@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"
+         version="3.1">
+
+    <!--Admin Mappings-->
+    <servlet>
+        <servlet-name>AddApiKeyServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.AddApiKeyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddApiKeyServlet</servlet-name>
+        <url-pattern>/admin/add-api-key</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>EnableOrDisableApiKeyServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.EnableOrDisableApiKeyServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>EnableOrDisableApiKeyServlet</servlet-name>
+        <url-pattern>/admin/enable-or-disable-api-key</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AddOrEditParameterServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.AddOrEditParameterServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AddOrEditParameterServlet</servlet-name>
+        <url-pattern>/admin/add-or-edit-parameter</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DeleteEntity</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.DeleteEntity</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DeleteEntity</servlet-name>
+        <url-pattern>/admin/delete-entity</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Parameters</servlet-name>
+        <jsp-file>/admin/Parameters.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Parameters</servlet-name>
+        <url-pattern>/admin/parameters</url-pattern>
+    </servlet-mapping>
+    <!--End of Admin Mappings-->
+
+    <!--Internal Sync servlet mappings-->
+    <servlet>
+        <servlet-name>Request</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.sync.Request</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Request</servlet-name>
+        <url-pattern>/sync/request</url-pattern>
+    </servlet-mapping>
+    <!--End of Internal Sync servlet mappings-->
+
+    <!--External API servlet mappings-->
+    <servlet>
+        <servlet-name>ApiSyncServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.api.ApiSyncServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ApiSyncServlet</servlet-name>
+        <url-pattern>/api/sync</url-pattern>
+    </servlet-mapping>
+    <!--End of External API servlet mappings-->
+
+
+</web-app>
