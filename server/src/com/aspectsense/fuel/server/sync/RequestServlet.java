@@ -2,6 +2,9 @@ package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.data.ApiKey;
 import com.aspectsense.fuel.server.data.Parameter;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,6 +16,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -22,17 +26,16 @@ import java.util.logging.Logger;
  *         18/12/2015
  *         11:28
  */
-public class Request extends HttpServlet {
+public class RequestServlet extends HttpServlet {
 
     public static final String PARAMETER_NAME_USER_ID = "USER_ID";
     public static final String PARAMETER_NAME_USER_PASSWORD_HASHED = "USER_PASSWORD_HASHED";
     public static final String PARAMETER_NAME_PRODUCTION_URL_QUERY = "PRODUCTION_URL_QUERY";
-    public static final String PARAMETER_NAME_PRODUCTION_URL_POLL = "PRODUCTION_URL_POLL";
 
     public static final String KEY_FUEL_TYPE = "fuelType";
     public static final String DEFAULT_FUEL_TYPE = "1"; // by default, assume petrol 95 // todo
 
-    public static final Logger log = Logger.getLogger(Request.class.getCanonicalName());
+    public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
     private static String postRequestPayload = null;
 
@@ -47,8 +50,8 @@ public class Request extends HttpServlet {
 
         final String apiKey = request.getParameter("apiKey");
         if(apiKey == null || apiKey.isEmpty() || !ApiKey.isActive(apiKey)) {
-            log.severe("Empty or invalid apiKey : " + apiKey);
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKey : " + apiKey + "\" }"); // normal JSON output
+            log.severe("Empty or invalid apiKey: " + apiKey);
+            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKey: " + apiKey + "\" }"); // normal JSON output
             return; // terminate here
         }
 
@@ -92,11 +95,14 @@ public class Request extends HttpServlet {
 
         try {
             final String correlationID = doRequest(productionUrlQuery, userId, userPasswordHashed, fuelType);
-            // todo store correlationID?
+            final Queue queue = QueueFactory.getDefaultQueue();
+            TaskOptions taskOptions = TaskOptions.Builder.withUrl("/sync/poll").param("apiKey", apiKey).param("correlationId", correlationID).countdownMillis(30000).method(TaskOptions.Method.GET);
+            queue.add(taskOptions);
             printWriter.println("{ \"result\": \"ok\", \"correlation-id\": \"" + correlationID + "\" }"); // normal JSON output
         } catch (IOException ioe) {
             printWriter.println("{ \"result\": \"Error\", \"message\": \"" + ioe.getMessage() + "\" }"); // normal JSON output
         }
+//        todo add checks to notify admin if sync fails for too long
     }
 
     private String doRequest(final String urlRequest, final String userId, final String userPasswordHashed, final String fuelType)
@@ -121,8 +127,8 @@ public class Request extends HttpServlet {
 
         int responseCode = httpURLConnection.getResponseCode();
         if(responseCode != 200) {
-            log.severe("Request @ '" + urlRequest + "' produced response code: " + responseCode);
-            log.severe("Request @ payload: " + postRequestPayload);
+            log.severe("RequestServlet @ '" + urlRequest + "' produced response code: " + responseCode);
+            log.severe("RequestServlet @ payload: " + postRequestPayload);
             throw new IOException("HTTP response code: " + responseCode);
         }
 
@@ -166,4 +172,32 @@ public class Request extends HttpServlet {
             "    </Message>\n" +
             "  </Body>\n" +
             "</GovTalkMessage>\n";
+
+    public static final String POST_POLL_PAYLOAD =
+            "<GovTalkMessage xmlns=\"http://www.govtalk.gov.uk/CM/envelope\">\n" +
+            "  <EnvelopeVersion>2.0</EnvelopeVersion>\n" +
+            "  <Header>\n" +
+            "    <MessageDetails>\n" +
+            "      <Class>PBL_MCIT_Petrol_PricesMob</Class>\n" +
+            "      <Qualifier>poll</Qualifier>\n" +
+            "      <Function>submit</Function>\n" +
+            "      <CorrelationID></CorrelationID>\n" +
+            "    </MessageDetails>\n" +
+            "    <SenderDetails>\n" +
+            "      <IDAuthentication>\n" +
+            "        <SenderID>paspfuel</SenderID>\n" +
+            "        <Authentication>\n" +
+            "          <Method>hash</Method>\n" +
+            "          <Value></Value>\n" +
+            "        </Authentication>\n" +
+            "      </IDAuthentication>\n" +
+            "    </SenderDetails>\n" +
+            "  </Header>\n" +
+            "  <GovTalkDetails>\n" +
+            "    <Keys>\n" +
+            "      <Key Type=\"\" />\n" +
+            "    </Keys>\n" +
+            "  </GovTalkDetails>\n" +
+            "  <Body />\n" +
+            "</GovTalkMessage>";
 }

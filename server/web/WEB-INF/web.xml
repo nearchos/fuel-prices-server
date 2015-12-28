@@ -53,12 +53,21 @@
 
     <!--Internal Sync servlet mappings-->
     <servlet>
-        <servlet-name>Request</servlet-name>
-        <servlet-class>com.aspectsense.fuel.server.sync.Request</servlet-class>
+        <servlet-name>RequestServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.sync.RequestServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>Request</servlet-name>
+        <servlet-name>RequestServlet</servlet-name>
         <url-pattern>/sync/request</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>PollServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.sync.PollServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PollServlet</servlet-name>
+        <url-pattern>/sync/poll</url-pattern>
     </servlet-mapping>
     <!--End of Internal Sync servlet mappings-->
 
