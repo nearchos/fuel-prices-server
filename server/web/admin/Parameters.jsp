@@ -1,10 +1,12 @@
-<%@ page import="com.aspectsense.fuel.server.admin.DeleteEntity" %>
+<%@ page import="com.aspectsense.fuel.server.admin.DeleteEntityServlet" %>
 <%@ page import="com.aspectsense.fuel.server.data.ApiKey" %>
 <%@ page import="java.net.URLEncoder" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="com.aspectsense.fuel.server.data.Parameter" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.ApiKeyFactory" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.ParameterFactory" %>
 <%--
   User: Nearchos Paspallis
   Date: 18/12/15
@@ -37,8 +39,8 @@ You are not logged in!
     }
     else
     {
-        final Vector<ApiKey> allApiKeys = ApiKey.getAllApiKeys();
-        final Vector<Parameter> allParameters = Parameter.getAllParameters();
+        final Vector<ApiKey> allApiKeys = ApiKeyFactory.getAllApiKeys();
+        final Vector<Parameter> allParameters = ParameterFactory.getAllParameters();
 %>
 
 <h1>Sync Parameters</h1>
@@ -58,7 +60,7 @@ You are not logged in!
             <td><%=parameter.getParameterValue()%></td>
             <td>
                 <form action="/admin/add-or-edit-parameter" method="post" onsubmit="submitButton.disabled = true; return true;">
-                    <input type="text" name="<%= Parameter.PROPERTY_VALUE%>" value="<%=parameter.getParameterValue()%>" required/>
+                    <input type="text" name="<%= ParameterFactory.PROPERTY_VALUE%>" value="<%=parameter.getParameterValue()%>" required/>
                     <div>
                         <input type="submit" name="submitButton" value="Save" />
                     </div>
@@ -67,8 +69,8 @@ You are not logged in!
             <td>
                 <form action="/admin/delete-entity">
                     <div><input type="submit" value="Delete" /></div>
-                    <input type="hidden" name="<%= DeleteEntity.PROPERTY_UUID %>" value="<%= parameter.getUuid() %>"/>
-                    <input type="hidden" name="<%= DeleteEntity.REDIRECT_URL %>" value="<%= URLEncoder.encode("/admin/parameters", "UTF-8") %>"/>
+                    <input type="hidden" name="<%= DeleteEntityServlet.PROPERTY_UUID %>" value="<%= parameter.getUuid() %>"/>
+                    <input type="hidden" name="<%= DeleteEntityServlet.REDIRECT_URL %>" value="<%= URLEncoder.encode("/admin/parameters", "UTF-8") %>"/>
                 </form>
             </td>
         </tr>
@@ -81,11 +83,11 @@ You are not logged in!
     <table>
         <tr>
             <td>NAME</td>
-            <td><input type="text" name="<%= Parameter.PROPERTY_NAME%>" required/></td>
+            <td><input type="text" name="<%= ParameterFactory.PROPERTY_NAME%>" required/></td>
         </tr>
         <tr>
             <td>VALUE</td>
-            <td><input type="text" name="<%= Parameter.PROPERTY_VALUE%>" required/></td>
+            <td><input type="text" name="<%= ParameterFactory.PROPERTY_VALUE%>" required/></td>
         </tr>
     </table>
     <div><input type="submit" name="submitButton" value="Create Parameter" /></div>
@@ -106,26 +108,26 @@ You are not logged in!
     <%
         if(allApiKeys != null)
         {
-            for(final ApiKey apiKey : allApiKeys)
+            for(final ApiKey apiKeyCode : allApiKeys)
             {
     %>
     <tr>
-        <td><%= apiKey.getEmailRequester() %></td>
-        <td><%= apiKey.getNote() %></td>
-        <td><%= timestampFormat.format(new Date(apiKey.getTimeRequested())) %></td>
-        <td><%= apiKey.isActive() %></td>
-        <td><%= apiKey.getApiKey() %></td>
+        <td><%= apiKeyCode.getEmailRequester() %></td>
+        <td><%= apiKeyCode.getNote() %></td>
+        <td><%= timestampFormat.format(new Date(apiKeyCode.getTimeRequested())) %></td>
+        <td><%= apiKeyCode.isActive() %></td>
+        <td><%= apiKeyCode.getApiKeyCode() %></td>
         <td>
             <form action="/admin/enable-or-disable-api-key">
                 <div><input type="submit" value="Toggle" /></div>
-                <input type="hidden" name="<%= ApiKey.PROPERTY_API_KEY %>" value="<%= apiKey.getApiKey() %>"/>
+                <input type="hidden" name="<%= ApiKeyFactory.PROPERTY_API_KEY_CODE %>" value="<%= apiKeyCode.getApiKeyCode() %>"/>
             </form>
         </td>
         <td>
             <form action="/admin/delete-entity">
                 <div><input type="submit" value="Delete" /></div>
-                <input type="hidden" name="<%= DeleteEntity.PROPERTY_UUID %>" value="<%= apiKey.getUuid() %>"/>
-                <input type="hidden" name="<%= DeleteEntity.REDIRECT_URL %>" value="<%= URLEncoder.encode("/admin/parameters", "UTF-8") %>"/>
+                <input type="hidden" name="<%= DeleteEntityServlet.PROPERTY_UUID %>" value="<%= apiKeyCode.getUuid() %>"/>
+                <input type="hidden" name="<%= DeleteEntityServlet.REDIRECT_URL %>" value="<%= URLEncoder.encode("/admin/parameters", "UTF-8") %>"/>
             </form>
         </td>
     </tr>
@@ -145,7 +147,7 @@ You are not logged in!
         </tr>
         <tr>
             <td>NOTE</td>
-            <td><input type="text" name="<%= ApiKey.PROPERTY_NOTE%>" required/></td>
+            <td><input type="text" name="<%= ApiKeyFactory.PROPERTY_NOTE%>" required/></td>
         </tr>
     </table>
     <div><input type="submit" name="submitButton" value="Create API key" /></div>

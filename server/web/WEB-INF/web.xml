@@ -33,11 +33,11 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>DeleteEntity</servlet-name>
-        <servlet-class>com.aspectsense.fuel.server.admin.DeleteEntity</servlet-class>
+        <servlet-name>DeleteEntityServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.DeleteEntityServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>DeleteEntity</servlet-name>
+        <servlet-name>DeleteEntityServlet</servlet-name>
         <url-pattern>/admin/delete-entity</url-pattern>
     </servlet-mapping>
 
@@ -48,6 +48,19 @@
     <servlet-mapping>
         <servlet-name>Parameters</servlet-name>
         <url-pattern>/admin/parameters</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminSyncServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.AdminSyncServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminSyncServlet</servlet-name>
+        <url-pattern>/admin/sync-prices</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>AdminSyncServlet</servlet-name>
+        <url-pattern>/admin/sync-stations</url-pattern>
     </servlet-mapping>
     <!--End of Admin Mappings-->
 
@@ -82,5 +95,26 @@
     </servlet-mapping>
     <!--End of External API servlet mappings-->
 
+    <!--Security constraints-->
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>api</web-resource-name>
+            <url-pattern>/api/*</url-pattern>
+        </web-resource-collection>
+        <user-data-constraint>
+            <transport-guarantee>CONFIDENTIAL</transport-guarantee>
+        </user-data-constraint>
+    </security-constraint>
+
+    <security-constraint>
+        <web-resource-collection>
+            <web-resource-name>cron</web-resource-name>
+            <url-pattern>/admin/*</url-pattern>
+        </web-resource-collection>
+        <auth-constraint>
+            <role-name>admin</role-name>
+        </auth-constraint>
+    </security-constraint>
+    <!--End of Security constraints-->
 
 </web-app>

@@ -1,7 +1,8 @@
 package com.aspectsense.fuel.server.admin;
 
-import com.aspectsense.fuel.server.data.ApiKey;
 import com.aspectsense.fuel.server.data.UserEntity;
+import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
+import com.aspectsense.fuel.server.datastore.UserEntityFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -23,14 +24,14 @@ import java.util.logging.Logger;
 public class EnableOrDisableApiKeyServlet extends HttpServlet {
     Logger log = Logger.getLogger("cyprusfuelguide");
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        final String apiKey = request.getParameter(ApiKey.PROPERTY_API_KEY);
+        final String apiKey = request.getParameter(ApiKeyFactory.PROPERTY_API_KEY_CODE);
         UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();
         log.info("EnableOrDisableApiKeyServlet - user: " + user);
         if(userService.isUserLoggedIn()) {
-            final UserEntity userEntity = UserEntity.getUserEntity(user.getEmail());
+            final UserEntity userEntity = UserEntityFactory.getUserEntity(user.getEmail());
             if(userEntity != null && userEntity.isAdmin()) {
-                ApiKey.enableOrDisable(apiKey);
+                ApiKeyFactory.enableOrDisable(apiKey);
                 response.sendRedirect("/admin/parameters");
             } else {
                 response.getWriter().println("{ \"status\": \"error\", \"message\": \"logged in user is not admin\" }");

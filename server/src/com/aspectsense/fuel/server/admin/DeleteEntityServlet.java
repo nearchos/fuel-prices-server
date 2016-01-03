@@ -1,6 +1,7 @@
 package com.aspectsense.fuel.server.admin;
 
 import com.aspectsense.fuel.server.data.UserEntity;
+import com.aspectsense.fuel.server.datastore.UserEntityFactory;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.KeyFactory;
@@ -24,9 +25,9 @@ import java.util.logging.Logger;
  *         22/12/2015
  *         21:30
  */
-public class DeleteEntity extends HttpServlet
+public class DeleteEntityServlet extends HttpServlet
 {
-    private Logger log = Logger.getLogger(DeleteEntity.class.toString());
+    private Logger log = Logger.getLogger(DeleteEntityServlet.class.toString());
 
     public static final String PROPERTY_UUID = "uuid";
     public static final String REDIRECT_URL = "redirect-url";
@@ -44,7 +45,7 @@ public class DeleteEntity extends HttpServlet
         }
         else
         {
-            final UserEntity userEntity = UserEntity.getUserEntity(user.getEmail());
+            final UserEntity userEntity = UserEntityFactory.getUserEntity(user.getEmail());
             if(userEntity == null || !userEntity.isAdmin())
             {
                 response.getWriter().print("User '" + user.getEmail() + "' is not an admin");

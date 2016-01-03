@@ -1,7 +1,8 @@
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.ApiKey;
 import com.aspectsense.fuel.server.data.Parameter;
+import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
+import com.aspectsense.fuel.server.datastore.ParameterFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -16,7 +17,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -48,12 +48,14 @@ public class RequestServlet extends HttpServlet {
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();
 
-        final String apiKey = request.getParameter("apiKey");
-        if(apiKey == null || apiKey.isEmpty() || !ApiKey.isActive(apiKey)) {
-            log.severe("Empty or invalid apiKey: " + apiKey);
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKey: " + apiKey + "\" }"); // normal JSON output
+        final String apiKeyCode = request.getParameter("apiKeyCode");
+        if(apiKeyCode == null || apiKeyCode.isEmpty() || !ApiKeyFactory.isActive(apiKeyCode)) {
+            log.severe("Empty or invalid apiKeyCode: " + apiKeyCode);
+            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKeyCode: " + apiKeyCode + "\" }"); // normal JSON output
             return; // terminate here
         }
+
+        final boolean syncStations = "true".equals(request.getParameter("syncStations"));
 
         // if no fuel type is requested, the default one is used
         final String fuelType = request.getParameter(KEY_FUEL_TYPE) == null ?
@@ -61,7 +63,7 @@ public class RequestServlet extends HttpServlet {
                 request.getParameter(KEY_FUEL_TYPE);
 
         if(userId == null) {
-            final Parameter parameter = Parameter.getParameterByName(PARAMETER_NAME_USER_ID);
+            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_ID);
             if(parameter != null) {
                 userId = parameter.getParameterValue();
             } else {
@@ -72,7 +74,7 @@ public class RequestServlet extends HttpServlet {
         }
 
         if(userPasswordHashed == null) {
-            final Parameter parameter = Parameter.getParameterByName(PARAMETER_NAME_USER_PASSWORD_HASHED);
+            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_PASSWORD_HASHED);
             if(parameter != null) {
                 userPasswordHashed = parameter.getParameterValue();
             } else {
@@ -83,7 +85,7 @@ public class RequestServlet extends HttpServlet {
         }
 
         if(productionUrlQuery == null) {
-            final Parameter parameter = Parameter.getParameterByName(PARAMETER_NAME_PRODUCTION_URL_QUERY);
+            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_PRODUCTION_URL_QUERY);
             if(parameter != null) {
                 productionUrlQuery = parameter.getParameterValue();
             } else {
@@ -96,7 +98,14 @@ public class RequestServlet extends HttpServlet {
         try {
             final String correlationID = doRequest(productionUrlQuery, userId, userPasswordHashed, fuelType);
             final Queue queue = QueueFactory.getDefaultQueue();
-            TaskOptions taskOptions = TaskOptions.Builder.withUrl("/sync/poll").param("apiKey", apiKey).param("correlationId", correlationID).countdownMillis(30000).method(TaskOptions.Method.GET);
+            TaskOptions taskOptions = TaskOptions.Builder
+                    .withUrl("/sync/poll")
+                    .param("apiKeyCode", apiKeyCode)
+                    .param("correlationId", correlationID)
+                    .param("fuelType", fuelType)
+                    .param("syncStations", Boolean.toString(syncStations))
+                    .countdownMillis(30000)
+                    .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
             printWriter.println("{ \"result\": \"ok\", \"correlation-id\": \"" + correlationID + "\" }"); // normal JSON output
         } catch (IOException ioe) {
@@ -105,8 +114,8 @@ public class RequestServlet extends HttpServlet {
 //        todo add checks to notify admin if sync fails for too long
     }
 
-    private String doRequest(final String urlRequest, final String userId, final String userPasswordHashed, final String fuelType)
-        throws IOException {
+    private String doRequest(final String urlRequest, final String userId, final String userPasswordHashed, final String fuelType) throws IOException {
+
         final URL productionUrlRequest = new URL(urlRequest);
         final HttpURLConnection httpURLConnection = (HttpURLConnection) productionUrlRequest.openConnection();
         httpURLConnection.setDoOutput(true);
