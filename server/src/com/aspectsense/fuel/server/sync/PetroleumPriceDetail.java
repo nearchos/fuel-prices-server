@@ -1,3 +1,20 @@
+/*
+ * This file is part of the Cyprus Fuel Guide server.
+ *
+ * The Cyprus Fuel Guide server is free software: you can redistribute it
+ * and/or modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of
+ * the License, or (at your option) any later version.
+ *
+ * The Cyprus Fuel Guide server is distributed in the hope that it will be
+ * useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.data.Price;
@@ -145,9 +162,8 @@ public class PetroleumPriceDetail implements Serializable {
         if(!stationAddress.equals(station.getStationAddress())) return true;
         if(!stationLatitude.equals(station.getStationLatitude())) return true;
         if(!stationLongitude.equals(station.getStationLongitude())) return true;
-        if(isOffline != station.isOffline()) return true;
+        return isOffline != station.isOffline();
 
-        return false;
     }
 
     public boolean hasChanges(final Price price) {

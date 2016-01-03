@@ -1,3 +1,20 @@
+<%--
+  ~ This file is part of the Cyprus Fuel Guide server.
+  ~
+  ~ The Cyprus Fuel Guide server is free software: you can redistribute it
+  ~ and/or modify it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 3 of
+  ~ the License, or (at your option) any later version.
+  ~
+  ~ The Cyprus Fuel Guide server is distributed in the hope that it will be
+  ~ useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+  ~ Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public License
+  ~ along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+  --%>
+
 <%@ page import="com.google.appengine.api.users.User" %>
 <%@ page import="com.google.appengine.api.users.UserServiceFactory" %>
 <%@ page import="com.google.appengine.api.users.UserService" %>
@@ -5,11 +22,9 @@
 <%@ page import="com.aspectsense.fuel.server.datastore.UserEntityFactory" %>
 
 <%--
-  Created by IntelliJ IDEA.
   User: Nearchos Paspallis
   Date: 18/12/2015
   Time: 11:34
-  To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <html>
