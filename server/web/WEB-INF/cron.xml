@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cronentries>
+
+    <cron>
+        <url>/admin/sync-prices</url>
+        <description>Sync prices with the ministry's server</description>
+        <schedule>every 30 minutes from 8:00 to 20:00</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
+    <cron>
+        <url>/admin/sync-stations</url>
+        <description>Sync station details with the ministry's server</description>
+        <schedule>every day 7:30</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
+</cronentries>
