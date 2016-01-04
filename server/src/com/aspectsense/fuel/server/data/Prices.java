@@ -17,6 +17,7 @@
 
 package com.aspectsense.fuel.server.data;
 
+import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
@@ -64,10 +65,21 @@ public class Prices implements Serializable {
         final Map<String,StationPrice> stationCodeToPriceMap = new HashMap<>();
         try {
             final JSONObject jsonObject = new JSONObject(json);
+
+            // parse JSON
+//            final String fuelType = jsonObject.getString("fuelType");
+//            final long lastUpdated = jsonObject.getLong("lastUpdated");
+            final JSONArray prices = jsonObject.getJSONArray("prices");
+            for(int i = 0; i < prices.length(); i++) {
+                JSONObject price = prices.getJSONObject(i);
+                final String stationCode = price.getString("stationCode");
+                final String priceString = price.getString("price");
+                final String priceModificationDate = price.getString("priceModificationDate");
+                stationCodeToPriceMap.put(stationCode, new Prices.StationPrice(priceString, priceModificationDate));
+            }
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
             log.severe("Error while parsing JSON: " + json);
-            //todo parse JSON
         }
         return stationCodeToPriceMap;
     }

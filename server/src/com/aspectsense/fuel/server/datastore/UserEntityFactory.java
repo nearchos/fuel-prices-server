@@ -44,24 +44,19 @@ public class UserEntityFactory {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query query = new Query(KIND).setFilter(new Query.FilterPredicate(UserEntityFactory.PROPERTY_EMAIL, Query.FilterOperator.EQUAL, email));
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
-        final List<Entity> userEntities = preparedQuery.asList(FetchOptions.Builder.withDefaults());
+        final List<Entity> userEntities = preparedQuery.asList(FetchOptions.Builder.withLimit(1));
         if(userEntities.size() == 0)
         {
             log.info("Could not find user with email: " + email);
             return null;
         }
-        else if(userEntities.size() == 1) // todo
+        else // if(userEntities.size() == 1)
         {
-            return new UserEntity(userEntities.get(0));
-        }
-        else
-        {
-            log.severe("More than 1 entities for email: " + email);
             return new UserEntity(userEntities.get(0));
         }
     }
 
-    static public UserEntity setUserEntity(final String email, final String nickname, final boolean isAdmin, final boolean isTrainer)
+    static public UserEntity setUserEntity(final String email, final String nickname, final boolean isAdmin)
     {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity userEntity = new Entity(KIND);

@@ -44,7 +44,7 @@
     } else {
         userEntity = UserEntityFactory.getUserEntity(user.getEmail());
         if(userEntity == null) {
-            userEntity = UserEntityFactory.setUserEntity(user.getEmail(), user.getNickname(), false, false);
+            userEntity = UserEntityFactory.setUserEntity(user.getEmail(), user.getNickname(), false);
         }
 %>
     <span><img src="../favicon.ico" alt="Cyprus Fuel Guide"/> Logged in as: <%= user.getNickname() %> <b> <%= userEntity.isAdmin() ? "(admin)" : "" %> </b> [<a href="<%= userService.createLogoutURL(request.getRequestURI()) %>">sign out</a>]</span>

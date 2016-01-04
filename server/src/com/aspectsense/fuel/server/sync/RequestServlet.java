@@ -50,7 +50,7 @@ public class RequestServlet extends HttpServlet {
     public static final String PARAMETER_NAME_PRODUCTION_URL_QUERY = "PRODUCTION_URL_QUERY";
 
     public static final String KEY_FUEL_TYPE = "fuelType";
-    public static final String DEFAULT_FUEL_TYPE = "1"; // by default, assume petrol 95 // todo
+    public static final String DEFAULT_FUEL_TYPE = "1"; // by default, assume '1', i.e. petrol 95
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
