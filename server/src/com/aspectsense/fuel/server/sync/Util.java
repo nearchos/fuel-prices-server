@@ -17,9 +17,9 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.Price;
+import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.data.Station;
-import com.aspectsense.fuel.server.datastore.PriceFactory;
+import com.aspectsense.fuel.server.datastore.PricesFactory;
 import com.aspectsense.fuel.server.datastore.StationFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -169,8 +169,6 @@ public class Util {
 
     public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
         final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations();
-//        final Map<String, Price> pricesByStationCode = PriceFactory.getPricesByStationCode(fuelType);
-        final Map<String, Price> stationCodesToPricesByStationCode = PriceFactory.getStationCodesToPricesByFuelType(fuelType);
 
         int numOfChanges = 0;
 
@@ -210,23 +208,8 @@ public class Util {
                 }
             }
 
-            // sync prices as needed
-            final Price price = stationCodesToPricesByStationCode.get(stationCode);
-            if(price == null) {
-                PriceFactory.addPrice(stationCode,
-                        petroleumPriceDetail.getPriceModificationDate(),
-                        fuelType,
-                        petroleumPriceDetail.getFuelPrice());
-                numOfChanges++;
-            } else if(petroleumPriceDetail.hasChanges(price)) {
-                // update datastore entry of the station
-                PriceFactory.editPrice(price.getUuid(),
-                        petroleumPriceDetail.getStationCode(),
-                        petroleumPriceDetail.getPriceModificationDate(),
-                        petroleumPriceDetail.getFuelType(),
-                        petroleumPriceDetail.getFuelPrice());
-                numOfChanges++;
-            }
+            // sync prices
+            final Prices prices = PricesFactory.addPrices(petroleumPriceDetails, fuelType);
         }
 
         return numOfChanges;

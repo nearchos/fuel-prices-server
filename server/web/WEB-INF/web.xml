@@ -68,6 +68,24 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>Stations</servlet-name>
+        <jsp-file>/admin/Stations.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Stations</servlet-name>
+        <url-pattern>/admin/stations</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>Prices</servlet-name>
+        <jsp-file>/admin/Prices.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Prices</servlet-name>
+        <url-pattern>/admin/prices</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AdminSyncServlet</servlet-name>
         <servlet-class>com.aspectsense.fuel.server.admin.AdminSyncServlet</servlet-class>
     </servlet>

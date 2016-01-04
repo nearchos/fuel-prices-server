@@ -64,6 +64,18 @@ public class Station implements Serializable {
         return uuid;
     }
 
+    /**
+     * Returns a specified number of characters from the tail of the UUID
+     * @param numOfLastCharacters
+     * @return
+     */
+    public String getShortUuid(int numOfLastCharacters) {
+        int cutoffCharacter = uuid.length() - numOfLastCharacters;
+        if(cutoffCharacter < 0) cutoffCharacter = 0;
+        if(cutoffCharacter >= uuid.length()) cutoffCharacter = uuid.length() - 1;
+        return uuid.substring(cutoffCharacter);
+    }
+
     public String getFuelCompanyCode() {
         return fuelCompanyCode;
     }

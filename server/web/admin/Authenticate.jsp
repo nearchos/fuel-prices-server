@@ -36,7 +36,7 @@
     final UserService userService = UserServiceFactory.getUserService();
     final User user = userService.getCurrentUser();
     final String userEmail = user == null ? "Unknown" : user.getEmail();
-    UserEntity userEntity;
+    UserEntity userEntity = null;
     if (user == null) {
 %>
 <p>You need to <a href="<%= userService.createLoginURL(request.getRequestURI()) %>">sign in</a> to use this service.</p>

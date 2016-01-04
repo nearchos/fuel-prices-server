@@ -17,7 +17,6 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.Price;
 import com.aspectsense.fuel.server.data.Station;
 
 import java.io.Serializable;
@@ -59,19 +58,19 @@ public class PetroleumPriceDetail implements Serializable {
             String fuelType,
             String fuelPrice,
             boolean isOffline) {
-        this.fuelCompanyCode = fuelCompanyCode;
-        this.fuelCompanyName = fuelCompanyName;
-        this.stationCode = stationCode;
-        this.stationName = stationName;
-        this.stationTelNo = stationTelNo;
-        this.stationCity = stationCity;
-        this.stationDistrict = stationDistrict;
-        this.stationAddress = stationAddress;
-        this.stationLatitude = stationLatitude;
-        this.stationLongitude = stationLongitude;
-        this.priceModificationDate = priceModificationDate;
-        this.fuelType = fuelType;
-        this.fuelPrice = fuelPrice;
+        this.fuelCompanyCode = fuelCompanyCode.trim();
+        this.fuelCompanyName = fuelCompanyName.trim();
+        this.stationCode = stationCode.trim();
+        this.stationName = stationName.trim();
+        this.stationTelNo = stationTelNo.trim();
+        this.stationCity = stationCity.trim();
+        this.stationDistrict = stationDistrict.trim();
+        this.stationAddress = stationAddress.trim();
+        this.stationLatitude = stationLatitude.trim();
+        this.stationLongitude = stationLongitude.trim();
+        this.priceModificationDate = priceModificationDate.trim();
+        this.fuelType = fuelType.trim();
+        this.fuelPrice = fuelPrice.trim();
         this.isOffline = isOffline;
     }
 
@@ -163,15 +162,5 @@ public class PetroleumPriceDetail implements Serializable {
         if(!stationLatitude.equals(station.getStationLatitude())) return true;
         if(!stationLongitude.equals(station.getStationLongitude())) return true;
         return isOffline != station.isOffline();
-
     }
-
-    public boolean hasChanges(final Price price) {
-        if(!priceModificationDate.equals(price.getPriceModificationDate())) return true;
-        if(!fuelPrice.equals(price.getFuelPrice())) return true;
-        // it must be assumed that the station code does not change
-
-        return false;
-    }
-
 }
