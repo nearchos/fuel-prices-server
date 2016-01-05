@@ -18,7 +18,6 @@
 package com.aspectsense.fuel.server.datastore;
 
 import com.aspectsense.fuel.server.data.Prices;
-import com.aspectsense.fuel.server.data.Station;
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
 import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.memcache.MemcacheService;
@@ -51,7 +50,7 @@ public class PricesFactory {
         final StringBuilder jsonStringBuilder = new StringBuilder("{\n");
         jsonStringBuilder.append("  \"fuelType\": ").append(fuelType).append(",\n");
         jsonStringBuilder.append("  \"lastUpdated\": ").append(lastUpdated).append(",\n");
-        jsonStringBuilder.append("  \"prices\": [").append(lastUpdated).append("\n");
+        jsonStringBuilder.append("  \"prices\": [").append("\n");
 
         int count = 0;
         for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
@@ -65,8 +64,9 @@ public class PricesFactory {
         jsonStringBuilder.append("}\n");
 
         final String json = jsonStringBuilder.toString();
+        final Text jsonText = new Text(json);
 
-        return addPrices(fuelType, json, lastUpdated);
+        return addPrices(fuelType, jsonText, lastUpdated);
     }
 
     /**
@@ -97,7 +97,7 @@ public class PricesFactory {
         }
     }
 
-    static public Prices addPrices(String fuelType, String json, long lastUpdated) {
+    static public Prices addPrices(String fuelType, Text json, long lastUpdated) {
 
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity pricesEntity = new Entity(KIND);
@@ -109,7 +109,7 @@ public class PricesFactory {
         // storing in the datastore
         final Key key = datastoreService.put(pricesEntity);
 
-        return new Prices(KeyFactory.keyToString(key), fuelType, json, lastUpdated);
+        return new Prices(KeyFactory.keyToString(key), fuelType, json.getValue(), lastUpdated);
     }
 
     static public Prices getFromEntity(final Entity entity) {

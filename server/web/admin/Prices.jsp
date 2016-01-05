@@ -22,6 +22,7 @@
 <%@ page import="java.util.Map" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.PricesFactory" %>
 <%@ page import="com.aspectsense.fuel.server.data.Prices" %>
+<%@ page import="java.util.HashMap" %>
 
 <%--
   User: Nearchos Paspallis
@@ -58,13 +59,13 @@ You are not logged in!
         final String [] fuelTypeCodes = new String [] { "1", "2", "3", "4"};
         final String [] fuelTypeNames = new String [] { "Petrol 95", "Petrol 98", "Diesel", "Heating"};
         final Prices petrol95Prices = PricesFactory.getLatestPrices(fuelTypeCodes[0]);
-        final Map<String, Prices.StationPrice> petrol95StationCodeToPriceMap = petrol95Prices.getStationCodeToPriceMap();
+        final Map<String, Prices.StationPrice> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, Prices.StationPrice>() : petrol95Prices.getStationCodeToPriceMap();
         final Prices petrol98Prices = PricesFactory.getLatestPrices(fuelTypeCodes[1]);
-        final Map<String, Prices.StationPrice> petrol98StationCodeToPriceMap = petrol98Prices.getStationCodeToPriceMap();
+        final Map<String, Prices.StationPrice> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, Prices.StationPrice>() : petrol98Prices.getStationCodeToPriceMap();
         final Prices dieselPrices = PricesFactory.getLatestPrices(fuelTypeCodes[2]);
-        final Map<String, Prices.StationPrice> dieselStationCodeToPriceMap = dieselPrices.getStationCodeToPriceMap();
+        final Map<String, Prices.StationPrice> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, Prices.StationPrice>() : dieselPrices.getStationCodeToPriceMap();
         final Prices heatingPrices = PricesFactory.getLatestPrices(fuelTypeCodes[3]);
-        final Map<String, Prices.StationPrice> heatingStationCodeToPriceMap = heatingPrices.getStationCodeToPriceMap();
+        final Map<String, Prices.StationPrice> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, Prices.StationPrice>() : heatingPrices.getStationCodeToPriceMap();
         final Vector<Station> allStations = StationFactory.getAllStations();
 %>
 
