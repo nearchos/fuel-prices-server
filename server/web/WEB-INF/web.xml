@@ -117,6 +117,15 @@
         <servlet-name>PollServlet</servlet-name>
         <url-pattern>/sync/poll</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>UpdateDatastoreServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.sync.UpdateDatastoreServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>UpdateDatastoreServlet</servlet-name>
+        <url-pattern>/sync/updateDatastore</url-pattern>
+    </servlet-mapping>
     <!--End of Internal Sync servlet mappings-->
 
     <!--External API servlet mappings-->

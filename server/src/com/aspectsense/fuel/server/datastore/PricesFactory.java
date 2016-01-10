@@ -23,7 +23,7 @@ import com.google.appengine.api.datastore.*;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -43,7 +43,12 @@ public class PricesFactory {
     public static final String PROPERTY_JSON            = "json";
     public static final String PROPERTY_LAST_UPDATED    = "last_updated";
 
-    public static Prices addPrices(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType) {
+    /**
+     * @param petroleumPriceDetails
+     * @param fuelType
+     * @return true if the data contain some actual updates for the given fuelType
+     */
+    public static boolean addPrices(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType) {
 
         final long lastUpdated = System.currentTimeMillis();
 
@@ -56,8 +61,9 @@ public class PricesFactory {
         for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
             boolean isLastElement = ++count == petroleumPriceDetails.size();
             jsonStringBuilder.append("    { \"stationCode\": \"").append(petroleumPriceDetail.getStationCode())
-                    .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice())
-                    .append("\", \"priceModificationDate\": \"").append(petroleumPriceDetail.getPriceModificationDate()).append("\" }")
+                    .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice()).append("\" }")
+//                    .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice())
+//                    .append("\", \"priceModificationDate\": \"").append(petroleumPriceDetail.getPriceModificationDate()).append("\" }")
                     .append(isLastElement ? "\n" : ",\n");
         }
         jsonStringBuilder.append("  ]\n");
@@ -66,7 +72,12 @@ public class PricesFactory {
         final String json = jsonStringBuilder.toString();
         final Text jsonText = new Text(json);
 
-        return addPrices(fuelType, jsonText, lastUpdated);
+        if(count > 0) {
+            addPrices(fuelType, jsonText, lastUpdated);
+            return false;
+        } else {
+            return true;
+        }
     }
 
     /**
@@ -76,28 +87,21 @@ public class PricesFactory {
      * @return the most recent {@link Prices} instance, or null if that could not be found
      */
     static public Prices getLatestPrices(final String fuelType) {
-        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
-        if(memcacheService.contains("prices-" + fuelType)) {
-            return (Prices) memcacheService.get("prices-" + fuelType);
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query.Filter filter = new Query.FilterPredicate(PROPERTY_FUEL_TYPE, Query.FilterOperator.EQUAL, fuelType);
+        final Query query = new Query(KIND).setFilter(filter).addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        // assert exactly one (or none) is found
+        final FetchOptions fetchOptions = FetchOptions.Builder.withLimit(1);
+        final List<Entity> list = preparedQuery.asList(fetchOptions);
+        if(!list.isEmpty()) {
+            return getFromEntity(list.get(0));
         } else {
-            final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-            final Query.Filter filter = new Query.FilterPredicate(PROPERTY_FUEL_TYPE, Query.FilterOperator.EQUAL, fuelType);
-            final Query query = new Query(KIND).setFilter(filter).addSort(PROPERTY_LAST_UPDATED + " DESC");
-            final PreparedQuery preparedQuery = datastoreService.prepare(query);
-            // assert exactly one (or none) is found
-            final FetchOptions fetchOptions = FetchOptions.Builder.withLimit(1);
-            final Iterator<Entity> iterator = preparedQuery.asList(fetchOptions).iterator();
-            if(iterator.hasNext()) {
-                final Prices prices = getFromEntity(iterator.next());
-                memcacheService.put("prices-" + fuelType, prices); // add or update cache entry
-                return prices;
-            } else {
-                return null;
-            }
+            return null;
         }
     }
 
-    static public Prices addPrices(String fuelType, Text json, long lastUpdated) {
+    static public Key addPrices(String fuelType, Text json, long lastUpdated) {
 
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity pricesEntity = new Entity(KIND);
@@ -107,16 +111,14 @@ public class PricesFactory {
         pricesEntity.setProperty(PROPERTY_LAST_UPDATED, lastUpdated);
 
         // storing in the datastore
-        final Key key = datastoreService.put(pricesEntity);
-
-        return new Prices(KeyFactory.keyToString(key), fuelType, json.getValue(), lastUpdated);
+        return datastoreService.put(pricesEntity);
     }
 
     static public Prices getFromEntity(final Entity entity) {
         return new Prices(
                 KeyFactory.keyToString(entity.getKey()),
                 (String) entity.getProperty(PROPERTY_FUEL_TYPE),
-                (String) entity.getProperty(PROPERTY_JSON),
+                ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
                 (Long) entity.getProperty(PROPERTY_LAST_UPDATED));
     }
 }

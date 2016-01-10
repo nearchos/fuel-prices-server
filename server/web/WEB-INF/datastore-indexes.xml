@@ -19,7 +19,7 @@
 
     <datastore-index kind="Prices" ancestor="false" source="manual">
         <property name="fuel_type" direction="asc"/>
-        <property name="last_updated DESC" direction="asc"/>
+        <property name="last_updated" direction="desc"/>
     </datastore-index>
 
 </datastore-indexes>

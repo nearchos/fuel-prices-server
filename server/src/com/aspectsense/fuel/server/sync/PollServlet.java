@@ -45,8 +45,6 @@ import java.util.logging.Logger;
  */
 public class PollServlet extends HttpServlet {
 
-    public static final String MEMCACHE_KEY_LAST_HASHCODE = "last-hashcode";
-
     public static final String PARAMETER_NAME_USER_ID = "USER_ID";
     public static final String PARAMETER_NAME_USER_PASSWORD_HASHED = "USER_PASSWORD_HASHED";
     public static final String PARAMETER_NAME_PRODUCTION_URL_POLL = "PRODUCTION_URL_POLL";
@@ -126,34 +124,19 @@ public class PollServlet extends HttpServlet {
                 log.info("xml: \n" +xml);
             }
 
-            int lastHashcode = 0;
-            final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
-            if(memcacheService.contains(MEMCACHE_KEY_LAST_HASHCODE + "-" + fuelType)) {
-                lastHashcode = (Integer) memcacheService.get(MEMCACHE_KEY_LAST_HASHCODE + "-" + fuelType);
-            }
-
-            int hashcode = xml.hashCode();
-            final boolean xmlHasChanged = hashcode != lastHashcode;
-            memcacheService.put(MEMCACHE_KEY_LAST_HASHCODE + "-" + fuelType, hashcode);
-
-            if(xmlHasChanged) {
-                // handle xml
-                Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
-                int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
-                log.info("Util.updateDatastore(petroleumPriceDetails, fuelType) -> " + numOfChanges + ", " +
-                        "elapsed: " + (System.currentTimeMillis() - start));
-                printWriter.println("{ \"result\": \"ok\", " +
-                        "\"numOfChanges\": " + numOfChanges + ", " +
-                        "\"hashXmlChanged\": true, " +
-                        "\"fuelType\": \"" + fuelType + "\", " +
-                        "\"elapsed\": " + (System.currentTimeMillis() - start) + " }");
-            }
+            // handle xml
+            Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
+            int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
+            log.info("Util.updateDatastore(petroleumPriceDetails, fuelType) -> " + numOfChanges + ", " +
+                    "elapsed: " + (System.currentTimeMillis() - start));
 
             printWriter.println("{ \"result\": \"ok\", " +
-                    "\"numOfChanges\": 0, " +
-                    "\"hashXmlChanged\": false, " +
+                    "\"numOfChanges\": " + numOfChanges + ", " +
                     "\"fuelType\": \"" + fuelType + "\", " +
+                    "\"debug\":" + debug + ", " +
+                    (debug ? "\"xml\": \"" + xml + "\"" : "") +
                     "\"elapsed\": " + (System.currentTimeMillis() - start) + " }");
+
         } catch (IOException ioe) {
             printWriter.println("{ \"result\": \"Error\", \"message\": \"" + ioe.getMessage() + "\" }");
         }

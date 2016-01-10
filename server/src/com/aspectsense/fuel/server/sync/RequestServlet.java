@@ -72,6 +72,8 @@ public class RequestServlet extends HttpServlet {
             return; // terminate here
         }
 
+        final boolean debug = request.getParameter("debug") != null;
+
         final boolean syncStations = "true".equals(request.getParameter("syncStations"));
 
         // if no fuel type is requested, the default one is used
@@ -124,7 +126,10 @@ public class RequestServlet extends HttpServlet {
                     .countdownMillis(30000)
                     .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
-            printWriter.println("{ \"result\": \"ok\", \"correlation-id\": \"" + correlationID + "\" }"); // normal JSON output
+            printWriter.println("{ \"result\": \"ok\", " +
+                    "\"debug\": " + debug + ", " +
+                    "\"request-xml\": \"" + postRequestPayload + "\", " +
+                    "\"correlation-id\": \"" + correlationID + "\" }"); // normal JSON output
         } catch (IOException ioe) {
             printWriter.println("{ \"result\": \"Error\", \"message\": \"" + ioe.getMessage() + "\" }"); // normal JSON output
         }
@@ -141,12 +146,10 @@ public class RequestServlet extends HttpServlet {
         httpURLConnection.setRequestProperty("Content-Type", "text/xml;charset=UTF-8");
         httpURLConnection.setRequestProperty("Authorization", "Hash " + userPasswordHashed);
 
-        if(postRequestPayload == null) {
-            postRequestPayload = POST_REQUEST_PAYLOAD
-                    .replaceAll("<SenderID></SenderID>", "<SenderID>" + userId + "</SenderID>")
-                    .replaceAll("<Value></Value>", "<Value>" + userPasswordHashed + "</Value>")
-                    .replaceAll("<PetroleumType></PetroleumType>", "<PetroleumType>" + fuelType + "</PetroleumType>");
-        }
+        postRequestPayload = POST_REQUEST_PAYLOAD
+                .replaceAll("<SenderID></SenderID>", "<SenderID>" + userId + "</SenderID>")
+                .replaceAll("<Value></Value>", "<Value>" + userPasswordHashed + "</Value>")
+                .replaceAll("<PetroleumType></PetroleumType>", "<PetroleumType>" + fuelType + "</PetroleumType>");
 
         final OutputStream os = httpURLConnection.getOutputStream();
         os.write(postRequestPayload.getBytes());
@@ -198,32 +201,4 @@ public class RequestServlet extends HttpServlet {
             "    </Message>\n" +
             "  </Body>\n" +
             "</GovTalkMessage>\n";
-
-    public static final String POST_POLL_PAYLOAD =
-            "<GovTalkMessage xmlns=\"http://www.govtalk.gov.uk/CM/envelope\">\n" +
-            "  <EnvelopeVersion>2.0</EnvelopeVersion>\n" +
-            "  <Header>\n" +
-            "    <MessageDetails>\n" +
-            "      <Class>PBL_MCIT_Petrol_PricesMob</Class>\n" +
-            "      <Qualifier>poll</Qualifier>\n" +
-            "      <Function>submit</Function>\n" +
-            "      <CorrelationID></CorrelationID>\n" +
-            "    </MessageDetails>\n" +
-            "    <SenderDetails>\n" +
-            "      <IDAuthentication>\n" +
-            "        <SenderID>paspfuel</SenderID>\n" +
-            "        <Authentication>\n" +
-            "          <Method>hash</Method>\n" +
-            "          <Value></Value>\n" +
-            "        </Authentication>\n" +
-            "      </IDAuthentication>\n" +
-            "    </SenderDetails>\n" +
-            "  </Header>\n" +
-            "  <GovTalkDetails>\n" +
-            "    <Keys>\n" +
-            "      <Key Type=\"\" />\n" +
-            "    </Keys>\n" +
-            "  </GovTalkDetails>\n" +
-            "  <Body />\n" +
-            "</GovTalkMessage>";
 }

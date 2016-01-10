@@ -61,8 +61,8 @@ public class Prices implements Serializable {
         return json;
     }
 
-    public Map<String,StationPrice> getStationCodeToPriceMap() {
-        final Map<String,StationPrice> stationCodeToPriceMap = new HashMap<>();
+    public Map<String,String> getStationCodeToPriceMap() {
+        final Map<String,String> stationCodeToPriceMap = new HashMap<>();
         try {
             final JSONObject jsonObject = new JSONObject(json);
 
@@ -74,8 +74,9 @@ public class Prices implements Serializable {
                 JSONObject price = prices.getJSONObject(i);
                 final String stationCode = price.getString("stationCode");
                 final String priceString = price.getString("price");
-                final String priceModificationDate = price.getString("priceModificationDate");
-                stationCodeToPriceMap.put(stationCode, new Prices.StationPrice(priceString, priceModificationDate));
+//                final String priceModificationDate = price.getString("priceModificationDate");
+//                stationCodeToPriceMap.put(stationCode, new Prices.StationPrice(priceString, priceModificationDate));
+                stationCodeToPriceMap.put(stationCode, priceString);
             }
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
@@ -88,22 +89,22 @@ public class Prices implements Serializable {
         return lastUpdated;
     }
 
-    public class StationPrice implements Serializable {
-
-        private final String price;
-        private final String priceModificationDate;
-
-        private StationPrice(final String price, final String priceModificationDate) {
-            this.price = price;
-            this.priceModificationDate = priceModificationDate;
-        }
-
-        public String getPrice() {
-            return price;
-        }
-
-        public String getPriceModificationDate() {
-            return priceModificationDate;
-        }
-    }
+//    public class StationPrice implements Serializable {
+//
+//        private final String price;
+//        private final String priceModificationDate;
+//
+//        private StationPrice(final String price, final String priceModificationDate) {
+//            this.price = price;
+//            this.priceModificationDate = priceModificationDate;
+//        }
+//
+//        public String getPrice() {
+//            return price;
+//        }
+//
+//        public String getPriceModificationDate() {
+//            return priceModificationDate;
+//        }
+//    }
 }

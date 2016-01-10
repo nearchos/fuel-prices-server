@@ -63,7 +63,8 @@ public class Util {
         if(document != null) {
             final Node petroleumTypeNode = document.getElementsByTagName("PetroleumType").item(0);
             if(petroleumTypeNode == null) {
-                log.severe("Parsed XML is not valid or does not contain any updates");
+                log.warning("Parsed XML is not valid or does not contain any updates");
+                // todo consider requesting this fuelType again
                 return petroleumPriceDetails;
             }
             NodeList nodeList = document.getElementsByTagName("PetroleumPriceDetails1");
@@ -207,10 +208,11 @@ public class Util {
                     numOfChanges++;
                 }
             }
-
-            // sync prices
-            final Prices prices = PricesFactory.addPrices(petroleumPriceDetails, fuelType);
         }
+
+        // sync prices
+//        final Prices prices =
+                PricesFactory.addPrices(petroleumPriceDetails, fuelType);
 
         return numOfChanges;
     }

@@ -59,13 +59,13 @@ You are not logged in!
         final String [] fuelTypeCodes = new String [] { "1", "2", "3", "4"};
         final String [] fuelTypeNames = new String [] { "Petrol 95", "Petrol 98", "Diesel", "Heating"};
         final Prices petrol95Prices = PricesFactory.getLatestPrices(fuelTypeCodes[0]);
-        final Map<String, Prices.StationPrice> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, Prices.StationPrice>() : petrol95Prices.getStationCodeToPriceMap();
+        final Map<String, String> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, String>() : petrol95Prices.getStationCodeToPriceMap();
         final Prices petrol98Prices = PricesFactory.getLatestPrices(fuelTypeCodes[1]);
-        final Map<String, Prices.StationPrice> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, Prices.StationPrice>() : petrol98Prices.getStationCodeToPriceMap();
+        final Map<String, String> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, String>() : petrol98Prices.getStationCodeToPriceMap();
         final Prices dieselPrices = PricesFactory.getLatestPrices(fuelTypeCodes[2]);
-        final Map<String, Prices.StationPrice> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, Prices.StationPrice>() : dieselPrices.getStationCodeToPriceMap();
+        final Map<String, String> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, String>() : dieselPrices.getStationCodeToPriceMap();
         final Prices heatingPrices = PricesFactory.getLatestPrices(fuelTypeCodes[3]);
-        final Map<String, Prices.StationPrice> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, Prices.StationPrice>() : heatingPrices.getStationCodeToPriceMap();
+        final Map<String, String> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, String>() : heatingPrices.getStationCodeToPriceMap();
         final Vector<Station> allStations = StationFactory.getAllStations();
 %>
 
@@ -88,20 +88,16 @@ You are not logged in!
             <td><%=station.getShortUuid(8)%></td>
             <td><%=station.getStationCode()%></td>
             <td>
-                <%=petrol95StationCodeToPriceMap.get(stationCode).getPrice()%><br>
-                <%=petrol95StationCodeToPriceMap.get(stationCode).getPriceModificationDate()%>
+                €<%=petrol95StationCodeToPriceMap.get(stationCode)%>
             </td>
             <td>
-                <%=petrol98StationCodeToPriceMap.get(stationCode).getPrice()%><br>
-                <%=petrol98StationCodeToPriceMap.get(stationCode).getPriceModificationDate()%>
+                €<%=petrol98StationCodeToPriceMap.get(stationCode)%>
             </td>
             <td>
-                <%=dieselStationCodeToPriceMap.get(stationCode).getPrice()%><br>
-                <%=dieselStationCodeToPriceMap.get(stationCode).getPriceModificationDate()%>
+                €<%=dieselStationCodeToPriceMap.get(stationCode)%>
             </td>
             <td>
-                <%=heatingStationCodeToPriceMap.get(stationCode).getPrice()%><br>
-                <%=heatingStationCodeToPriceMap.get(stationCode).getPriceModificationDate()%>
+                €<%=heatingStationCodeToPriceMap.get(stationCode)%>
             </td>
         </tr>
 <%

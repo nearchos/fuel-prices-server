@@ -90,7 +90,9 @@ public class AdminSyncServlet extends HttpServlet {
         final Queue queue = QueueFactory.getDefaultQueue();
 
         log.info("Scheduling sync events ...");
+
         long delay = 0L;
+        // schedule the request/poll servlets
         for(final String fuelType : FUEL_TYPES) {
             TaskOptions taskOptions = TaskOptions.Builder
                     .withUrl("/sync/request")
@@ -100,7 +102,15 @@ public class AdminSyncServlet extends HttpServlet {
                     .countdownMillis(delay)
                     .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
-            delay += 60000; // split individual request tasks by 60 seconds
+            delay += 60000; // put 60 seconds between individual request tasks
         }
+
+        // schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
+        TaskOptions taskOptions = TaskOptions.Builder
+                .withUrl("/sync/updateDatastore")
+                .param("apiKeyCode", apiKeyCode)
+                .countdownMillis(delay)
+                .method(TaskOptions.Method.GET);
+        queue.add(taskOptions);
     }
 }
