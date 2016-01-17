@@ -19,7 +19,6 @@ package com.aspectsense.fuel.server.datastore;
 
 import com.aspectsense.fuel.server.data.Parameter;
 import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -44,7 +43,7 @@ public class ParameterFactory {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query query = new Query(KIND).addSort(PROPERTY_NAME);
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
-        final Vector<Parameter> parameters = new Vector<Parameter>();
+        final Vector<Parameter> parameters = new Vector<>();
         for(final Entity entity : preparedQuery.asIterable()) {
             parameters.add(getFromEntity(entity));
         }
@@ -58,7 +57,7 @@ public class ParameterFactory {
         final Query.Filter filter = new Query.FilterPredicate(PROPERTY_NAME, Query.FilterOperator.EQUAL, name);
         query.setFilter(filter);
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
-        final Vector<Parameter> parameters = new Vector<Parameter>();
+        final Vector<Parameter> parameters = new Vector<>();
         for(final Entity entity : preparedQuery.asIterable()) {
             parameters.add(getFromEntity(entity));
         }
@@ -86,8 +85,6 @@ public class ParameterFactory {
             parameterEntity.setProperty(PROPERTY_NAME, name);
             parameterEntity.setProperty(PROPERTY_VALUE, value);
             datastoreService.put(parameterEntity);
-
-            MemcacheServiceFactory.getMemcacheService().delete(uuid); // invalidate cache entry
         }
         catch (EntityNotFoundException enfe)
         {

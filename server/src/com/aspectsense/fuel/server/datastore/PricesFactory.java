@@ -20,8 +20,6 @@ package com.aspectsense.fuel.server.datastore;
 import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
 import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 import java.util.List;
 import java.util.Vector;
@@ -62,8 +60,6 @@ public class PricesFactory {
             boolean isLastElement = ++count == petroleumPriceDetails.size();
             jsonStringBuilder.append("    { \"stationCode\": \"").append(petroleumPriceDetail.getStationCode())
                     .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice()).append("\" }")
-//                    .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice())
-//                    .append("\", \"priceModificationDate\": \"").append(petroleumPriceDetail.getPriceModificationDate()).append("\" }")
                     .append(isLastElement ? "\n" : ",\n");
         }
         jsonStringBuilder.append("  ]\n");

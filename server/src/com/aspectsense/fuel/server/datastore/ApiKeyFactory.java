@@ -93,7 +93,7 @@ public class ApiKeyFactory {
     }
 
     static public boolean isActive(final String apiKeyCode) {
-        ApiKey apiKey = getApiKeyByCode(apiKeyCode);
+        final ApiKey apiKey = getApiKeyByCode(apiKeyCode);
         return apiKey != null && apiKey.isActive();
     }
 
@@ -102,7 +102,7 @@ public class ApiKeyFactory {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query query = new Query(KIND).addSort(PROPERTY_TIME_REQUESTED);
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
-        final Vector<ApiKey> apiKeys = new Vector<ApiKey>();
+        final Vector<ApiKey> apiKeys = new Vector<>();
         for(final Entity entity : preparedQuery.asIterable())
         {
             apiKeys.add(getFromEntity(entity));
@@ -120,6 +120,9 @@ public class ApiKeyFactory {
         apiKeyEntity.setProperty(PROPERTY_IS_ACTIVE, true);
         apiKeyEntity.setProperty(PROPERTY_API_KEY_CODE, UUID.randomUUID().toString());
 
+        // clean up mem-cache to force it ti rebuild next time is needed
+        MemcacheServiceFactory.getMemcacheService().clearAll();
+
         return datastoreService.put(apiKeyEntity);
     }
 
@@ -136,7 +139,8 @@ public class ApiKeyFactory {
                 apiKeyEntity.setProperty(PROPERTY_API_KEY_CODE, apiKey);
                 datastoreService.put(apiKeyEntity);
 
-                MemcacheServiceFactory.getMemcacheService().delete("ApiKeyCode-" + apiKeyCode); // invalidate cache entry
+                // clean up mem-cache to force it to rebuild next time is needed
+                MemcacheServiceFactory.getMemcacheService().clearAll();
             } catch (EntityNotFoundException enfe) {
                 log.severe("Could not find " + KIND + " with key: " + apiKey.getUuid());
             }
