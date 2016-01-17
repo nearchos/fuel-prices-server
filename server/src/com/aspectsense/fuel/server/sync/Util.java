@@ -17,8 +17,8 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.data.Station;
+import com.aspectsense.fuel.server.datastore.OfflineFactory;
 import com.aspectsense.fuel.server.datastore.PricesFactory;
 import com.aspectsense.fuel.server.datastore.StationFactory;
 import org.w3c.dom.Document;
@@ -169,7 +169,7 @@ public class Util {
     }
 
     public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
-        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations();
+        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
 
         int numOfChanges = 0;
 
@@ -189,8 +189,8 @@ public class Util {
                             petroleumPriceDetail.getStationDistrict(),
                             petroleumPriceDetail.getStationAddress(),
                             petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude(),
-                            petroleumPriceDetail.isOffline());
+                            petroleumPriceDetail.getStationLongitude()
+                    );
                     numOfChanges++;
                 } else if (petroleumPriceDetail.hasChanges(station)) {
                     // update datastore entry of the station
@@ -203,8 +203,8 @@ public class Util {
                             petroleumPriceDetail.getStationDistrict(),
                             petroleumPriceDetail.getStationAddress(),
                             petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude(),
-                            petroleumPriceDetail.isOffline());
+                            petroleumPriceDetail.getStationLongitude()
+                    );
                     numOfChanges++;
                 }
             }
@@ -212,7 +212,11 @@ public class Util {
 
         // sync prices
 //        final Prices prices =
-                PricesFactory.addPrices(petroleumPriceDetails, fuelType);
+        PricesFactory.addPrices(petroleumPriceDetails, fuelType);
+
+        // update the data for offline stations
+        final long updateTimestamp = System.currentTimeMillis();
+        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
 
         return numOfChanges;
     }

@@ -22,6 +22,9 @@
 <%@ page import="java.util.Vector" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.StationFactory" %>
 <%@ page import="com.aspectsense.fuel.server.data.Station" %>
+<%@ page import="com.aspectsense.fuel.server.data.Offline" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.OfflineFactory" %>
+<%@ page import="java.util.Map" %>
 
 <%--
   User: Nearchos Paspallis
@@ -56,6 +59,7 @@ You are not logged in!
     else
     {
         final Vector<Station> allStations = StationFactory.getAllStations();
+        final Map<String,Offline> allOfflines = OfflineFactory.getAllOfflines(0);
 %>
 
 <h1>Stations</h1>
@@ -82,8 +86,8 @@ You are not logged in!
             <td><%=station.getStationTelNo()%></td>
             <td><%=station.getStationAddress()%>, <%=station.getStationDistrict()%>, <%=station.getStationCity()%></td>
             <td><a href="https://www.google.com/maps/@<%=station.getStationLatitude()%>,<%=station.getStationLongitude()%>,18z"><%=station.getStationLatitude()%>, <%=station.getStationLongitude()%></a></td>
-            <td><%=station.isOffline()%></td>
-            <td><%=timestampFormat.format(new Date(station.getLastModified()))%></td>
+            <td><%=allOfflines.get(station.getStationCode()).isOffline()%></td>
+            <td><%=timestampFormat.format(new Date(station.getLastUpdated()))%></td>
             <td>
                 <form action="/admin/delete-entity">
                     <div><input type="submit" value="Delete" /></div>

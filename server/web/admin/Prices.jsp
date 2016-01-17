@@ -20,9 +20,10 @@
 <%@ page import="com.aspectsense.fuel.server.datastore.StationFactory" %>
 <%@ page import="com.aspectsense.fuel.server.data.Station" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.PricesFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.Prices" %>
 <%@ page import="java.util.HashMap" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.PriceFactory" %>
+<%@ page import="com.aspectsense.fuel.server.data.Price" %>
+<%@ page import="java.util.Date" %>
 
 <%--
   User: Nearchos Paspallis
@@ -56,21 +57,23 @@ You are not logged in!
     }
     else
     {
-        final String [] fuelTypeCodes = new String [] { "1", "2", "3", "4"};
+//        final String [] fuelTypeCodes = new String [] { "1", "2", "3", "4"};
         final String [] fuelTypeNames = new String [] { "Petrol 95", "Petrol 98", "Diesel", "Heating"};
-        final Prices petrol95Prices = PricesFactory.getLatestPrices(fuelTypeCodes[0]);
-        final Map<String, String> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, String>() : petrol95Prices.getStationCodeToPriceMap();
-        final Prices petrol98Prices = PricesFactory.getLatestPrices(fuelTypeCodes[1]);
-        final Map<String, String> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, String>() : petrol98Prices.getStationCodeToPriceMap();
-        final Prices dieselPrices = PricesFactory.getLatestPrices(fuelTypeCodes[2]);
-        final Map<String, String> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, String>() : dieselPrices.getStationCodeToPriceMap();
-        final Prices heatingPrices = PricesFactory.getLatestPrices(fuelTypeCodes[3]);
-        final Map<String, String> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, String>() : heatingPrices.getStationCodeToPriceMap();
+//        final Prices petrol95Prices = PricesFactory.getLatestPrices(fuelTypeCodes[0]);
+//        final Map<String, Integer> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, Integer>() : petrol95Prices.getStationCodeToPriceInMillieurosMap();
+//        final Prices petrol98Prices = PricesFactory.getLatestPrices(fuelTypeCodes[1]);
+//        final Map<String, Integer> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, Integer>() : petrol98Prices.getStationCodeToPriceInMillieurosMap();
+//        final Prices dieselPrices = PricesFactory.getLatestPrices(fuelTypeCodes[2]);
+//        final Map<String, Integer> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, Integer>() : dieselPrices.getStationCodeToPriceInMillieurosMap();
+//        final Prices heatingPrices = PricesFactory.getLatestPrices(fuelTypeCodes[3]);
+//        final Map<String, Integer> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, Integer>() : heatingPrices.getStationCodeToPriceInMillieurosMap();
         final Vector<Station> allStations = StationFactory.getAllStations();
+        final Map<String,Vector<Price>> allPrices = PriceFactory.getAllPrices(0);
 %>
 
 <h1>Prices</h1>
 
+    allPrices: <%=allPrices%>
     <table border="1">
         <tr>
             <th>STATION UUID</th>
@@ -83,21 +86,29 @@ You are not logged in!
 <%
         for(final Station station : allStations) {
             final String stationCode = station.getStationCode();
+            final Vector<Price> prices = allPrices.get(stationCode);
+            final Map<String,String> fuelTypeToPrice = new HashMap<>();
+            if(prices != null) {
+                for (final Price price : prices) {
+                    final double p = price.getFuelPriceInMillieuros() / 1000d;
+                    fuelTypeToPrice.put(price.getStationCode(), String.format("€%5.3f\n%s", p, timestampFormat.format(new Date(price.getLastUpdated()))));
+                }
+            }
 %>
         <tr>
             <td><%=station.getShortUuid(8)%></td>
             <td><%=station.getStationCode()%></td>
             <td>
-                €<%=petrol95StationCodeToPriceMap.get(stationCode)%>
+                €<%=fuelTypeToPrice.get("1")%>
             </td>
             <td>
-                €<%=petrol98StationCodeToPriceMap.get(stationCode)%>
+                €<%=fuelTypeToPrice.get("2")%>
             </td>
             <td>
-                €<%=dieselStationCodeToPriceMap.get(stationCode)%>
+                €<%=fuelTypeToPrice.get("3")%>
             </td>
             <td>
-                €<%=heatingStationCodeToPriceMap.get(stationCode)%>
+                €<%=fuelTypeToPrice.get("4")%>
             </td>
         </tr>
 <%

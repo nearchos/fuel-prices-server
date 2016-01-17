@@ -160,7 +160,6 @@ public class PetroleumPriceDetail implements Serializable {
         if(!stationDistrict.equals(station.getStationDistrict())) return true;
         if(!stationAddress.equals(station.getStationAddress())) return true;
         if(!stationLatitude.equals(station.getStationLatitude())) return true;
-        if(!stationLongitude.equals(station.getStationLongitude())) return true;
-        return isOffline != station.isOffline();
+        return !stationLongitude.equals(station.getStationLongitude());
     }
 }

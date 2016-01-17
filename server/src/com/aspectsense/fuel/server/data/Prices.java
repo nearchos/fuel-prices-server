@@ -61,8 +61,8 @@ public class Prices implements Serializable {
         return json;
     }
 
-    public Map<String,String> getStationCodeToPriceMap() {
-        final Map<String,String> stationCodeToPriceMap = new HashMap<>();
+    public Map<String,Integer> getStationCodeToPriceInMillieurosMap() {
+        final Map<String,Integer> stationCodeToPriceInMillieurosMap = new HashMap<>();
         try {
             final JSONObject jsonObject = new JSONObject(json);
 
@@ -76,13 +76,15 @@ public class Prices implements Serializable {
                 final String priceString = price.getString("price");
 //                final String priceModificationDate = price.getString("priceModificationDate");
 //                stationCodeToPriceMap.put(stationCode, new Prices.StationPrice(priceString, priceModificationDate));
-                stationCodeToPriceMap.put(stationCode, priceString);
+                int priceInMillieuros = 0;
+                try { priceInMillieuros = (int) (1000 * Double.parseDouble(priceString)); } catch (NumberFormatException nfe) {}
+                stationCodeToPriceInMillieurosMap.put(stationCode, priceInMillieuros);
             }
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
             log.severe("Error while parsing JSON: " + json);
         }
-        return stationCodeToPriceMap;
+        return stationCodeToPriceInMillieurosMap;
     }
 
     public long getLastUpdated() {

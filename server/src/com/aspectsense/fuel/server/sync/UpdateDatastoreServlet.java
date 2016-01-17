@@ -20,6 +20,7 @@ package com.aspectsense.fuel.server.sync;
 import com.aspectsense.fuel.server.admin.AdminSyncServlet;
 import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
+import com.aspectsense.fuel.server.datastore.PriceFactory;
 import com.aspectsense.fuel.server.datastore.PricesFactory;
 
 import javax.servlet.ServletException;
@@ -55,13 +56,19 @@ public class UpdateDatastoreServlet extends HttpServlet {
             return; // terminate here
         }
 
-        final long timestamp = System.currentTimeMillis();
+        // we use a single timestamp for the full update operation of all the prices
+        final long updateTimestamp = System.currentTimeMillis();
 
         for(final String fuelType : AdminSyncServlet.FUEL_TYPES) {
             // get the latest JSON for each fuelType
             final Prices prices = PricesFactory.getLatestPrices(fuelType);
-            final Map<String,String> stationCodeToPriceMap = prices == null ? new HashMap<String, String>(): prices.getStationCodeToPriceMap();
-            //todo actually update the Price datastore and facilitate the update functionality
+            final Map<String,Integer> stationCodeToPriceInMillieurosMap = prices == null ? new HashMap<String, Integer>(): prices.getStationCodeToPriceInMillieurosMap();
+
+            // update the Price datastore and facilitate the update functionality
+            for(final String stationCode : stationCodeToPriceInMillieurosMap.keySet()) {
+                final int priceInMillieuro = stationCodeToPriceInMillieurosMap.get(stationCode);
+                PriceFactory.addOrUpdatePrice(stationCode, fuelType, priceInMillieuro, updateTimestamp);
+            }
         }
     }
 }

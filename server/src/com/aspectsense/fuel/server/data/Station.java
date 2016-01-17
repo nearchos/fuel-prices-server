@@ -17,6 +17,9 @@
 
 package com.aspectsense.fuel.server.data;
 
+import com.google.appengine.labs.repackaged.org.json.JSONString;
+import com.google.appengine.labs.repackaged.org.json.JSONStringer;
+
 import java.io.Serializable;
 
 /**
@@ -39,12 +42,11 @@ public class Station implements Serializable {
     private final String stationAddress;
     private final String stationLatitude;
     private final String stationLongitude;
-    private final boolean isOffline;
-    private final long lastModified;
+    private final long lastUpdated;
 
     public Station(String uuid, String fuelCompanyCode, String fuelCompanyName, String stationCode, String stationName,
                    String stationTelNo, String stationCity, String stationDistrict, String stationAddress,
-                   String stationLatitude, String stationLongitude, boolean isOffline, long lastModified) {
+                   String stationLatitude, String stationLongitude, long lastUpdated) {
         this.uuid = uuid;
         this.fuelCompanyCode = fuelCompanyCode;
         this.fuelCompanyName = fuelCompanyName;
@@ -56,8 +58,7 @@ public class Station implements Serializable {
         this.stationAddress = stationAddress;
         this.stationLatitude = stationLatitude;
         this.stationLongitude = stationLongitude;
-        this.isOffline = isOffline;
-        this.lastModified = lastModified;
+        this.lastUpdated = lastUpdated;
     }
 
     public String getUuid() {
@@ -116,11 +117,27 @@ public class Station implements Serializable {
         return stationLongitude;
     }
 
-    public boolean isOffline() {
-        return isOffline;
+    public long getLastUpdated() {
+        return lastUpdated;
     }
 
-    public long getLastModified() {
-        return lastModified;
+    public String toJSONObject() {
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("{ \"code\": \"").append(stationCode)
+                .append("\", \"name\": \"").append(stationName.replaceAll("\"", "'"))
+                .append("\", \"telNo\": \"").append(stationTelNo)
+                .append("\", \"address\": \"").append(stationAddress.replaceAll("\"", "'"))
+                .append("\", \"district\": \"").append(stationDistrict.replaceAll("\"", "").trim())
+                .append("\", \"city\": \"").append(stationCity.replaceAll("\"", "").trim())
+                .append("\", \"lat\": ").append(stationLatitude)
+                .append(", \"lng\": ").append(stationLongitude)
+                .append(" }");
+        return stringBuilder.toString();
     }
+
+//    public static void main(String[] args) {
+//        Station station = new Station("123", "EK", "EKO", "EK007", "Kostis Inc.", "25334455", "Limassol", "Mesa Yeitonia", "Kosti Palama 10", "33.123", "30.213", System.currentTimeMillis());
+//        System.out.println(station);
+//        System.out.println(station.toJSONObject());
+//    }
 }
