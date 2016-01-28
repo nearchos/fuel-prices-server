@@ -20,8 +20,6 @@ package com.aspectsense.fuel.server.sync;
 import com.aspectsense.fuel.server.data.Parameter;
 import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.ParameterFactory;
-import com.google.appengine.api.memcache.MemcacheService;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;

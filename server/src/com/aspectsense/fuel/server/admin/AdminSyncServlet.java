@@ -62,9 +62,9 @@ public class AdminSyncServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
-        boolean syncStations = request.getRequestURI().endsWith("/admin/sync-stations");
+        log.info("Running sync cron task - sync stations or sync prices");
 
-        log.info("Running sync cron task - sync prices");
+        boolean syncStations = request.getRequestURI().endsWith("/admin/sync-stations");
 
         if(apiKeyCode == null) {
             final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_DEFAULT_API_KEY);

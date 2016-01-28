@@ -19,6 +19,8 @@ package com.aspectsense.fuel.server.datastore;
 
 import com.aspectsense.fuel.server.data.Station;
 import com.google.appengine.api.datastore.*;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -104,6 +106,8 @@ public class StationFactory {
         return stations;
     }
 
+    public static final String ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY = "all-station-codes-to-stations";
+
     /**
      * Retrieve all stations that have changed since the last update
      *
@@ -112,22 +116,30 @@ public class StationFactory {
      */
     static public Map<String,Station> getAllStationCodesToStations(final long lastUpdated) {
 
-        // todo utilize memcache
-        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-        final Query.Filter filter = new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.GREATER_THAN, lastUpdated);
-        final Query query = new Query(KIND).setFilter(filter);
-        final PreparedQuery preparedQuery = datastoreService.prepare(query);
-        final Map<String,Station> stations = new HashMap<>();
-        for(final Entity entity : preparedQuery.asIterable()) {
-            final Station station = getFromEntity(entity);
-            stations.put(station.getStationCode(), station);
+        // utilize memcache
+        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
+        if(memcacheService.contains(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY)) {
+            return (Map<String, Station>) memcacheService.get(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY);
+        } else {
+            final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+            final Query.Filter filter = new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.GREATER_THAN, lastUpdated);
+            final Query query = new Query(KIND).setFilter(filter);
+            final PreparedQuery preparedQuery = datastoreService.prepare(query);
+            final Map<String, Station> allStationCodesToStations = new HashMap<>();
+            for (final Entity entity : preparedQuery.asIterable()) {
+                final Station station = getFromEntity(entity);
+                allStationCodesToStations.put(station.getStationCode(), station);
+            }
+
+            memcacheService.put(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY, allStationCodesToStations);
+
+            return allStationCodesToStations;
         }
-        return stations;
     }
 
     static public Key addStation(String fuelCompanyCode, String fuelCompanyName, String stationCode, String stationName,
                                  String stationTelNo, String stationCity, String stationDistrict, String stationAddress,
-                                 String stationLatitude, String stationLongitude) {
+                                 String stationLatitude, String stationLongitude, final long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity stationEntity = new Entity(KIND);
         stationEntity.setProperty(PROPERTY_COMPANY_CODE, fuelCompanyCode);
@@ -142,12 +154,21 @@ public class StationFactory {
         stationEntity.setProperty(PROPERTY_STATION_LONGITUDE, stationLongitude);
         stationEntity.setProperty(PROPERTY_LAST_UPDATED, System.currentTimeMillis());
 
-        return datastoreService.put(stationEntity);
+        final Key key = datastoreService.put(stationEntity);
+
+        // update memCache
+        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
+        final Station station = new Station(KeyFactory.keyToString(key), fuelCompanyCode, fuelCompanyName, stationCode, stationName, stationTelNo, stationCity, stationDistrict, stationAddress, stationLatitude, stationLongitude, lastUpdated);
+        final Map<String,Station> allStationCodesToStations = (Map<String, Station>) memcacheService.get(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY);
+        allStationCodesToStations.put(stationCode, station);
+        memcacheService.put(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY, allStationCodesToStations);
+
+        return key;
     }
 
-    static public void editStation(String uuid, String fuelCompanyCode, String fuelCompanyName, String stationName,
-                                   String stationTelNo, String stationCity, String stationDistrict,
-                                   String stationAddress, String stationLatitude, String stationLongitude) {
+    static public void editStation(String uuid, String fuelCompanyCode, String fuelCompanyName, String stationCode,
+                                   String stationName, String stationTelNo, String stationCity, String stationDistrict,
+                                   String stationAddress, String stationLatitude, String stationLongitude, final long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         try {
             final Entity stationEntity = datastoreService.get(KeyFactory.stringToKey(uuid));
@@ -162,6 +183,13 @@ public class StationFactory {
             stationEntity.setProperty(PROPERTY_STATION_LONGITUDE, stationLongitude);
 
             datastoreService.put(stationEntity);
+
+            // update memCache
+            final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
+            final Station station = new Station(uuid, fuelCompanyCode, fuelCompanyName, stationCode, stationName, stationTelNo, stationCity, stationDistrict, stationAddress, stationLatitude, stationLongitude, lastUpdated);
+            final Map<String,Station> allStationCodesToStations = (Map<String, Station>) memcacheService.get(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY);
+            allStationCodesToStations.put(stationCode, station);
+            memcacheService.put(ALL_STATION_CODES_TO_STATIONS_MEM_CACHE_KEY, allStationCodesToStations);
         }
         catch (EntityNotFoundException enfe)
         {

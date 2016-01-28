@@ -33,19 +33,17 @@ import java.util.logging.Logger;
  *         29/12/2015
  *         22:42
  */
-public class Prices implements Serializable {
+public class Offlines implements Serializable {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
     private final String uuid;
-    private final String fuelType;
     private final String json;
     private final long lastUpdated;
 
-    public Prices(String uuid, String fuelType, String json, long lastUpdated) {
+    public Offlines(String uuid, String json, long lastUpdated) {
         this.uuid = uuid;
-        this.fuelType = fuelType;
-        this.json = json;
+        this.json = json; // of the form "{ "offlines": [ { "stationCode": "EK012", "offline": true }, { "stationCode": "ES007", "offline": : false } , ... , { "stationCode": "PE010", "offline": : false } ] }"
         this.lastUpdated = lastUpdated;
     }
 
@@ -53,33 +51,23 @@ public class Prices implements Serializable {
         return uuid;
     }
 
-    public String getFuelType() {
-        return fuelType;
-    }
-
-    public long getLastUpdated() {
-        return lastUpdated;
-    }
-
-    public Map<String,Integer> getStationCodeToPriceInMillieurosMap() {
-        final Map<String,Integer> stationCodeToPriceInMillieurosMap = new HashMap<>();
+    public Map<String,Boolean> getStationCodeToOfflineMap() {
+        final Map<String,Boolean> stationCodeToOfflineMap = new HashMap<>();
         try {
             final JSONObject jsonObject = new JSONObject(json);
 
             // parse JSON
-            final JSONArray prices = jsonObject.getJSONArray("prices");
-            for(int i = 0; i < prices.length(); i++) {
-                JSONObject price = prices.getJSONObject(i);
-                final String stationCode = price.getString("stationCode");
-                final String priceString = price.getString("price");
-                int priceInMillieuros = 0;
-                try { priceInMillieuros = (int) (1000 * Double.parseDouble(priceString)); } catch (NumberFormatException nfe) {}
-                stationCodeToPriceInMillieurosMap.put(stationCode, priceInMillieuros);
+            final JSONArray offlines = jsonObject.getJSONArray("offlines");
+            for(int i = 0; i < offlines.length(); i++) {
+                final JSONObject offlinesJSONObject = offlines.getJSONObject(i);
+                final String stationCode = offlinesJSONObject.getString("stationCode");
+                final boolean offline = offlinesJSONObject.getBoolean("offline");
+                stationCodeToOfflineMap.put(stationCode, offline);
             }
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
             log.severe("Error while parsing JSON: " + json);
         }
-        return stationCodeToPriceInMillieurosMap;
+        return stationCodeToOfflineMap;
     }
 }

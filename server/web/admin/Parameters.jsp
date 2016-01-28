@@ -63,6 +63,8 @@ You are not logged in!
 
 <h1>Sync Parameters</h1>
 
+    <p>Built: 19/01/2016</p>
+
     <table border="1">
         <tr>
             <th>NAME</th>

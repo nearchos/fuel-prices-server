@@ -19,6 +19,7 @@ package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.data.Station;
 import com.aspectsense.fuel.server.datastore.OfflineFactory;
+import com.aspectsense.fuel.server.datastore.OfflinesFactory;
 import com.aspectsense.fuel.server.datastore.PricesFactory;
 import com.aspectsense.fuel.server.datastore.StationFactory;
 import org.w3c.dom.Document;
@@ -173,13 +174,16 @@ public class Util {
 
         int numOfChanges = 0;
 
+        // update the data for offline stations
+        final long updateTimestamp = System.currentTimeMillis();
+
         for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
             final String stationCode = petroleumPriceDetail.getStationCode();
 
             // sync stations, if needed (as indicated by syncStations boolean value)
             if(syncStations) {
                 final Station station = stationsByStationCode.get(stationCode);
-                if (station == null) {
+                if (station == null) { // new station added
                     StationFactory.addStation(petroleumPriceDetail.getFuelCompanyCode(),
                             petroleumPriceDetail.getFuelCompanyName(),
                             petroleumPriceDetail.getStationCode(),
@@ -189,21 +193,24 @@ public class Util {
                             petroleumPriceDetail.getStationDistrict(),
                             petroleumPriceDetail.getStationAddress(),
                             petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude()
+                            petroleumPriceDetail.getStationLongitude(),
+                            updateTimestamp
                     );
                     numOfChanges++;
-                } else if (petroleumPriceDetail.hasChanges(station)) {
+                } else if (petroleumPriceDetail.hasChanges(station)) { // existing station was edited
                     // update datastore entry of the station
                     StationFactory.editStation(station.getUuid(),
                             petroleumPriceDetail.getFuelCompanyCode(),
                             petroleumPriceDetail.getFuelCompanyName(),
+                            petroleumPriceDetail.getStationCode(),
                             petroleumPriceDetail.getStationName(),
                             petroleumPriceDetail.getStationTelNo(),
                             petroleumPriceDetail.getStationCity(),
                             petroleumPriceDetail.getStationDistrict(),
                             petroleumPriceDetail.getStationAddress(),
                             petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude()
+                            petroleumPriceDetail.getStationLongitude(),
+                            updateTimestamp
                     );
                     numOfChanges++;
                 }
@@ -214,9 +221,8 @@ public class Util {
 //        final Prices prices =
         PricesFactory.addPrices(petroleumPriceDetails, fuelType);
 
-        // update the data for offline stations
-        final long updateTimestamp = System.currentTimeMillis();
-        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
+        OfflinesFactory.addOfflines(petroleumPriceDetails);
+//        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
 
         return numOfChanges;
     }
