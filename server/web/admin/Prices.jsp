@@ -73,10 +73,11 @@ You are not logged in!
 
 <h1>Prices</h1>
 
-    allPrices: <%=allPrices%>
+    <%--allPrices: <%=allPrices%>--%>
     <table border="1">
         <tr>
             <th>STATION UUID</th>
+            <th>STATION NAME</th>
             <th>CODE</th>
             <th><%=fuelTypeNames[0]%></th>
             <th><%=fuelTypeNames[1]%></th>
@@ -91,24 +92,25 @@ You are not logged in!
             if(prices != null) {
                 for (final Price price : prices) {
                     final double p = price.getFuelPriceInMillieuros() / 1000d;
-                    fuelTypeToPrice.put(price.getStationCode(), String.format("€%5.3f\n%s", p, timestampFormat.format(new Date(price.getLastUpdated()))));
+                    fuelTypeToPrice.put(price.getFuelType(), String.format("€%5.3f", p)); //, timestampFormat.format(new Date(price.getLastUpdated()))));
                 }
             }
 %>
         <tr>
             <td><%=station.getShortUuid(8)%></td>
+            <td><%=station.getStationName()%></td>
             <td><%=station.getStationCode()%></td>
             <td>
-                €<%=fuelTypeToPrice.get("1")%>
+                <%=fuelTypeToPrice.get("1")%>
             </td>
             <td>
-                €<%=fuelTypeToPrice.get("2")%>
+                <%=fuelTypeToPrice.get("2")%>
             </td>
             <td>
-                €<%=fuelTypeToPrice.get("3")%>
+                <%=fuelTypeToPrice.get("3")%>
             </td>
             <td>
-                €<%=fuelTypeToPrice.get("4")%>
+                <%=fuelTypeToPrice.get("4")%>
             </td>
         </tr>
 <%
