@@ -150,6 +150,13 @@ public class PetroleumPriceDetail implements Serializable {
                 '}';
     }
 
+    /**
+     * Checks if there are any changes between this and the given station (the check does not cover whether the station
+     * is offline, or details related to fuel type and price)
+     *
+     * @param station
+     * @return
+     */
     public boolean hasChanges(final Station station) {
         if(!fuelCompanyCode.equals(station.getFuelCompanyCode())) return true;
         if(!fuelCompanyName.equals(station.getFuelCompanyName())) return true;

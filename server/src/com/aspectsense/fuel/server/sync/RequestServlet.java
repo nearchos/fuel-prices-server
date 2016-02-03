@@ -81,37 +81,16 @@ public class RequestServlet extends HttpServlet {
                 DEFAULT_FUEL_TYPE :
                 request.getParameter(KEY_FUEL_TYPE);
 
-        if(userId == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_ID);
-            if(parameter != null) {
-                userId = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_USER_ID);
-                printWriter.println("{ \"result\": \"Error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_USER_ID + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+        if(userId == null) { // initialize parameter
+            userId = getParameter(PARAMETER_NAME_USER_ID);
         }
 
-        if(userPasswordHashed == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_PASSWORD_HASHED);
-            if(parameter != null) {
-                userPasswordHashed = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_USER_PASSWORD_HASHED);
-                printWriter.println("{ \"result\": \"Error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_USER_PASSWORD_HASHED + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+        if(userPasswordHashed == null) { // initialize parameter
+            userPasswordHashed = getParameter(PARAMETER_NAME_USER_PASSWORD_HASHED);
         }
 
-        if(productionUrlQuery == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_PRODUCTION_URL_QUERY);
-            if(parameter != null) {
-                productionUrlQuery = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_PRODUCTION_URL_QUERY);
-                printWriter.println("{ \"result\": \"Error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_PRODUCTION_URL_QUERY + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+        if(productionUrlQuery == null) { // initialize parameter
+            productionUrlQuery = getParameter(PARAMETER_NAME_PRODUCTION_URL_QUERY);
         }
 
         try {
@@ -133,7 +112,6 @@ public class RequestServlet extends HttpServlet {
         } catch (IOException ioe) {
             printWriter.println("{ \"result\": \"Error\", \"message\": \"" + ioe.getMessage() + "\" }"); // normal JSON output
         }
-//        todo add checks to notify admin if sync fails for too long
     }
 
     private String doRequest(final String urlRequest, final String userId, final String userPasswordHashed, final String fuelType) throws IOException {
@@ -201,4 +179,14 @@ public class RequestServlet extends HttpServlet {
             "    </Message>\n" +
             "  </Body>\n" +
             "</GovTalkMessage>\n";
+
+    private String getParameter(final String parameterKey) {
+        final Parameter parameter = ParameterFactory.getParameterByName(parameterKey);
+        if(parameter != null) {
+            return parameter.getParameterValue();
+        } else {
+            log.severe("Could no find parameter with key: " + parameterKey);
+            throw new RuntimeException("Could no find parameter with key: " + parameterKey);
+        }
+    }
 }

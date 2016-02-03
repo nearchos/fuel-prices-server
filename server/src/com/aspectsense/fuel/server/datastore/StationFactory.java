@@ -52,49 +52,6 @@ public class StationFactory {
     public static final String PROPERTY_STATION_LONGITUDE   = "station_longitude";
     public static final String PROPERTY_LAST_UPDATED        = "last_updated";
 
-//    static public Station getStation(final String uuid) {
-//        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
-//        if(memcacheService.contains(uuid)) {
-//            return (Station) memcacheService.get(uuid);
-//        } else {
-//            final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-//            try {
-//                final Entity stationEntity = datastoreService.get(KeyFactory.stringToKey(uuid));
-//
-//                final Station station = getFromEntity(stationEntity);
-//
-//                memcacheService.put(uuid, station); // add cache entry
-//
-//                return station;
-//            } catch (EntityNotFoundException enfe) {
-//                log.severe("Could not find " + KIND + " with key: " + uuid);
-//                return null;
-//            }
-//        }
-//    }
-
-//    static public Station getStationByCode(final String stationCode) {
-//        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService();
-//        // check memcache first
-//        if(memcacheService.contains(stationCode)) {
-//            return (Station) memcacheService.get(stationCode);
-//        } else {
-//            final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-//            final Query.Filter filter = new Query.FilterPredicate(PROPERTY_STATION_CODE, Query.FilterOperator.EQUAL, stationCode);
-//            final Query query = new Query(KIND).setFilter(filter);
-//            final PreparedQuery preparedQuery = datastoreService.prepare(query);
-//            // assert exactly one (or none) is found
-//            final Iterator<Entity> iterator = preparedQuery.asIterable().iterator();
-//            if(iterator.hasNext()) {
-//                final Station station = getFromEntity(iterator.next());
-//                // update memcache
-//                memcacheService.put(stationCode, station);
-//                return station;
-//            }
-//            return null;
-//        }
-//    }
-
     static public Vector<Station> getAllStations() {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query query = new Query(KIND);

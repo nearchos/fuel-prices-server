@@ -97,6 +97,28 @@ public class PricesFactory {
         }
     }
 
+    /**
+     * Returns the most recent {@link Prices} instances.
+     * @return the most recent {@link Prices} instance, or null if that could not be found
+     */
+    static public Vector<Prices> queryLatestPrices(final int numOfEntriesToReturn) {
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query query = new Query(KIND).addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        // assert exactly one (or none) is found
+        final FetchOptions fetchOptions = FetchOptions.Builder.withLimit(numOfEntriesToReturn);
+        final List<Entity> list = preparedQuery.asList(fetchOptions);
+        if(!list.isEmpty()) {
+            final Vector<Prices> prices = new Vector<>(numOfEntriesToReturn);
+            for(final Entity entity : list) {
+                prices.add(getFromEntity(entity));
+            }
+            return prices;
+        } else {
+            return null;
+        }
+    }
+
     static public Key addPrices(String fuelType, Text json, long lastUpdated) {
 
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();

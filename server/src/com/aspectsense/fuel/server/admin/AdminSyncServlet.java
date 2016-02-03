@@ -18,6 +18,7 @@
 package com.aspectsense.fuel.server.admin;
 
 import com.aspectsense.fuel.server.data.ApiKey;
+import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.Parameter;
 import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.ParameterFactory;
@@ -48,13 +49,6 @@ public class AdminSyncServlet extends HttpServlet {
 
     public static final String PARAMETER_DEFAULT_API_KEY = "DEFAULT-API-KEY";
 
-    public static final String [] FUEL_TYPES = {
-            "1" /* petrol 95 */ ,
-            "2" /* petrol 98 */,
-            "3" /* diesel */,
-            "4" /* heating */
-    };
-
     Logger log = Logger.getLogger("cyprusfuelguide");
 
     private static String apiKeyCode = null;
@@ -82,7 +76,7 @@ public class AdminSyncServlet extends HttpServlet {
                     apiKeyCode = apiKey.getApiKeyCode();
                     ParameterFactory.addParameter(PARAMETER_DEFAULT_API_KEY, apiKeyCode);
                 } else {
-                    log.severe("Could not get ApiKey with UUID: " + uuid);
+                    log.severe("Could not get ApiKey for userEmail: " + userEmail + ", with UUID: " + uuid);
                 }
             }
         }
@@ -92,12 +86,12 @@ public class AdminSyncServlet extends HttpServlet {
         log.info("Scheduling sync events ...");
 
         long delay = 0L;
-        // schedule the request/poll servlets
-        for(final String fuelType : FUEL_TYPES) {
+        // schedule the request/poll servlets for each fuel type
+        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
             TaskOptions taskOptions = TaskOptions.Builder
                     .withUrl("/sync/request")
                     .param("apiKeyCode", apiKeyCode)
-                    .param("fuelType", fuelType)
+                    .param("fuelType", fuelType.getCodeAsString())
                     .param("syncStations", Boolean.toString(syncStations))
                     .countdownMillis(delay)
                     .method(TaskOptions.Method.GET);
@@ -105,7 +99,7 @@ public class AdminSyncServlet extends HttpServlet {
             delay += 60000; // put 60 seconds between individual request tasks
         }
 
-        // schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
+        // finally, schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
         TaskOptions taskOptions = TaskOptions.Builder
                 .withUrl("/sync/updateDatastore")
                 .param("apiKeyCode", apiKeyCode)

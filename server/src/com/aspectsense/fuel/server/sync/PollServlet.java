@@ -84,36 +84,15 @@ public class PollServlet extends HttpServlet {
         }
 
         if(userId == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_ID);
-            if(parameter != null) {
-                userId = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_USER_ID);
-                printWriter.println("{ \"result\": \"Error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_USER_ID + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+            userId = getParameter(PARAMETER_NAME_USER_ID);
         }
 
         if(userPasswordHashed == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_USER_PASSWORD_HASHED);
-            if(parameter != null) {
-                userPasswordHashed = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_USER_PASSWORD_HASHED);
-                printWriter.println("{ \"result\": \"Error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_USER_PASSWORD_HASHED + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+            userPasswordHashed = getParameter(PARAMETER_NAME_USER_PASSWORD_HASHED);
         }
 
         if(productionUrlPoll == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_NAME_PRODUCTION_URL_POLL);
-            if(parameter != null) {
-                productionUrlPoll = parameter.getParameterValue();
-            } else {
-                log.severe("Could no find parameter: " + PARAMETER_NAME_PRODUCTION_URL_POLL);
-                printWriter.println("{ \"result\": \"error\", \"message\": \"could not find parameter: " + PARAMETER_NAME_PRODUCTION_URL_POLL + "\" }"); // normal JSON output
-                return; // terminate here
-            }
+            productionUrlPoll = getParameter(PARAMETER_NAME_PRODUCTION_URL_POLL);
         }
 
         try {
@@ -123,8 +102,8 @@ public class PollServlet extends HttpServlet {
             }
 
             // handle xml
-            Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
-            int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
+            final Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
+            final int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
             log.info("Util.updateDatastore(petroleumPriceDetails, fuelType) -> " + numOfChanges + ", " +
                     "elapsed: " + (System.currentTimeMillis() - start));
 
@@ -200,4 +179,14 @@ public class PollServlet extends HttpServlet {
             "  </GovTalkDetails>\n" +
             "  <Body />\n" +
             "</GovTalkMessage>";
+
+    private String getParameter(final String parameterKey) {
+        final Parameter parameter = ParameterFactory.getParameterByName(parameterKey);
+        if(parameter != null) {
+            return parameter.getParameterValue();
+        } else {
+            log.severe("Could no find parameter with key: " + parameterKey);
+            throw new RuntimeException("Could no find parameter with key: " + parameterKey);
+        }
+    }
 }

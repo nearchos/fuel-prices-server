@@ -65,7 +65,6 @@ public class Util {
             final Node petroleumTypeNode = document.getElementsByTagName("PetroleumType").item(0);
             if(petroleumTypeNode == null) {
                 log.warning("Parsed XML is not valid or does not contain any updates");
-                // todo consider requesting this fuelType again
                 return petroleumPriceDetails;
             }
             NodeList nodeList = document.getElementsByTagName("PetroleumPriceDetails1");
@@ -170,18 +169,18 @@ public class Util {
     }
 
     public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
-        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
 
+        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
         int numOfChanges = 0;
 
         // update the data for offline stations
         final long updateTimestamp = System.currentTimeMillis();
 
-        for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
-            final String stationCode = petroleumPriceDetail.getStationCode();
+        // sync stations, if needed (as indicated by syncStations boolean value)
+        if(syncStations) {
+            for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
+                final String stationCode = petroleumPriceDetail.getStationCode();
 
-            // sync stations, if needed (as indicated by syncStations boolean value)
-            if(syncStations) {
                 final Station station = stationsByStationCode.get(stationCode);
                 if (station == null) { // new station added
                     StationFactory.addStation(petroleumPriceDetail.getFuelCompanyCode(),

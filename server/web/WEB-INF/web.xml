@@ -86,6 +86,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>Console</servlet-name>
+        <jsp-file>/admin/Console.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Console</servlet-name>
+        <url-pattern>/admin/console</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AdminSyncServlet</servlet-name>
         <servlet-class>com.aspectsense.fuel.server.admin.AdminSyncServlet</servlet-class>
     </servlet>

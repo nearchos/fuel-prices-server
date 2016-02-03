@@ -19,6 +19,7 @@ package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.admin.AdminSyncServlet;
 import com.aspectsense.fuel.server.api.ApiSyncServlet;
+import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.Offlines;
 import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.datastore.*;
@@ -62,7 +63,6 @@ public class UpdateDatastoreServlet extends HttpServlet {
         // we use a single timestamp for the full update operation of all the prices
         final long updateTimestamp = System.currentTimeMillis();
 
-//        final String json = ApiSyncServlet.getJSON(updateTimestamp);
         final String json = ApiSyncServlet.getSummaryJSON(updateTimestamp);
 
         try {
@@ -85,9 +85,9 @@ public class UpdateDatastoreServlet extends HttpServlet {
                     }
                 }
                 // ...and then update the prices as and when needed
-                for(final String fuelType : AdminSyncServlet.FUEL_TYPES) {
+                for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
                     // get the latest JSON for each fuelType
-                    final Prices prices = PricesFactory.getLatestPrices(fuelType);
+                    final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
                     final Map<String, Integer> stationCodeToPriceInMillieurosMap = prices == null ? new HashMap<String, Integer>() : prices.getStationCodeToPriceInMillieurosMap();
 
                     // update the Price datastore and facilitate the update functionality
@@ -96,7 +96,7 @@ public class UpdateDatastoreServlet extends HttpServlet {
                         final int oldPriceInMillieuro = oldStationCodeAndFuelTypeToPricesInMillieurosMap.containsKey(stationCode + "-" + fuelType) ?
                                 oldStationCodeAndFuelTypeToPricesInMillieurosMap.get(stationCode + "-" + fuelType) : 0;
                         if(priceInMillieuro != oldPriceInMillieuro) {
-                            PriceFactory.addOrUpdatePrice(stationCode, fuelType, priceInMillieuro, updateTimestamp);
+                            PriceFactory.addOrUpdatePrice(stationCode, fuelType.getCodeAsString(), priceInMillieuro, updateTimestamp);
                         }
                     }
                 }
