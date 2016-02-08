@@ -16,14 +16,14 @@
   --%>
 
 <%@ page import="java.text.SimpleDateFormat" %>
-<%@ page import="java.util.Vector" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.StationFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.Station" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.PricesFactory" %>
 <%@ page import="java.util.Map" %>
 <%@ page import="java.util.HashMap" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.PriceFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.Price" %>
 <%@ page import="java.util.Date" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.StationsFactory" %>
+<%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>
+<%@ page import="java.util.Vector" %>
+<%@ page import="com.aspectsense.fuel.server.data.*" %>
 
 <%--
   User: Nearchos Paspallis
@@ -43,32 +43,16 @@
 
 <%
     final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    if(userEntity == null)
-    {
+    if(userEntity == null) {
 %>
 You are not logged in!
 <%
-    }
-    else if(!userEntity.isAdmin())
-    {
+    } else if(!userEntity.isAdmin()) {
 %>
 <p>You are not admin!</p>
 <%
-    }
-    else
-    {
-//        final String [] fuelTypeCodes = new String [] { "1", "2", "3", "4"};
-        final String [] fuelTypeNames = new String [] { "Petrol 95", "Petrol 98", "Diesel", "Heating"};
-//        final Prices petrol95Prices = PricesFactory.getLatestPrices(fuelTypeCodes[0]);
-//        final Map<String, Integer> petrol95StationCodeToPriceMap = petrol95Prices == null ? new HashMap<String, Integer>() : petrol95Prices.getStationCodeToPriceInMillieurosMap();
-//        final Prices petrol98Prices = PricesFactory.getLatestPrices(fuelTypeCodes[1]);
-//        final Map<String, Integer> petrol98StationCodeToPriceMap = petrol98Prices == null ? new HashMap<String, Integer>() : petrol98Prices.getStationCodeToPriceInMillieurosMap();
-//        final Prices dieselPrices = PricesFactory.getLatestPrices(fuelTypeCodes[2]);
-//        final Map<String, Integer> dieselStationCodeToPriceMap = dieselPrices == null ? new HashMap<String, Integer>() : dieselPrices.getStationCodeToPriceInMillieurosMap();
-//        final Prices heatingPrices = PricesFactory.getLatestPrices(fuelTypeCodes[3]);
-//        final Map<String, Integer> heatingStationCodeToPriceMap = heatingPrices == null ? new HashMap<String, Integer>() : heatingPrices.getStationCodeToPriceInMillieurosMap();
-        final Vector<Station> allStations = StationFactory.getAllStations();
-        final Map<String,Vector<Price>> allPrices = PriceFactory.getAllPrices(0);
+    } else {
+        final Map<FuelType,Map<String,Integer>> fuelTypesToPricesMap = new HashMap<>();
 %>
 
 <h1>Prices</h1>
@@ -76,42 +60,53 @@ You are not logged in!
     <%--allPrices: <%=allPrices%>--%>
     <table border="1">
         <tr>
-            <th>STATION UUID</th>
+            <th>STATION CODE</th>
             <th>STATION NAME</th>
-            <th>CODE</th>
-            <th><%=fuelTypeNames[0]%></th>
-            <th><%=fuelTypeNames[1]%></th>
-            <th><%=fuelTypeNames[2]%></th>
-            <th><%=fuelTypeNames[3]%></th>
+            <th>STATION ADDRESS</th>
+<%
+        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+            final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
+            fuelTypesToPricesMap.put(fuelType, prices.getStationCodeToPriceInMillieurosMap());
+%>
+            <th>
+                <%=fuelType.getName()%>
+                <br/>
+                <%=timestampFormat.format(new Date(prices.getLastUpdated()))%>
+            </th>
+<%
+        }
+%>
         </tr>
 <%
+        final Stations stations = StationsFactory.getLatestStations();
+        final Vector<Station> allStations = StationsParser.fromStationsJson(stations.getJson());
         for(final Station station : allStations) {
             final String stationCode = station.getStationCode();
-            final Vector<Price> prices = allPrices.get(stationCode);
-            final Map<String,String> fuelTypeToPrice = new HashMap<>();
-            if(prices != null) {
-                for (final Price price : prices) {
-                    final double p = price.getFuelPriceInMillieuros() / 1000d;
-                    fuelTypeToPrice.put(price.getFuelType(), String.format("€%5.3f", p)); //, timestampFormat.format(new Date(price.getLastUpdated()))));
-                }
-            }
 %>
         <tr>
-            <td><%=station.getShortUuid(8)%></td>
+            <td><%=stationCode%></td>
             <td><%=station.getStationName()%></td>
-            <td><%=station.getStationCode()%></td>
+            <td><%=station.getStationAddress()%>, <%=station.getStationDistrict()%>, <%=station.getStationCity()%></td>
+<%
+            for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+                final Map<String,Integer> stationCodeToPriceInMillieurosMap = fuelTypesToPricesMap.get(fuelType);
+                final String priceFormatted;
+                if(stationCodeToPriceInMillieurosMap == null) {
+                    priceFormatted = "unknown";
+                } else {
+                    if(stationCodeToPriceInMillieurosMap.containsKey(stationCode)) {
+                        priceFormatted = String.format("€%5.3f", stationCodeToPriceInMillieurosMap.get(stationCode) / 1000d);
+                    } else {
+                        priceFormatted = "unknown station";
+                    }
+                }
+%>
             <td>
-                <%=fuelTypeToPrice.get("1")%>
+                <%=priceFormatted%>
             </td>
-            <td>
-                <%=fuelTypeToPrice.get("2")%>
-            </td>
-            <td>
-                <%=fuelTypeToPrice.get("3")%>
-            </td>
-            <td>
-                <%=fuelTypeToPrice.get("4")%>
-            </td>
+<%
+            }
+%>
         </tr>
 <%
         }

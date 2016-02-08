@@ -95,6 +95,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>SyncMessages</servlet-name>
+        <jsp-file>/admin/SyncMessages.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>SyncMessages</servlet-name>
+        <url-pattern>/admin/sync-messages</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AdminSyncServlet</servlet-name>
         <servlet-class>com.aspectsense.fuel.server.admin.AdminSyncServlet</servlet-class>
     </servlet>

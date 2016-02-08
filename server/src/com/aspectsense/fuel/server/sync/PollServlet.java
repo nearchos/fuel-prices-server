@@ -18,8 +18,7 @@
 package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.data.Parameter;
-import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
-import com.aspectsense.fuel.server.datastore.ParameterFactory;
+import com.aspectsense.fuel.server.datastore.*;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -62,10 +61,10 @@ public class PollServlet extends HttpServlet {
 
         final boolean debug = request.getParameter("debug") != null;
 
-        final String apiKeyCode = request.getParameter("apiKeyCode");
-        if(apiKeyCode == null || apiKeyCode.isEmpty() || !ApiKeyFactory.isActive(apiKeyCode)) {
-            log.severe("Empty or invalid apiKeyCode: " + apiKeyCode);
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKeyCode: " + apiKeyCode + "\" }"); // normal JSON output
+        final String magic = request.getParameter("magic");
+        if(magic == null || magic.isEmpty() || !ParameterFactory.isMagic(magic)) {
+            log.severe("Empty or invalid magic: " + magic);
+            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid magic: " + magic + "\" }"); // normal JSON output
             return; // terminate here
         }
 
@@ -103,7 +102,8 @@ public class PollServlet extends HttpServlet {
 
             // handle xml
             final Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
-            final int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
+//            final int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
+            final int numOfChanges = updateDatastore(petroleumPriceDetails, fuelType, syncStations);
             log.info("Util.updateDatastore(petroleumPriceDetails, fuelType) -> " + numOfChanges + ", " +
                     "elapsed: " + (System.currentTimeMillis() - start));
 
@@ -111,7 +111,7 @@ public class PollServlet extends HttpServlet {
                     "\"numOfChanges\": " + numOfChanges + ", " +
                     "\"fuelType\": \"" + fuelType + "\", " +
                     "\"debug\":" + debug + ", " +
-                    (debug ? "\"xml\": \"" + xml + "\"" : "") +
+                    (debug ? "\"xml\": \"" + xml + "\", " : "") +
                     "\"elapsed\": " + (System.currentTimeMillis() - start) + " }");
 
         } catch (IOException ioe) {
@@ -188,5 +188,27 @@ public class PollServlet extends HttpServlet {
             log.severe("Could no find parameter with key: " + parameterKey);
             throw new RuntimeException("Could no find parameter with key: " + parameterKey);
         }
+    }
+
+    private int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
+
+        int numOfChanges = 0;
+
+        // update the data for offline stations
+        final long updateTimestamp = System.currentTimeMillis();
+
+        // sync stations, if needed (as indicated by syncStations boolean value)
+        if(syncStations) {
+            StationsFactory.addStations(petroleumPriceDetails, updateTimestamp);
+        }
+
+        // sync prices
+//        final Prices prices =
+        PricesFactory.addPrices(petroleumPriceDetails, fuelType, updateTimestamp);
+
+        // sync offliens
+        OfflinesFactory.addOfflines(petroleumPriceDetails, updateTimestamp);
+
+        return numOfChanges;
     }
 }

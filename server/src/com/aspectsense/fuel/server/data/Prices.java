@@ -57,6 +57,8 @@ public class Prices implements Serializable {
         return fuelType;
     }
 
+    public String getJson() { return json; }
+
     public long getLastUpdated() {
         return lastUpdated;
     }
@@ -79,6 +81,7 @@ public class Prices implements Serializable {
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
             log.severe("Error while parsing JSON: " + json);
+            throw new RuntimeException(jsone);
         }
         return stationCodeToPriceInMillieurosMap;
     }

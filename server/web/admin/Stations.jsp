@@ -15,16 +15,13 @@
   ~ along with Foobar. If not, see <http://www.gnu.org/licenses/>.
   --%>
 
-<%@ page import="com.aspectsense.fuel.server.admin.DeleteEntityServlet" %>
-<%@ page import="java.net.URLEncoder" %>
+<%@ page import="com.aspectsense.fuel.server.data.Stations" %>
+<%@ page import="com.aspectsense.fuel.server.datastore.StationsFactory" %>
+<%@ page import="java.util.Vector" %>
+<%@ page import="com.aspectsense.fuel.server.data.Station" %>
+<%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Date" %>
-<%@ page import="java.util.Vector" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.StationFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.Station" %>
-<%@ page import="com.aspectsense.fuel.server.data.Offline" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.OfflineFactory" %>
-<%@ page import="java.util.Map" %>
 
 <%--
   User: Nearchos Paspallis
@@ -44,57 +41,53 @@
 
 <%
     final SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-    if(userEntity == null)
-    {
+    if(userEntity == null) {
 %>
 You are not logged in!
 <%
-    }
-    else if(!userEntity.isAdmin())
-    {
+    } else if(!userEntity.isAdmin()) {
 %>
 <p>You are not admin!</p>
 <%
-    }
-    else
-    {
-        final Vector<Station> allStations = StationFactory.getAllStations();
-        final Map<String,Offline> allOfflines = OfflineFactory.getAllOfflines(0);
+    } else {
+        final Vector<Station> allStations;
+        final Stations stations = StationsFactory.getLatestStations();
+        final long lastUpdated;
+        if(stations != null) {
+            final String stationsJson = stations.getJson();
+            allStations = StationsParser.fromStationsJson(stationsJson);
+            lastUpdated = stations.getLastUpdated();
+        } else {
+            allStations = new Vector<>();
+            lastUpdated = 0L;
+        }
 %>
 
 <h1>Stations</h1>
 
+    <p>Last updated: <%=lastUpdated == 0 ? "Unknown" : timestampFormat.format(new Date(lastUpdated))%></p>
     <table border="1">
         <tr>
-            <th>UUID</th>
+            <th>#</th>
             <th>COMPANY</th>
             <th>CODE</th>
             <th>TEL-NO</th>
             <th>ADDRESS</th>
             <th>COORDINATES</th>
-            <th>OFFLINE</th>
-            <th>LAST MODIFIED</th>
-            <th>DELETE</th>
+            <%--<th>OFFLINE</th>--%>
         </tr>
 <%
+        int counter = 0;
         for(final Station station : allStations) {
 %>
         <tr>
-            <td><%=station.getShortUuid(8)%></td>
-            <td><%=station.getFuelCompanyCode()%> (<%=station.getFuelCompanyName()%>)</td>
+            <td><%=++counter%></td>
+            <td><%=station.getStationBrand()%></td>
             <td><%=station.getStationCode()%></td>
             <td><%=station.getStationTelNo()%></td>
             <td><%=station.getStationAddress()%>, <%=station.getStationDistrict()%>, <%=station.getStationCity()%></td>
             <td><a href="https://www.google.com/maps/@<%=station.getStationLatitude()%>,<%=station.getStationLongitude()%>,18z"><%=station.getStationLatitude()%>, <%=station.getStationLongitude()%></a></td>
-            <td><%=allOfflines.get(station.getStationCode()).isOffline()%></td>
-            <td><%=timestampFormat.format(new Date(station.getLastUpdated()))%></td>
-            <td>
-                <form action="/admin/delete-entity">
-                    <div><input type="submit" value="Delete" /></div>
-                    <input type="hidden" name="<%= DeleteEntityServlet.PROPERTY_UUID %>" value="<%= station.getUuid() %>"/>
-                    <input type="hidden" name="<%= DeleteEntityServlet.REDIRECT_URL %>" value="<%= URLEncoder.encode("/admin/stations", "UTF-8") %>"/>
-                </form>
-            </td>
+            <%--<td><%=allOfflines.get(station.getStationCode()).isOffline()%></td>--%>
         </tr>
 <%
         }

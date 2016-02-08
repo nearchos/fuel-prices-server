@@ -17,15 +17,13 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.admin.AdminSyncServlet;
 import com.aspectsense.fuel.server.api.ApiSyncServlet;
-import com.aspectsense.fuel.server.data.FuelType;
-import com.aspectsense.fuel.server.data.Offlines;
-import com.aspectsense.fuel.server.data.Prices;
+import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.*;
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.aspectsense.fuel.server.json.StationsParser;
+import com.google.appengine.api.datastore.Text;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,8 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -53,82 +50,63 @@ public class UpdateDatastoreServlet extends HttpServlet {
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();
 
-        final String apiKeyCode = request.getParameter("apiKeyCode");
-        if(apiKeyCode == null || apiKeyCode.isEmpty() || !ApiKeyFactory.isActive(apiKeyCode)) {
-            log.severe("Empty or invalid apiKeyCode: " + apiKeyCode);
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKeyCode: " + apiKeyCode + "\" }"); // normal JSON output
+        final String magic = request.getParameter("magic");
+        if(magic == null || magic.isEmpty() || !ParameterFactory.isMagic(magic)) {
+            log.severe("Empty or invalid magic: " + magic);
+            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid magic: " + magic + "\" }"); // normal JSON output
             return; // terminate here
         }
 
         // we use a single timestamp for the full update operation of all the prices
         final long updateTimestamp = System.currentTimeMillis();
 
-        final String json = ApiSyncServlet.getSummaryJSON(updateTimestamp);
+        final Stations stations = StationsFactory.getLatestStations();
+        final Vector<Station> allStations = stations != null ? StationsParser.fromStationsJson(stations.getJson()) : new Vector<Station>();
+        final Offlines offlines = OfflinesFactory.getLatestOfflines();
 
-        try {
-            final JSONObject jsonObject = new JSONObject(json);
-
-            // update prices
-            // first use the JSON file from mem cache to initialize the 'old' prices view...
-            {
-                final JSONArray pricesJsonArray = jsonObject.getJSONArray("prices");
-                final Map<String,Integer> oldStationCodeAndFuelTypeToPricesInMillieurosMap = new HashMap<>();
-                for(int i = 0; i < pricesJsonArray.length(); i++) {
-                    final JSONObject priceJsonObject = pricesJsonArray.getJSONObject(i);
-                    final String stationCode = priceJsonObject.getString("stationCode");
-                    final JSONArray childPricesJsonArray = priceJsonObject.getJSONArray("prices");
-                    for(int j = 0; j < childPricesJsonArray.length(); j++) {
-                        final JSONObject childPriceJsonObject = childPricesJsonArray.getJSONObject(j);
-                        final String fuelType = childPriceJsonObject.getString("type");
-                        final int priceInMillieuros = childPriceJsonObject.getInt("price");
-                        oldStationCodeAndFuelTypeToPricesInMillieurosMap.put(stationCode + "-" + fuelType, priceInMillieuros);
-                    }
-                }
-                // ...and then update the prices as and when needed
-                for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-                    // get the latest JSON for each fuelType
-                    final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
-                    final Map<String, Integer> stationCodeToPriceInMillieurosMap = prices == null ? new HashMap<String, Integer>() : prices.getStationCodeToPriceInMillieurosMap();
-
-                    // update the Price datastore and facilitate the update functionality
-                    for (final String stationCode : stationCodeToPriceInMillieurosMap.keySet()) {
-                        final int priceInMillieuro = stationCodeToPriceInMillieurosMap.get(stationCode);
-                        final int oldPriceInMillieuro = oldStationCodeAndFuelTypeToPricesInMillieurosMap.containsKey(stationCode + "-" + fuelType) ?
-                                oldStationCodeAndFuelTypeToPricesInMillieurosMap.get(stationCode + "-" + fuelType) : 0;
-                        if(priceInMillieuro != oldPriceInMillieuro) {
-                            PriceFactory.addOrUpdatePrice(stationCode, fuelType.getCodeAsString(), priceInMillieuro, updateTimestamp);
-                        }
-                    }
-                }
-            }
-
-            // update offlines
-            // first use the JSON file from mem cache to initialize the 'old' offlines view...
-            {
-                final JSONArray offlinesJsonArray = jsonObject.getJSONArray("offlines");
-                final Map<String,Boolean> oldStationCodesToOfflinesMap = new HashMap<>();
-                for(int i = 0; i < offlinesJsonArray.length(); i++) {
-                    final JSONObject offlineJsonObject = offlinesJsonArray.getJSONObject(i);
-                    final String stationCode = offlineJsonObject.getString("stationCode");
-                    final boolean offline = offlineJsonObject.getBoolean("offline");
-                    oldStationCodesToOfflinesMap.put(stationCode, offline);
-                }
-                // ...and then update the offlines as and when needed
-                final Offlines offlines = OfflinesFactory.getLatestOfflines();
-                final Map<String, Boolean> stationCodeToOfflinesMap = offlines == null ? new HashMap<String, Boolean>() : offlines.getStationCodeToOfflineMap();
-
-                // update the Offline datastore and facilitate the update functionality
-                for (final String stationCode : stationCodeToOfflinesMap.keySet()) {
-                    final boolean offline = stationCodeToOfflinesMap.get(stationCode);
-                    if(!oldStationCodesToOfflinesMap.containsKey(stationCode) || // if the json does not have info on this station...
-                            oldStationCodesToOfflinesMap.get(stationCode) != offline) { // ... or if the value has changed...
-                        OfflineFactory.addOrUpdateOffline(stationCode, offline, updateTimestamp); // ...update offline
-                    }
-                }
-            }
-
-        } catch (JSONException jsone) {
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Invalid cached data: " + jsone.getMessage() + "\" }");
+        final Map<FuelType, Map<String,Integer>> fuelTypeToStationCodeToPriceInMillieurosMap = new HashMap<>();
+        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+            final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
+            fuelTypeToStationCodeToPriceInMillieurosMap.put(fuelType, prices.getStationCodeToPriceInMillieurosMap());
         }
+
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("{");
+        stringBuilder.append("  \"lastUpdated\": ").append(updateTimestamp).append(",");
+        stringBuilder.append("  \"stations\": ").append(stations != null ? stations.getJson() : "[]").append(",\n");
+        stringBuilder.append("  \"offlines\": ").append(offlines != null ? offlines.getJson() : "[]").append(",\n");
+        stringBuilder.append("  \"prices\": [");
+        final int numOfStations = allStations.size();
+        int counter  = 0;
+        for(final Station station : allStations) {
+            stringBuilder.append("    { \"code\": \"").append(station.getStationCode()).append("\", \"prices\": [ ");
+            int fuelTypeCounter = 0;
+            for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+                final Map<String,Integer> stationCodeToPriceInMillieurosMap = fuelTypeToStationCodeToPriceInMillieurosMap.get(fuelType);
+                final int priceInMillieuros;
+                if(stationCodeToPriceInMillieurosMap == null) {
+                    priceInMillieuros = 0;
+                } else if(stationCodeToPriceInMillieurosMap.containsKey(station.getStationCode())) {
+                    priceInMillieuros = stationCodeToPriceInMillieurosMap.get(station.getStationCode());
+                } else {
+                    priceInMillieuros = 0;
+                }
+                stringBuilder.append(priceInMillieuros).append(fuelTypeCounter++ < FuelType.ALL_FUEL_TYPES.length - 1 ? ", " : "");
+            }
+            stringBuilder.append(++counter >= numOfStations ? " ] }\n" : " ] },\n");
+        }
+        stringBuilder.append("  ]");
+        stringBuilder.append("}");
+
+        final String json = stringBuilder.toString();
+        SyncMessageFactory.addSyncMessage(new Text(json), updateTimestamp);
+
+        // invalidate all sync cache
+        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(ApiSyncServlet.SYNC_NAMESPACE);
+        memcacheService.clearAll();
+
+        // todo check if there has been an update in the last couple of hours, and email an error message if not
+
+        // todo delete everything that is older than say 7 days from prices, offlines, and stations (perhaps email them first)
     }
 }

@@ -17,13 +17,9 @@
 
 package com.aspectsense.fuel.server.admin;
 
-import com.aspectsense.fuel.server.data.ApiKey;
 import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.Parameter;
-import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.ParameterFactory;
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
@@ -47,11 +43,12 @@ import java.util.logging.Logger;
  */
 public class AdminSyncServlet extends HttpServlet {
 
-    public static final String PARAMETER_DEFAULT_API_KEY = "DEFAULT-API-KEY";
+    public static final String PARAMETER_MAGIC = "MAGIC";
+    public static final String PARAMETER_SYNC_ON_CRON = "SYNC_ON_CRON";
 
     Logger log = Logger.getLogger("cyprusfuelguide");
 
-    private static String apiKeyCode = null;
+    private static String magic = null;
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -60,51 +57,52 @@ public class AdminSyncServlet extends HttpServlet {
 
         boolean syncStations = request.getRequestURI().endsWith("/admin/sync-stations");
 
-        if(apiKeyCode == null) {
-            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_DEFAULT_API_KEY);
+        if(magic == null) {
+            final Parameter parameter = ParameterFactory.getParameterByName(PARAMETER_MAGIC);
             if(parameter != null) {
-                apiKeyCode = parameter.getParameterValue();
+                magic = parameter.getParameterValue();
             } else {
-                log.info("Initializing parameter: " + PARAMETER_DEFAULT_API_KEY);
                 final UserService userService = UserServiceFactory.getUserService();
                 final User user = userService.getCurrentUser();
                 final String userEmail = user == null ? "Unknown" : user.getEmail();
-                final Key key = ApiKeyFactory.addApiKey(userEmail, PARAMETER_DEFAULT_API_KEY);
-                String uuid = KeyFactory.keyToString(key);
-                final ApiKey apiKey = ApiKeyFactory.getApiKey(uuid);
-                if(apiKey != null) {
-                    apiKeyCode = apiKey.getApiKeyCode();
-                    ParameterFactory.addParameter(PARAMETER_DEFAULT_API_KEY, apiKeyCode);
-                } else {
-                    log.severe("Could not get ApiKey for userEmail: " + userEmail + ", with UUID: " + uuid);
-                }
+                log.severe("Could not get magic for userEmail: " + userEmail);
             }
         }
 
-        final Queue queue = QueueFactory.getDefaultQueue();
 
-        log.info("Scheduling sync events ...");
+        boolean forceSync = request.getParameter("forceSync") != null;
 
-        long delay = 0L;
-        // schedule the request/poll servlets for each fuel type
-        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+        final Parameter syncOnCronParameter = ParameterFactory.getParameterByName(PARAMETER_SYNC_ON_CRON);
+        final boolean syncOnCron = syncOnCronParameter != null && "true".equalsIgnoreCase(syncOnCronParameter.getParameterValue());
+
+        if(forceSync || syncOnCron) { // only proceed if either: 1. the 'forceSync' parameter was set, or 2. the syncOnCron parameter is set to true
+            log.info("Scheduling sync events ...");
+
+            final Queue queue = QueueFactory.getDefaultQueue();
+
+            long delay = 0L;
+            // schedule the request/poll servlets for each fuel type
+            for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+                TaskOptions taskOptions = TaskOptions.Builder
+                        .withUrl("/sync/request")
+                        .param("magic", magic)
+                        .param("fuelType", fuelType.getCodeAsString())
+                        .param("syncStations", Boolean.toString(syncStations))
+                        .countdownMillis(delay)
+                        .method(TaskOptions.Method.GET);
+                queue.add(taskOptions);
+                delay += 60000; // put 60 seconds between individual request tasks
+            }
+
+            // finally, schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
             TaskOptions taskOptions = TaskOptions.Builder
-                    .withUrl("/sync/request")
-                    .param("apiKeyCode", apiKeyCode)
-                    .param("fuelType", fuelType.getCodeAsString())
-                    .param("syncStations", Boolean.toString(syncStations))
+                    .withUrl("/sync/updateDatastore")
+                    .param("magic", magic)
                     .countdownMillis(delay)
                     .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
-            delay += 60000; // put 60 seconds between individual request tasks
+        } else {
+            log.info("SKIPPING: Scheduling sync events (parameter SYNC_ON_CRON) is true");
         }
-
-        // finally, schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
-        TaskOptions taskOptions = TaskOptions.Builder
-                .withUrl("/sync/updateDatastore")
-                .param("apiKeyCode", apiKeyCode)
-                .countdownMillis(delay)
-                .method(TaskOptions.Method.GET);
-        queue.add(taskOptions);
     }
 }

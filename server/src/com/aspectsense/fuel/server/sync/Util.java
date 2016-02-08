@@ -17,11 +17,6 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.Station;
-import com.aspectsense.fuel.server.datastore.OfflineFactory;
-import com.aspectsense.fuel.server.datastore.OfflinesFactory;
-import com.aspectsense.fuel.server.datastore.PricesFactory;
-import com.aspectsense.fuel.server.datastore.StationFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -168,61 +163,61 @@ public class Util {
         return String.format("%9.6f", d + m / 60d + s / 3600d);
     }
 
-    public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
-
-        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
-        int numOfChanges = 0;
-
-        // update the data for offline stations
-        final long updateTimestamp = System.currentTimeMillis();
-
-        // sync stations, if needed (as indicated by syncStations boolean value)
-        if(syncStations) {
-            for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
-                final String stationCode = petroleumPriceDetail.getStationCode();
-
-                final Station station = stationsByStationCode.get(stationCode);
-                if (station == null) { // new station added
-                    StationFactory.addStation(petroleumPriceDetail.getFuelCompanyCode(),
-                            petroleumPriceDetail.getFuelCompanyName(),
-                            petroleumPriceDetail.getStationCode(),
-                            petroleumPriceDetail.getStationName(),
-                            petroleumPriceDetail.getStationTelNo(),
-                            petroleumPriceDetail.getStationCity(),
-                            petroleumPriceDetail.getStationDistrict(),
-                            petroleumPriceDetail.getStationAddress(),
-                            petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude(),
-                            updateTimestamp
-                    );
-                    numOfChanges++;
-                } else if (petroleumPriceDetail.hasChanges(station)) { // existing station was edited
-                    // update datastore entry of the station
-                    StationFactory.editStation(station.getUuid(),
-                            petroleumPriceDetail.getFuelCompanyCode(),
-                            petroleumPriceDetail.getFuelCompanyName(),
-                            petroleumPriceDetail.getStationCode(),
-                            petroleumPriceDetail.getStationName(),
-                            petroleumPriceDetail.getStationTelNo(),
-                            petroleumPriceDetail.getStationCity(),
-                            petroleumPriceDetail.getStationDistrict(),
-                            petroleumPriceDetail.getStationAddress(),
-                            petroleumPriceDetail.getStationLatitude(),
-                            petroleumPriceDetail.getStationLongitude(),
-                            updateTimestamp
-                    );
-                    numOfChanges++;
-                }
-            }
-        }
-
-        // sync prices
-//        final Prices prices =
-        PricesFactory.addPrices(petroleumPriceDetails, fuelType);
-
-        OfflinesFactory.addOfflines(petroleumPriceDetails);
-//        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
-
-        return numOfChanges;
-    }
+//    public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
+//
+//        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
+//        int numOfChanges = 0;
+//
+//        // update the data for offline stations
+//        final long updateTimestamp = System.currentTimeMillis();
+//
+//        // sync stations, if needed (as indicated by syncStations boolean value)
+//        if(syncStations) {
+//            for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
+//                final String stationCode = petroleumPriceDetail.getStationCode();
+//
+//                final Station station = stationsByStationCode.get(stationCode);
+//                if (station == null) { // new station added
+//                    StationFactory.addStation(petroleumPriceDetail.getFuelCompanyCode(),
+//                            petroleumPriceDetail.getFuelCompanyName(),
+//                            petroleumPriceDetail.getStationCode(),
+//                            petroleumPriceDetail.getStationName(),
+//                            petroleumPriceDetail.getStationTelNo(),
+//                            petroleumPriceDetail.getStationCity(),
+//                            petroleumPriceDetail.getStationDistrict(),
+//                            petroleumPriceDetail.getStationAddress(),
+//                            petroleumPriceDetail.getStationLatitude(),
+//                            petroleumPriceDetail.getStationLongitude(),
+//                            updateTimestamp
+//                    );
+//                    numOfChanges++;
+//                } else if (petroleumPriceDetail.hasChanges(station)) { // existing station was edited
+//                    // update datastore entry of the station
+//                    StationFactory.editStation(station.getUuid(),
+//                            petroleumPriceDetail.getFuelCompanyCode(),
+//                            petroleumPriceDetail.getFuelCompanyName(),
+//                            petroleumPriceDetail.getStationCode(),
+//                            petroleumPriceDetail.getStationName(),
+//                            petroleumPriceDetail.getStationTelNo(),
+//                            petroleumPriceDetail.getStationCity(),
+//                            petroleumPriceDetail.getStationDistrict(),
+//                            petroleumPriceDetail.getStationAddress(),
+//                            petroleumPriceDetail.getStationLatitude(),
+//                            petroleumPriceDetail.getStationLongitude(),
+//                            updateTimestamp
+//                    );
+//                    numOfChanges++;
+//                }
+//            }
+//        }
+//
+//        // sync prices
+////        final Prices prices =
+//        PricesFactory.addPrices(petroleumPriceDetails, fuelType);
+//
+//        OfflinesFactory.addOfflines(petroleumPriceDetails);
+////        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
+//
+//        return numOfChanges;
+//    }
 }

@@ -17,8 +17,6 @@
 
 package com.aspectsense.fuel.server.sync;
 
-import com.aspectsense.fuel.server.data.Station;
-
 import java.io.Serializable;
 
 /**
@@ -150,23 +148,23 @@ public class PetroleumPriceDetail implements Serializable {
                 '}';
     }
 
-    /**
-     * Checks if there are any changes between this and the given station (the check does not cover whether the station
-     * is offline, or details related to fuel type and price)
-     *
-     * @param station
-     * @return
-     */
-    public boolean hasChanges(final Station station) {
-        if(!fuelCompanyCode.equals(station.getFuelCompanyCode())) return true;
-        if(!fuelCompanyName.equals(station.getFuelCompanyName())) return true;
-        // it must be assumed that the station code does not change
-        if(!stationName.equals(station.getStationName())) return true;
-        if(!stationTelNo.equals(station.getStationTelNo())) return true;
-        if(!stationCity.equals(station.getStationCity())) return true;
-        if(!stationDistrict.equals(station.getStationDistrict())) return true;
-        if(!stationAddress.equals(station.getStationAddress())) return true;
-        if(!stationLatitude.equals(station.getStationLatitude())) return true;
-        return !stationLongitude.equals(station.getStationLongitude());
-    }
+//    /**
+//     * Checks if there are any changes between this and the given station (the check does not cover whether the station
+//     * is offline, or details related to fuel type and price)
+//     *
+//     * @param station
+//     * @return
+//     */
+//    public boolean hasChanges(final Station station) {
+//        if(!fuelCompanyCode.equals(station.getFuelCompanyCode())) return true;
+//        if(!fuelCompanyName.equals(station.getFuelCompanyName())) return true;
+//        // it must be assumed that the station code does not change
+//        if(!stationName.equals(station.getStationName())) return true;
+//        if(!stationTelNo.equals(station.getStationTelNo())) return true;
+//        if(!stationCity.equals(station.getStationCity())) return true;
+//        if(!stationDistrict.equals(station.getStationDistrict())) return true;
+//        if(!stationAddress.equals(station.getStationAddress())) return true;
+//        if(!stationLatitude.equals(station.getStationLatitude())) return true;
+//        return !stationLongitude.equals(station.getStationLongitude());
+//    }
 }

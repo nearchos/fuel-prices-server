@@ -18,7 +18,6 @@
 package com.aspectsense.fuel.server.sync;
 
 import com.aspectsense.fuel.server.data.Parameter;
-import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.ParameterFactory;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
@@ -65,10 +64,10 @@ public class RequestServlet extends HttpServlet {
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();
 
-        final String apiKeyCode = request.getParameter("apiKeyCode");
-        if(apiKeyCode == null || apiKeyCode.isEmpty() || !ApiKeyFactory.isActive(apiKeyCode)) {
-            log.severe("Empty or invalid apiKeyCode: " + apiKeyCode);
-            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid apiKeyCode: " + apiKeyCode + "\" }"); // normal JSON output
+        final String magic = request.getParameter("magic");
+        if(magic == null || magic.isEmpty() || !ParameterFactory.isMagic(magic)) {
+            log.severe("Empty or invalid magic: " + magic);
+            printWriter.println("{ \"result\": \"error\", \"message\": \"Empty or invalid magic: " + magic + "\" }"); // normal JSON output
             return; // terminate here
         }
 
@@ -98,7 +97,7 @@ public class RequestServlet extends HttpServlet {
             final Queue queue = QueueFactory.getDefaultQueue();
             TaskOptions taskOptions = TaskOptions.Builder
                     .withUrl("/sync/poll")
-                    .param("apiKeyCode", apiKeyCode)
+                    .param("magic", magic)
                     .param("correlationId", correlationID)
                     .param("fuelType", fuelType)
                     .param("syncStations", Boolean.toString(syncStations))

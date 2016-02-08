@@ -51,23 +51,25 @@ public class Offlines implements Serializable {
         return uuid;
     }
 
-    public Map<String,Boolean> getStationCodeToOfflineMap() {
-        final Map<String,Boolean> stationCodeToOfflineMap = new HashMap<>();
-        try {
-            final JSONObject jsonObject = new JSONObject(json);
+    public String getJson() { return json; }
 
-            // parse JSON
-            final JSONArray offlines = jsonObject.getJSONArray("offlines");
-            for(int i = 0; i < offlines.length(); i++) {
-                final JSONObject offlinesJSONObject = offlines.getJSONObject(i);
-                final String stationCode = offlinesJSONObject.getString("stationCode");
-                final boolean offline = offlinesJSONObject.getBoolean("offline");
-                stationCodeToOfflineMap.put(stationCode, offline);
-            }
-        } catch (JSONException jsone) {
-            log.severe("JSON Error: " + jsone);
-            log.severe("Error while parsing JSON: " + json);
-        }
-        return stationCodeToOfflineMap;
-    }
+//    public Map<String,Boolean> getStationCodeToOfflineMap() {
+//        final Map<String,Boolean> stationCodeToOfflineMap = new HashMap<>();
+//        try {
+//            final JSONObject jsonObject = new JSONObject(json);
+//
+//            // parse JSON
+//            final JSONArray offlines = jsonObject.getJSONArray("offlines");
+//            for(int i = 0; i < offlines.length(); i++) {
+//                final JSONObject offlinesJSONObject = offlines.getJSONObject(i);
+//                final String stationCode = offlinesJSONObject.getString("stationCode");
+//                final boolean offline = offlinesJSONObject.getBoolean("offline");
+//                stationCodeToOfflineMap.put(stationCode, offline);
+//            }
+//        } catch (JSONException jsone) {
+//            log.severe("JSON Error: " + jsone);
+//            log.severe("Error while parsing JSON: " + json);
+//        }
+//        return stationCodeToOfflineMap;
+//    }
 }

@@ -18,6 +18,7 @@
 package com.aspectsense.fuel.server.datastore;
 
 import com.aspectsense.fuel.server.data.Prices;
+import com.aspectsense.fuel.server.json.PricesParser;
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
 import com.google.appengine.api.datastore.*;
 
@@ -46,33 +47,12 @@ public class PricesFactory {
      * @param fuelType
      * @return true if the data contain some actual updates for the given fuelType
      */
-    public static boolean addPrices(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType) {
-
-        final long lastUpdated = System.currentTimeMillis();
-
-        final StringBuilder jsonStringBuilder = new StringBuilder("{\n");
-        jsonStringBuilder.append("  \"fuelType\": ").append(fuelType).append(",\n");
-        jsonStringBuilder.append("  \"lastUpdated\": ").append(lastUpdated).append(",\n");
-        jsonStringBuilder.append("  \"prices\": [").append("\n");
-
-        int count = 0;
-        for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
-            boolean isLastElement = ++count == petroleumPriceDetails.size();
-            jsonStringBuilder.append("    { \"stationCode\": \"").append(petroleumPriceDetail.getStationCode())
-                    .append("\", \"price\": \"").append(petroleumPriceDetail.getFuelPrice()).append("\" }")
-                    .append(isLastElement ? "\n" : ",\n");
-        }
-        jsonStringBuilder.append("  ]\n");
-        jsonStringBuilder.append("}\n");
-
-        final String json = jsonStringBuilder.toString();
-        final Text jsonText = new Text(json);
-
-        if(count > 0) {
+    public static void addPrices(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final long lastUpdated) {
+        // add the Prices to the datastore ONLY IF non empty
+        if(!petroleumPriceDetails.isEmpty()) {
+            final String json = PricesParser.toPricesJson(petroleumPriceDetails);
+            final Text jsonText = new Text(json);
             addPrices(fuelType, jsonText, lastUpdated);
-            return false;
-        } else {
-            return true;
         }
     }
 

@@ -17,9 +17,6 @@
 
 package com.aspectsense.fuel.server.data;
 
-import com.google.appengine.labs.repackaged.org.json.JSONString;
-import com.google.appengine.labs.repackaged.org.json.JSONStringer;
-
 import java.io.Serializable;
 
 /**
@@ -31,25 +28,17 @@ import java.io.Serializable;
  */
 public class Station implements Serializable {
 
-    private final String uuid;
-    private final String fuelCompanyCode;
-    private final String fuelCompanyName;
     private final String stationCode;
     private final String stationName;
     private final String stationTelNo;
     private final String stationCity;
     private final String stationDistrict;
     private final String stationAddress;
-    private final String stationLatitude;
-    private final String stationLongitude;
-    private final long lastUpdated;
+    private final double stationLatitude;
+    private final double stationLongitude;
 
-    public Station(String uuid, String fuelCompanyCode, String fuelCompanyName, String stationCode, String stationName,
-                   String stationTelNo, String stationCity, String stationDistrict, String stationAddress,
-                   String stationLatitude, String stationLongitude, long lastUpdated) {
-        this.uuid = uuid;
-        this.fuelCompanyCode = fuelCompanyCode;
-        this.fuelCompanyName = fuelCompanyName;
+    public Station(String stationCode, String stationName, String stationTelNo, String stationCity,
+                   String stationDistrict, String stationAddress, double stationLatitude, double stationLongitude) {
         this.stationCode = stationCode;
         this.stationName = stationName;
         this.stationTelNo = stationTelNo;
@@ -58,31 +47,18 @@ public class Station implements Serializable {
         this.stationAddress = stationAddress;
         this.stationLatitude = stationLatitude;
         this.stationLongitude = stationLongitude;
-        this.lastUpdated = lastUpdated;
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    /**
-     * Returns a specified number of characters from the tail of the UUID
-     * @param numOfLastCharacters
-     * @return
-     */
-    public String getShortUuid(int numOfLastCharacters) {
-        int cutoffCharacter = uuid.length() - numOfLastCharacters;
-        if(cutoffCharacter < 0) cutoffCharacter = 0;
-        if(cutoffCharacter >= uuid.length()) cutoffCharacter = uuid.length() - 1;
-        return uuid.substring(cutoffCharacter);
-    }
-
-    public String getFuelCompanyCode() {
-        return fuelCompanyCode;
-    }
-
-    public String getFuelCompanyName() {
-        return fuelCompanyName;
+    public String getStationBrand() {
+        if(stationCode.startsWith("AG")) return "Agip";
+        else if(stationCode.startsWith("EK")) return "Eko";
+        else if(stationCode.startsWith("ES")) return "Esso";
+        else if(stationCode.startsWith("IS")) return "Independent";
+        else if(stationCode.startsWith("LU")) return "Lukoil";
+        else if(stationCode.startsWith("PE")) return "Petrolina";
+        else if(stationCode.startsWith("ST")) return "Staroil";
+        else if(stationCode.startsWith("TO")) return "Total";
+        else return "Unknown";
     }
 
     public String getStationCode() {
@@ -109,35 +85,46 @@ public class Station implements Serializable {
         return stationAddress;
     }
 
-    public String getStationLatitude() {
+    public double getStationLatitude() {
         return stationLatitude;
     }
 
-    public String getStationLongitude() {
+    public double getStationLongitude() {
         return stationLongitude;
     }
 
-    public long getLastUpdated() {
-        return lastUpdated;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Station station = (Station) o;
+
+        if (Double.compare(station.stationLatitude, stationLatitude) != 0) return false;
+        if (Double.compare(station.stationLongitude, stationLongitude) != 0) return false;
+        if (!stationCode.equals(station.stationCode)) return false;
+        if (!stationName.equals(station.stationName)) return false;
+        if (!stationTelNo.equals(station.stationTelNo)) return false;
+        if (!stationCity.equals(station.stationCity)) return false;
+        if (!stationDistrict.equals(station.stationDistrict)) return false;
+        return stationAddress.equals(station.stationAddress);
+
     }
 
-    public String toJSONObject() {
-        final StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("{ \"code\": \"").append(stationCode)
-                .append("\", \"name\": \"").append(stationName.replaceAll("\"", "'"))
-                .append("\", \"telNo\": \"").append(stationTelNo)
-                .append("\", \"address\": \"").append(stationAddress.replaceAll("\"", "'"))
-                .append("\", \"district\": \"").append(stationDistrict.replaceAll("\"", "").trim())
-                .append("\", \"city\": \"").append(stationCity.replaceAll("\"", "").trim())
-                .append("\", \"lat\": ").append(stationLatitude)
-                .append(", \"lng\": ").append(stationLongitude)
-                .append(" }");
-        return stringBuilder.toString();
+    @Override
+    public int hashCode() {
+        int result;
+        long temp;
+        result = stationCode.hashCode();
+        result = 31 * result + stationName.hashCode();
+        result = 31 * result + stationTelNo.hashCode();
+        result = 31 * result + stationCity.hashCode();
+        result = 31 * result + stationDistrict.hashCode();
+        result = 31 * result + stationAddress.hashCode();
+        temp = Double.doubleToLongBits(stationLatitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        temp = Double.doubleToLongBits(stationLongitude);
+        result = 31 * result + (int) (temp ^ (temp >>> 32));
+        return result;
     }
-
-//    public static void main(String[] args) {
-//        Station station = new Station("123", "EK", "EKO", "EK007", "Kostis Inc.", "25334455", "Limassol", "Mesa Yeitonia", "Kosti Palama 10", "33.123", "30.213", System.currentTimeMillis());
-//        System.out.println(station);
-//        System.out.println(station.toJSONObject());
-//    }
 }

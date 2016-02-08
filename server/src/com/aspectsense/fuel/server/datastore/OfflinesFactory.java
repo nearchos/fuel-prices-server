@@ -18,6 +18,7 @@
 package com.aspectsense.fuel.server.datastore;
 
 import com.aspectsense.fuel.server.data.Offlines;
+import com.aspectsense.fuel.server.json.OfflinesParser;
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
 import com.google.appengine.api.datastore.*;
 
@@ -40,36 +41,12 @@ public class OfflinesFactory {
     public static final String PROPERTY_JSON            = "json";
     public static final String PROPERTY_LAST_UPDATED    = "last_updated";
 
-    /**
-     * @param petroleumPriceDetails
-     * @return true if the data contain some actual updates for the given fuelType
-     */
-    public static boolean addOfflines(final Vector<PetroleumPriceDetail> petroleumPriceDetails) {
-
-        final long lastUpdated = System.currentTimeMillis();
-
-        final StringBuilder jsonStringBuilder = new StringBuilder("{\n");
-        jsonStringBuilder.append("  \"lastUpdated\": ").append(lastUpdated).append(",\n");
-        jsonStringBuilder.append("  \"offlines\": [").append("\n");
-
-        int count = 0;
-        for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
-            boolean isLastElement = ++count == petroleumPriceDetails.size();
-            jsonStringBuilder.append("    { \"stationCode\": \"").append(petroleumPriceDetail.getStationCode())
-                    .append("\", \"offline\": \"").append(petroleumPriceDetail.isOffline()).append("\" }")
-                    .append(isLastElement ? "\n" : ",\n");
-        }
-        jsonStringBuilder.append("  ]\n");
-        jsonStringBuilder.append("}\n");
-
-        final String json = jsonStringBuilder.toString();
-        final Text jsonText = new Text(json);
-
-        if(count > 0) {
+    public static void addOfflines(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final long lastUpdated) {
+        // add the Offlines to the datastore ONLY IF non empty
+        if(!petroleumPriceDetails.isEmpty()) {
+            final String json = OfflinesParser.toOfflinesJson(petroleumPriceDetails);
+            final Text jsonText = new Text(json);
             addOfflines(jsonText, lastUpdated);
-            return false;
-        } else {
-            return true;
         }
     }
 

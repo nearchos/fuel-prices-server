@@ -17,6 +17,7 @@
 
 package com.aspectsense.fuel.server.datastore;
 
+import com.aspectsense.fuel.server.admin.AdminSyncServlet;
 import com.aspectsense.fuel.server.data.Parameter;
 import com.google.appengine.api.datastore.*;
 
@@ -38,6 +39,11 @@ public class ParameterFactory {
 
     public static final String PROPERTY_NAME    = "name";
     public static final String PROPERTY_VALUE   = "value";
+
+    static public boolean isMagic(final String code) {
+        final Parameter parameter = getParameterByName(AdminSyncServlet.PARAMETER_MAGIC);
+        return parameter != null && parameter.getParameterValue().equals(code);
+    }
 
     static public Vector<Parameter> getAllParameters() {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
