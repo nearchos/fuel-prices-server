@@ -12,7 +12,7 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.data;
@@ -66,16 +66,14 @@ public class Prices implements Serializable {
     public Map<String,Integer> getStationCodeToPriceInMillieurosMap() {
         final Map<String,Integer> stationCodeToPriceInMillieurosMap = new HashMap<>();
         try {
-            final JSONObject jsonObject = new JSONObject(json);
-
             // parse JSON
-            final JSONArray prices = jsonObject.getJSONArray("prices");
+            final JSONArray prices = new JSONArray(json);
             for(int i = 0; i < prices.length(); i++) {
                 JSONObject price = prices.getJSONObject(i);
                 final String stationCode = price.getString("stationCode");
                 final String priceString = price.getString("price");
-                int priceInMillieuros = 0;
-                try { priceInMillieuros = (int) (1000 * Double.parseDouble(priceString)); } catch (NumberFormatException nfe) {}
+                int priceInMillieuros;
+                try { priceInMillieuros = (int) Double.parseDouble(priceString); } catch (NumberFormatException nfe) { priceInMillieuros = 0; }
                 stationCodeToPriceInMillieurosMap.put(stationCode, priceInMillieuros);
             }
         } catch (JSONException jsone) {

@@ -12,7 +12,7 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.sync;
@@ -57,6 +57,8 @@ public class UpdateDatastoreServlet extends HttpServlet {
             return; // terminate here
         }
 
+        final boolean debug = request.getParameter("debug") != null;
+
         // we use a single timestamp for the full update operation of all the prices
         final long updateTimestamp = System.currentTimeMillis();
 
@@ -73,13 +75,13 @@ public class UpdateDatastoreServlet extends HttpServlet {
         final StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("{");
         stringBuilder.append("  \"lastUpdated\": ").append(updateTimestamp).append(",");
-        stringBuilder.append("  \"stations\": ").append(stations != null ? stations.getJson() : "[]").append(",\n");
-        stringBuilder.append("  \"offlines\": ").append(offlines != null ? offlines.getJson() : "[]").append(",\n");
+        stringBuilder.append("  \"stations\": ").append(stations != null ? stations.getJson() : "[]").append(",");
+        stringBuilder.append("  \"offlines\": ").append(offlines != null ? offlines.getJson() : "[]").append(",");
         stringBuilder.append("  \"prices\": [");
         final int numOfStations = allStations.size();
         int counter  = 0;
         for(final Station station : allStations) {
-            stringBuilder.append("    { \"code\": \"").append(station.getStationCode()).append("\", \"prices\": [ ");
+            stringBuilder.append("    { \"stationCode\": \"").append(station.getStationCode()).append("\", \"prices\": [ ");
             int fuelTypeCounter = 0;
             for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
                 final Map<String,Integer> stationCodeToPriceInMillieurosMap = fuelTypeToStationCodeToPriceInMillieurosMap.get(fuelType);
@@ -108,5 +110,10 @@ public class UpdateDatastoreServlet extends HttpServlet {
         // todo check if there has been an update in the last couple of hours, and email an error message if not
 
         // todo delete everything that is older than say 7 days from prices, offlines, and stations (perhaps email them first)
+
+        printWriter.print("{ \"status\": \"OK\", \"debug\": " + debug + " }\n");
+        if(debug) {
+            printWriter.print("DEBUG: Generated JSON:\n" + json);
+        }
     }
 }

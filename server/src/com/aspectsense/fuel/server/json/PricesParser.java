@@ -6,7 +6,8 @@ import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
- * Created by Nearchos on 08-Feb-16.
+ * @author Nearchos Paspallis
+ * 08-Feb-16
  */
 public class PricesParser {
 

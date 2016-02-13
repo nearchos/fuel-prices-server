@@ -12,7 +12,7 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.datastore;
@@ -45,17 +45,6 @@ public class ApiKeyFactory {
     public static final String PROPERTY_TIME_REQUESTED  = "time_requested";
     public static final String PROPERTY_IS_ACTIVE       = "is_active";
     public static final String PROPERTY_API_KEY_CODE    = "api_key";
-
-    static public ApiKey getApiKey(final String uuid) {
-        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
-        try {
-            final Entity apiKeyEntity = datastoreService.get(KeyFactory.stringToKey(uuid));
-            return getFromEntity(apiKeyEntity);
-        } catch (EntityNotFoundException enfe) {
-            log.severe("Could not find " + KIND + " with key: " + uuid);
-            return null;
-        }
-    }
 
     static public ApiKey getApiKeyByCode(final String apiKeyCode)
     {

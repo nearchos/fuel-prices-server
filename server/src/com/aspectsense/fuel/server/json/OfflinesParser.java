@@ -10,7 +10,8 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * Created by Nearchos on 07-Feb-16.
+ * @author Nearchos Paspallis
+ * 07-Feb-16
  */
 public class OfflinesParser {
 

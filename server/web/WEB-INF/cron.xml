@@ -13,7 +13,7 @@
   ~ Public License for more details.
   ~
   ~ You should have received a copy of the GNU General Public License
-  ~ along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+  ~ along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
   -->
 
 <cronentries>
@@ -21,14 +21,14 @@
     <cron>
         <url>/admin/sync-prices</url>
         <description>Sync prices with the ministry's server</description>
-        <schedule>every 30 minutes from 8:00 to 20:00</schedule>
+        <schedule>every 60 minutes from 8:00 to 20:00</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 
     <cron>
         <url>/admin/sync-stations</url>
-        <description>Sync station details with the ministry's server</description>
-        <schedule>every day 7:30</schedule>
+        <description>Sync prices AND station details with the ministry's server</description>
+        <schedule>every 60 minutes from 7:30 to 19:30</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 

@@ -12,17 +12,12 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.data;
 
-import com.google.appengine.api.datastore.*;
-import com.google.appengine.api.memcache.MemcacheServiceFactory;
-
 import java.io.Serializable;
-import java.util.Vector;
-import java.util.logging.Logger;
 
 /**
  * fuel-prices-server

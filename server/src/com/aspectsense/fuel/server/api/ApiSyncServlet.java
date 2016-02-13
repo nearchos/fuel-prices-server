@@ -12,15 +12,17 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.api;
 
 import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.*;
+import com.aspectsense.fuel.server.json.*;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
@@ -29,6 +31,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Vector;
 import java.util.logging.Logger;
 
 /**
@@ -56,11 +62,13 @@ public class ApiSyncServlet extends HttpServlet {
         }
 
         final String key = request.getParameter("key");
-        if(key == null || ! ApiKeyFactory.isActive(key)) {
-            response.getWriter().println(" { \"status\": \"error\", \"message\": \"undefined  or unknown key\" }");
+        if(key == null || key.isEmpty()) {
+            response.getWriter().println(" { \"status\": \"error\", \"message\": \"undefined  or empty key\" }");
+        } else if(!ApiKeyFactory.isActive(key)) {
+            response.getWriter().println(" { \"status\": \"error\", \"message\": \"invalid key\" }");
         } else {
             try {
-                response.getWriter().println(getSyncMessageAsJSON(fromTimestamp));
+                response.getWriter().println(getSyncMessageAsJSON(fromTimestamp)); // compute reply
             } catch (JSONException jsone) {
                 response.getWriter().println(" { \"status\": \"error\", \"message\": \"" + jsone.getMessage() + "\" }");
             }
@@ -71,62 +79,214 @@ public class ApiSyncServlet extends HttpServlet {
 
     private String getSyncMessageAsJSON(final long fromTimestamp) throws JSONException {
 
-        final long start = System.currentTimeMillis();
-
         // first check if the requested data is already in memcache
         final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(SYNC_NAMESPACE);
-        final String memCacheKey = Long.toString(fromTimestamp);
-        if(memcacheService.contains(memCacheKey)) {
-            return (String) memcacheService.get(memCacheKey);
-        } else { // key not found in mem-cache -- must be created now
-            final String latestJson;
-            final JSONObject latestJsonObject;
-            if(memCacheKey.contains(Long.toString(0L))) {
-                latestJson = (String) memcacheService.get(Long.toString(0L));
+        if(memcacheService.contains(fromTimestamp)) {
+            return (String) memcacheService.get(fromTimestamp);
+        } else { // key not found in memcache - data must be dynamically generated now (and stored in cache at the end)
+            final long start = System.currentTimeMillis();
+            final String reply;
+            final SyncMessage targetSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
+            if(targetSyncMessage == null) {
+                log.severe("No SyncMessages in datastore");
+                return "{ \"status\": \"error\", \"message\": \"No SyncMessages in datastore\"}";
             } else {
-                final SyncMessage latestSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
-                if(latestSyncMessage == null) throw new RuntimeException("Latest SyncMessage fetched is null");
-                latestJson = latestSyncMessage.getJson();
-                memcacheService.put(Long.toString(0L), latestJson);
-            }
-            latestJsonObject = new JSONObject(latestJson);
-            final long lastUpdated = latestJsonObject.getLong("lastUpdated");
-
-            {
-                final String oldJson;
-                final SyncMessage oldSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
-                if(oldSyncMessage == null) {
-                    log.severe("Null SyncMessage for requested timestamp: " + fromTimestamp);
-                    // todo return full sync message
-                } else {
-                    oldJson = oldSyncMessage.getJson();
+                final Modifications modifications;
+                if(fromTimestamp == 0L) { // no need to compute modifications, just return the latest data
+                    modifications = computeModifications(targetSyncMessage);
+                } else { // must dynamically compute the changes
+                    final SyncMessage sourceSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
+                    if(sourceSyncMessage == null) {
+                        log.warning("No SyncMessage in datastore for given timestamp:" + fromTimestamp);
+                        return "{ \"status\": \"error\", \"message\": \"No SyncMessage in datastore for given timestamp:" + fromTimestamp + "\" }";
+                    } else {
+                        modifications = computeModifications(sourceSyncMessage, targetSyncMessage);
+                    }
                 }
+
+                final long finish = System.currentTimeMillis();
+
+                reply = formReplyMessage(fromTimestamp, modifications, finish-start, targetSyncMessage.getLastUpdated());
+
+                memcacheService.put(fromTimestamp, reply); // store in memcache
             }
-
-
-            final StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append(" { \"status\": \"ok\", \"from\": ")
-                    .append(fromTimestamp)
-                    .append(", \"stations\": [");
-            // add station updates
-            {
-
-            }
-            stringBuilder.append("], \"offlines\": [");
-            // add offline updates
-            {
-            }
-            stringBuilder.append("], \"prices\": [");
-            // add price updates
-            {
-            }
-            final long finish = System.currentTimeMillis();
-            stringBuilder.append("], \"processedInMilliseconds\": ").append(finish - start).append(", \"lastUpdated\": ").append(lastUpdated).append(" }");
-
-            final String reply = stringBuilder.toString();
-            memcacheService.put(memCacheKey, reply); // store in memcache
-
             return reply;
+        }
+    }
+
+    private Modifications computeModifications(final SyncMessage targetSyncMessage) throws JSONException {
+        // compute target-related data
+        final String targetJson = targetSyncMessage.getJson();
+        final JSONObject targetJsonObject = new JSONObject(targetJson);
+
+final Object s = targetJsonObject.get("stations");
+final JSONArray targetStationsArray = s instanceof JSONArray ? ((JSONArray) s) : ((JSONObject) s).getJSONArray("stations");
+//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations"); //todo
+        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+
+final Object o = targetJsonObject.get("offlines");
+final JSONArray targetJsonOfflinesArray = o instanceof JSONArray ? (JSONArray) o : ((JSONObject) o).getJSONArray("offlines");
+//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines"); // todo
+        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+
+        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
+        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+
+        // add all stations
+        final Vector<Station> modifiedStations = new Vector<>();
+        for(final Station station : targetStations) {
+            modifiedStations.add(station);
+        }
+
+        // add all offlines
+        final Vector<Offline> modifiedOfflines = new Vector<>();
+        for(final Map.Entry<String, Boolean> targetOfflineEntry : targetOfflines.entrySet()) {
+            final String stationCode = targetOfflineEntry.getKey();
+            final boolean offline = targetOfflineEntry.getValue();
+            modifiedOfflines.add(new Offline(stationCode, offline));
+        }
+
+        // add all prices
+        final Vector<Price> modifiedPrices = new Vector<>();
+        for(final Map.Entry<String,Price> targetPriceEntry : targetPrices.entrySet()) {
+            final Price targetPrice = targetPriceEntry.getValue();
+            modifiedPrices.add(targetPrice);
+        }
+
+        return new Modifications(modifiedStations, modifiedOfflines, modifiedPrices);
+
+    }
+
+    public static Modifications computeModifications(final SyncMessage sourceSyncMessage, final SyncMessage targetSyncMessage) throws JSONException {
+
+        // compute source-related data
+        final String sourceJson = sourceSyncMessage.getJson();
+        final JSONObject sourceJsonObject = new JSONObject(sourceJson);
+
+final Object s = sourceJsonObject.get("stations");
+final JSONArray sourceStationsArray = s instanceof JSONArray ? ((JSONArray) s) : ((JSONObject) s).getJSONArray("stations");
+//        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations"); // todo
+        final Vector<Station> sourceStations = StationsParser.fromStationsJsonArray(sourceStationsArray);
+        final Map<String, Station> sourceCodeToStationsMap = new HashMap<>();
+        for(final Station station : sourceStations) {
+            sourceCodeToStationsMap.put(station.getStationCode(), station);
+        }
+
+final Object so = sourceJsonObject.get("offlines");
+final JSONArray sourceOfflinesArray = so instanceof JSONArray ? (JSONArray) so : ((JSONObject) so).getJSONArray("offlines");
+//        final JSONArray sourceOfflinesArray = sourceJsonObject.getJSONArray("offlines"); // todo
+        final Map<String, Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceOfflinesArray);
+
+        final JSONArray sourcePricesArray = sourceJsonObject.getJSONArray("prices");
+        final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourcePricesArray);
+
+        // compute target-related data
+        final String targetJson = targetSyncMessage.getJson();
+        final JSONObject targetJsonObject = new JSONObject(targetJson);
+
+final Object ts = targetJsonObject.get("stations");
+final JSONArray targetStationsArray = ts instanceof JSONArray ? ((JSONArray) ts) : ((JSONObject) ts).getJSONArray("stations");
+//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations"); // todo
+        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+
+final Object to = targetJsonObject.get("offlines");
+final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) to : ((JSONObject) to).getJSONArray("offlines");
+//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines"); // todo
+        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+
+        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
+        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+
+        // compute differences in stations
+        final Vector<Station> modifiedStations = new Vector<>();
+        for(final Station station : targetStations) {
+            if(!station.equals(sourceCodeToStationsMap.get(station.getStationCode()))) {
+                modifiedStations.add(station);
+            }
+        }
+
+        // compute differences in offlines
+        final Vector<Offline> modifiedOfflines = new Vector<>();
+        for(final Map.Entry<String, Boolean> targetOfflineEntry : targetOfflines.entrySet()) {
+            final String stationCode = targetOfflineEntry.getKey();
+            final boolean offline = targetOfflineEntry.getValue();
+            if(sourceOfflines.get(stationCode) != offline) {
+                modifiedOfflines.add(new Offline(stationCode, offline));
+            }
+        }
+
+        // compute differences in prices
+        final Vector<Price> modifiedPrices = new Vector<>();
+        for(final Map.Entry<String,Price> targetPriceEntry : targetPrices.entrySet()) {
+            final Price targetPrice = targetPriceEntry.getValue();
+            final Price sourcePrice = sourcePrices.get(targetPriceEntry.getKey());
+            if(different(targetPrice.getPrices(), sourcePrice.getPrices())) {
+                modifiedPrices.add(targetPrice);
+            }
+        }
+
+        return new Modifications(modifiedStations, modifiedOfflines, modifiedPrices);
+    }
+
+    public static String formReplyMessage(final long fromTimestamp,
+                                    final Modifications modifications,
+                                    final long processedInMilliseconds,
+                                    final long lastUpdated) {
+        final StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(" { \"status\": \"ok\", \"from\": ")
+                .append(fromTimestamp)
+                .append(", \"stations\": [");
+
+        final Vector<Station> modifiedStations = modifications.modifiedStations;
+        final Vector<Offline> modifiedOfflines = modifications.modifiedOfflines;
+        final Vector<Price> modifiedPrices = modifications.modifiedPrices;
+        final int numberOfModifications = modifiedStations.size() + modifiedOfflines.size() + modifiedPrices.size();
+
+        // add station updates
+        for(int i = 0; i < modifiedStations.size(); i++) {
+            stringBuilder.append(StationParser.toStationJson(modifiedStations.elementAt(i))).append(i < modifiedStations.size() - 1 ? ",\n" : "\n");
+        }
+
+        stringBuilder.append("], \"offlines\": [");
+
+        // add offline updates
+        for(int i = 0; i < modifiedOfflines.size(); i++){
+            stringBuilder.append(OfflineParser.toJson(modifiedOfflines.elementAt(i))).append(i < modifiedOfflines.size() - 1 ? ",\n" : "\n");
+        }
+
+        stringBuilder.append("], \"prices\": [");
+
+        // add price updates
+        for(int i = 0; i < modifiedPrices.size(); i++){
+            stringBuilder.append(PriceParser.toJson(modifiedPrices.elementAt(i))).append(i < modifiedPrices.size() - 1 ? ",\n" : "\n");
+        }
+        stringBuilder.append("], " +
+                "\"numberOfModifications\": ").append(numberOfModifications).append(", " +
+                "\"processedInMilliseconds\": ").append(processedInMilliseconds).append(", " +
+                "\"lastUpdated\": ").append(lastUpdated).append(" }");
+
+        return stringBuilder.toString();
+    }
+
+    private static boolean different(final int [] left, final int [] right) {
+        if(left == null || right == null) throw new NullPointerException("Invalid null argument(s)");
+        if(left.length != right.length) return true;
+        for(int i = 0; i < left.length; i++) {
+            if(left[i] != right[i]) return true;
+        }
+        return false;
+    }
+
+    public static class Modifications implements Serializable {
+
+        private final Vector<Station> modifiedStations;
+        private final Vector<Offline> modifiedOfflines;
+        private final Vector<Price> modifiedPrices;
+
+        Modifications(final Vector<Station> modifiedStations, final Vector<Offline> modifiedOfflines, final Vector<Price> modifiedPrices) {
+            this.modifiedStations = modifiedStations;
+            this.modifiedOfflines = modifiedOfflines;
+            this.modifiedPrices = modifiedPrices;
         }
     }
 }

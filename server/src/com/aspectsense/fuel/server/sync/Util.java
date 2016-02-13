@@ -12,7 +12,7 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.sync;
@@ -29,7 +29,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -59,7 +58,7 @@ public class Util {
         if(document != null) {
             final Node petroleumTypeNode = document.getElementsByTagName("PetroleumType").item(0);
             if(petroleumTypeNode == null) {
-                log.warning("Parsed XML is not valid or does not contain any updates");
+                log.warning("Parsed XML is not valid: " + xml);
                 return petroleumPriceDetails;
             }
             NodeList nodeList = document.getElementsByTagName("PetroleumPriceDetails1");

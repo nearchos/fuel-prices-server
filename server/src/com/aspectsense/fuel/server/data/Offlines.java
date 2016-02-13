@@ -12,7 +12,7 @@
  * Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+ * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.aspectsense.fuel.server.data;
@@ -53,23 +53,4 @@ public class Offlines implements Serializable {
 
     public String getJson() { return json; }
 
-//    public Map<String,Boolean> getStationCodeToOfflineMap() {
-//        final Map<String,Boolean> stationCodeToOfflineMap = new HashMap<>();
-//        try {
-//            final JSONObject jsonObject = new JSONObject(json);
-//
-//            // parse JSON
-//            final JSONArray offlines = jsonObject.getJSONArray("offlines");
-//            for(int i = 0; i < offlines.length(); i++) {
-//                final JSONObject offlinesJSONObject = offlines.getJSONObject(i);
-//                final String stationCode = offlinesJSONObject.getString("stationCode");
-//                final boolean offline = offlinesJSONObject.getBoolean("offline");
-//                stationCodeToOfflineMap.put(stationCode, offline);
-//            }
-//        } catch (JSONException jsone) {
-//            log.severe("JSON Error: " + jsone);
-//            log.severe("Error while parsing JSON: " + json);
-//        }
-//        return stationCodeToOfflineMap;
-//    }
 }

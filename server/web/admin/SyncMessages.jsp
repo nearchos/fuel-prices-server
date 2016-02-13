@@ -12,17 +12,12 @@
   ~ Public License for more details.
   ~
   ~ You should have received a copy of the GNU General Public License
-  ~ along with Foobar. If not, see <http://www.gnu.org/licenses/>.
+  ~ along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
   --%>
 
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.Vector" %>
-<%@ page import="java.util.Map" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.PricesFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.Prices" %>
-<%@ page import="java.util.HashMap" %>
-<%@ page import="com.aspectsense.fuel.server.data.FuelType" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.SyncMessageFactory" %>
 <%@ page import="com.aspectsense.fuel.server.data.SyncMessage" %>
 
@@ -76,7 +71,6 @@ You are not logged in!
         for(int i = 0; i < syncMessages.size(); i++) {
             final SyncMessage syncMessage = syncMessages.elementAt(i);
             final String json = syncMessage.getJson();
-
 %>
         <tr>
             <td><%=json.substring(Math.max(0, json.length() - NUM_OF_CHARACTERS_TO_SHOW))%></td>
@@ -85,12 +79,13 @@ You are not logged in!
             <td>
 <%
             if(i < syncMessages.size() - 1) {
-                final long distanceFromPreviousInMilliseconds =  syncMessage.getLastUpdated() - syncMessages.elementAt(i+1).getLastUpdated();
+                final SyncMessage nextSyncMessage = syncMessages.elementAt(i+1);
+                final long distanceFromPreviousInMilliseconds =  syncMessage.getLastUpdated() - nextSyncMessage.getLastUpdated();
                 long hours = distanceFromPreviousInMilliseconds / (60 * 60 * 1000);
                 long minutes = (distanceFromPreviousInMilliseconds - (hours * 60 * 60 * 1000)) / (60 * 1000);
                 long seconds = (distanceFromPreviousInMilliseconds - (minutes * 60 * 1000)) / 1000L;
 %>
-                <a href=""><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
+                <a href="/admin/difference?from=<%=syncMessage.getLastUpdated()%>&to=<%=nextSyncMessage.getLastUpdated()%>"><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
 <%
             }
 %>

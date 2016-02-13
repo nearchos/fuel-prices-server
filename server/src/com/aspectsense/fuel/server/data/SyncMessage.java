@@ -4,7 +4,8 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 
 /**
- * Created by Nearchos on 07-Feb-16.
+ * @author Nearchos Paspallis
+ * 07-Feb-16
  */
 public class SyncMessage implements Serializable {
 
