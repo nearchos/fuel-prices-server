@@ -101,7 +101,7 @@ public class RequestServlet extends HttpServlet {
                     .param("correlationId", correlationID)
                     .param("fuelType", fuelType)
                     .param("syncStations", Boolean.toString(syncStations))
-                    .countdownMillis(30000)
+                    .countdownMillis(60000) // wait 60 seconds before the poll
                     .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
             printWriter.println("{ \"result\": \"ok\", " +

@@ -13,11 +13,13 @@ public class SyncMessage implements Serializable {
 
     private final String uuid;
     private final String json;
+    private final long numOfChanges;
     private final long lastUpdated;
 
-    public SyncMessage(String uuid, String json, long lastUpdated) {
+    public SyncMessage(String uuid, String json, long numOfChanges, long lastUpdated) {
         this.uuid = uuid;
         this.json = json;
+        this.numOfChanges = numOfChanges;
         this.lastUpdated = lastUpdated;
     }
 
@@ -27,6 +29,10 @@ public class SyncMessage implements Serializable {
 
     public String getJson() {
         return json;
+    }
+
+    public long getNumOfChanges() {
+        return numOfChanges;
     }
 
     public long getLastUpdated() {

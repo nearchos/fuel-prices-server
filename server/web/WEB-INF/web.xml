@@ -166,6 +166,17 @@
     </servlet-mapping>
     <!--End of External API servlet mappings-->
 
+    <!--Generic pages-->
+    <servlet>
+        <servlet-name>PrivacyServlet</servlet-name>
+        <jsp-file>/privacy.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>PrivacyServlet</servlet-name>
+        <url-pattern>/privacy</url-pattern>
+    </servlet-mapping>
+    <!--End of Generic pages-->
+
     <!--Security constraints-->
     <security-constraint>
         <web-resource-collection>

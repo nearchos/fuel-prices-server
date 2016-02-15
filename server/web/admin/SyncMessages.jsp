@@ -65,6 +65,7 @@ You are not logged in!
             <th>SYNC MESSAGE</th>
             <th>TIMESTAMP</th>
             <th>FORMATTED</th>
+            <th>NUM OF CHANGES</th>
             <th>COMPARE</th>
         </tr>
 <%
@@ -76,6 +77,7 @@ You are not logged in!
             <td><%=json.substring(Math.max(0, json.length() - NUM_OF_CHARACTERS_TO_SHOW))%></td>
             <td><%=syncMessage.getLastUpdated()%></td>
             <td><%=timestampFormat.format(new Date(syncMessage.getLastUpdated()))%></td>
+            <td><%=syncMessage.getNumOfChanges()%></td>
             <td>
 <%
             if(i < syncMessages.size() - 1) {

@@ -17,6 +17,7 @@ public class SyncMessageFactory {
     public static final String KIND = "SyncMessage";
 
     public static final String PROPERTY_JSON            = "json";
+    public static final String PROPERTY_NUM_OF_CHANGES  = "num_of_changes";
     public static final String PROPERTY_LAST_UPDATED    = "last_updated";
 
     /**
@@ -67,10 +68,11 @@ public class SyncMessageFactory {
         }
     }
 
-    static public Key addSyncMessage(Text json, long lastUpdated) {
+    static public Key addSyncMessage(Text json, int numOfChanges, long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity syncMessageEntity = new Entity(KIND);
         syncMessageEntity.setProperty(PROPERTY_JSON, json);
+        syncMessageEntity.setProperty(PROPERTY_NUM_OF_CHANGES, numOfChanges);
         syncMessageEntity.setProperty(PROPERTY_LAST_UPDATED, lastUpdated);
         // storing in the datastore
         return datastoreService.put(syncMessageEntity);
@@ -80,6 +82,7 @@ public class SyncMessageFactory {
         return new SyncMessage(
                 KeyFactory.keyToString(entity.getKey()),
                 ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
+                (entity.hasProperty(PROPERTY_NUM_OF_CHANGES) ? (Long) entity.getProperty(PROPERTY_NUM_OF_CHANGES) : -1L),
                 (Long) entity.getProperty(PROPERTY_LAST_UPDATED));
     }
 }

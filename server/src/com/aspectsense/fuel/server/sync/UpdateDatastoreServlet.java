@@ -24,6 +24,7 @@ import com.aspectsense.fuel.server.json.StationsParser;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.appengine.labs.repackaged.org.json.JSONException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -100,8 +101,25 @@ public class UpdateDatastoreServlet extends HttpServlet {
         stringBuilder.append("  ]");
         stringBuilder.append("}");
 
-        final String json = stringBuilder.toString();
-        SyncMessageFactory.addSyncMessage(new Text(json), updateTimestamp);
+        final String currentJson = stringBuilder.toString();
+        // compute number of differences since last update and ignore saving the SyncMessage is there are no changes
+        final SyncMessage latestSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
+        if(latestSyncMessage == null) {
+            SyncMessageFactory.addSyncMessage(new Text(currentJson), 0, updateTimestamp);
+        } else {
+            final String latestJson = latestSyncMessage.getJson();
+            try {
+                final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(latestJson, currentJson);
+                final int numberOfChanges = modifications.getSize();
+                if(numberOfChanges > 0) {
+                    SyncMessageFactory.addSyncMessage(new Text(currentJson), numberOfChanges, updateTimestamp);
+                } else {
+                    log.info("Saving the SyncMessage was not necessary because it has 0 modifications (timestamp: " + updateTimestamp + ")");
+                }
+            } catch (JSONException jsone) {
+                log.warning("Error while compiling current JSON with latest one to decide if we will store it: " + jsone.getMessage());
+            }
+        }
 
         // invalidate all sync cache
         final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(ApiSyncServlet.SYNC_NAMESPACE);
@@ -109,11 +127,13 @@ public class UpdateDatastoreServlet extends HttpServlet {
 
         // todo check if there has been an update in the last couple of hours, and email an error message if not
 
-        // todo delete everything that is older than say 7 days from prices, offlines, and stations (perhaps email them first)
+        // todo delete everything that is older than say 7 days from prices, offlines, and stations
+
+        // todo send weekly emails with updates (only SynCMessages)
 
         printWriter.print("{ \"status\": \"OK\", \"debug\": " + debug + " }\n");
         if(debug) {
-            printWriter.print("DEBUG: Generated JSON:\n" + json);
+            printWriter.print("DEBUG: Generated JSON:\n" + currentJson);
         }
     }
 }

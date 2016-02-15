@@ -46,7 +46,7 @@ import java.util.logging.Logger;
  */
 public class ApiSyncServlet extends HttpServlet {
 
-    private final Logger log = Logger.getLogger("cyprusfuelguide");
+    private static final Logger log = Logger.getLogger("cyprusfuelguide");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
@@ -158,9 +158,14 @@ final JSONArray targetJsonOfflinesArray = o instanceof JSONArray ? (JSONArray) o
     }
 
     public static Modifications computeModifications(final SyncMessage sourceSyncMessage, final SyncMessage targetSyncMessage) throws JSONException {
+        final String sourceJson = sourceSyncMessage.getJson();
+        final String targetJson = targetSyncMessage.getJson();
+        return computeModifications(sourceJson, targetJson);
+    }
+
+    public static Modifications computeModifications(final String sourceJson, final String targetJson) throws JSONException {
 
         // compute source-related data
-        final String sourceJson = sourceSyncMessage.getJson();
         final JSONObject sourceJsonObject = new JSONObject(sourceJson);
 
 final Object s = sourceJsonObject.get("stations");
@@ -181,7 +186,6 @@ final JSONArray sourceOfflinesArray = so instanceof JSONArray ? (JSONArray) so :
         final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourcePricesArray);
 
         // compute target-related data
-        final String targetJson = targetSyncMessage.getJson();
         final JSONObject targetJsonObject = new JSONObject(targetJson);
 
 final Object ts = targetJsonObject.get("stations");
@@ -210,7 +214,7 @@ final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) 
         for(final Map.Entry<String, Boolean> targetOfflineEntry : targetOfflines.entrySet()) {
             final String stationCode = targetOfflineEntry.getKey();
             final boolean offline = targetOfflineEntry.getValue();
-            if(sourceOfflines.get(stationCode) != offline) {
+            if((!sourceOfflines.containsKey(stationCode)) || sourceOfflines.get(stationCode) != offline) {
                 modifiedOfflines.add(new Offline(stationCode, offline));
             }
         }
@@ -220,7 +224,7 @@ final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) 
         for(final Map.Entry<String,Price> targetPriceEntry : targetPrices.entrySet()) {
             final Price targetPrice = targetPriceEntry.getValue();
             final Price sourcePrice = sourcePrices.get(targetPriceEntry.getKey());
-            if(different(targetPrice.getPrices(), sourcePrice.getPrices())) {
+            if(sourcePrice == null || different(targetPrice.getPrices(), sourcePrice.getPrices())) {
                 modifiedPrices.add(targetPrice);
             }
         }
@@ -240,7 +244,7 @@ final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) 
         final Vector<Station> modifiedStations = modifications.modifiedStations;
         final Vector<Offline> modifiedOfflines = modifications.modifiedOfflines;
         final Vector<Price> modifiedPrices = modifications.modifiedPrices;
-        final int numberOfModifications = modifiedStations.size() + modifiedOfflines.size() + modifiedPrices.size();
+        final int numberOfModifications = modifications.getSize();
 
         // add station updates
         for(int i = 0; i < modifiedStations.size(); i++) {
@@ -287,6 +291,10 @@ final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) 
             this.modifiedStations = modifiedStations;
             this.modifiedOfflines = modifiedOfflines;
             this.modifiedPrices = modifiedPrices;
+        }
+
+        public int getSize() {
+            return modifiedStations.size() + modifiedOfflines.size() + modifiedPrices.size();
         }
     }
 }
