@@ -127,4 +127,18 @@ public class Station implements Serializable {
         result = 31 * result + (int) (temp ^ (temp >>> 32));
         return result;
     }
+
+    @Override
+    public String toString() {
+        return "Station{" +
+                "stationCode='" + stationCode + '\'' +
+                ", stationName='" + stationName + '\'' +
+                ", stationTelNo='" + stationTelNo + '\'' +
+                ", stationCity='" + stationCity + '\'' +
+                ", stationDistrict='" + stationDistrict + '\'' +
+                ", stationAddress='" + stationAddress + '\'' +
+                ", stationLatitude=" + stationLatitude +
+                ", stationLongitude=" + stationLongitude +
+                '}';
+    }
 }

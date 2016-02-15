@@ -94,6 +94,7 @@ public class AdminSyncServlet extends HttpServlet {
                 delay += 60000; // put 60 seconds between individual request tasks
             }
 
+            delay += 60000; // put an additional 60 seconds before the update call (as the last poll will be executed at +90, the update is scheduled for +120)
             // finally, schedule the datastore update servlet -- this will normally be scheduled 30 seconds after the last poll
             TaskOptions taskOptions = TaskOptions.Builder
                     .withUrl("/sync/updateDatastore")

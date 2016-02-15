@@ -119,14 +119,10 @@ public class ApiSyncServlet extends HttpServlet {
         final String targetJson = targetSyncMessage.getJson();
         final JSONObject targetJsonObject = new JSONObject(targetJson);
 
-final Object s = targetJsonObject.get("stations");
-final JSONArray targetStationsArray = s instanceof JSONArray ? ((JSONArray) s) : ((JSONObject) s).getJSONArray("stations");
-//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations"); //todo
+        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
         final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
 
-final Object o = targetJsonObject.get("offlines");
-final JSONArray targetJsonOfflinesArray = o instanceof JSONArray ? (JSONArray) o : ((JSONObject) o).getJSONArray("offlines");
-//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines"); // todo
+        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
         final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
 
         final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
@@ -168,18 +164,10 @@ final JSONArray targetJsonOfflinesArray = o instanceof JSONArray ? (JSONArray) o
         // compute source-related data
         final JSONObject sourceJsonObject = new JSONObject(sourceJson);
 
-final Object s = sourceJsonObject.get("stations");
-final JSONArray sourceStationsArray = s instanceof JSONArray ? ((JSONArray) s) : ((JSONObject) s).getJSONArray("stations");
-//        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations"); // todo
-        final Vector<Station> sourceStations = StationsParser.fromStationsJsonArray(sourceStationsArray);
-        final Map<String, Station> sourceCodeToStationsMap = new HashMap<>();
-        for(final Station station : sourceStations) {
-            sourceCodeToStationsMap.put(station.getStationCode(), station);
-        }
+        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations");
+        final Map<String, Station> sourceCodeToStationsMap = StationsParser.jsonArrayToMap(sourceStationsArray);
 
-final Object so = sourceJsonObject.get("offlines");
-final JSONArray sourceOfflinesArray = so instanceof JSONArray ? (JSONArray) so : ((JSONObject) so).getJSONArray("offlines");
-//        final JSONArray sourceOfflinesArray = sourceJsonObject.getJSONArray("offlines"); // todo
+        final JSONArray sourceOfflinesArray = sourceJsonObject.getJSONArray("offlines");
         final Map<String, Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceOfflinesArray);
 
         final JSONArray sourcePricesArray = sourceJsonObject.getJSONArray("prices");
@@ -188,14 +176,10 @@ final JSONArray sourceOfflinesArray = so instanceof JSONArray ? (JSONArray) so :
         // compute target-related data
         final JSONObject targetJsonObject = new JSONObject(targetJson);
 
-final Object ts = targetJsonObject.get("stations");
-final JSONArray targetStationsArray = ts instanceof JSONArray ? ((JSONArray) ts) : ((JSONObject) ts).getJSONArray("stations");
-//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations"); // todo
+        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
         final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
 
-final Object to = targetJsonObject.get("offlines");
-final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) to : ((JSONObject) to).getJSONArray("offlines");
-//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines"); // todo
+        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
         final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
 
         final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
@@ -295,6 +279,18 @@ final JSONArray targetJsonOfflinesArray = to instanceof JSONArray ? (JSONArray) 
 
         public int getSize() {
             return modifiedStations.size() + modifiedOfflines.size() + modifiedPrices.size();
+        }
+
+        public Vector<Station> getModifiedStations() {
+            return modifiedStations;
+        }
+
+        public Vector<Offline> getModifiedOfflines() {
+            return modifiedOfflines;
+        }
+
+        public Vector<Price> getModifiedPrices() {
+            return modifiedPrices;
         }
     }
 }

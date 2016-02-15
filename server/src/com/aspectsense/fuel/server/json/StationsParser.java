@@ -6,6 +6,8 @@ import com.google.appengine.labs.repackaged.org.json.JSONArray;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -47,5 +49,14 @@ public class StationsParser {
         }
 
         return stations;
+    }
+
+    public static Map<String,Station> jsonArrayToMap(final JSONArray stationsJsonArray) {
+        final Vector<Station> allStations = fromStationsJsonArray(stationsJsonArray);
+        final Map<String,Station> map = new HashMap<>();
+        for(final Station station : allStations) {
+            map.put(station.getStationCode(), station);
+        }
+        return map;
     }
 }
