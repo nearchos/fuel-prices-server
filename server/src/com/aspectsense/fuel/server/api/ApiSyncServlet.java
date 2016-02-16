@@ -98,7 +98,8 @@ public class ApiSyncServlet extends HttpServlet {
                     final SyncMessage sourceSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
                     if(sourceSyncMessage == null) {
                         log.warning("No SyncMessage in datastore for given timestamp:" + fromTimestamp);
-                        return "{ \"status\": \"error\", \"message\": \"No SyncMessage in datastore for given timestamp:" + fromTimestamp + "\" }";
+                        // revert to sending back the whole Sync message
+                        return getSyncMessageAsJSON(0L);
                     } else {
                         modifications = computeModifications(sourceSyncMessage, targetSyncMessage);
                     }
