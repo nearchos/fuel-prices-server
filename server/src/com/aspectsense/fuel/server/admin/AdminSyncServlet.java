@@ -46,7 +46,7 @@ public class AdminSyncServlet extends HttpServlet {
     public static final String PARAMETER_MAGIC = "MAGIC";
     public static final String PARAMETER_SYNC_ON_CRON = "SYNC_ON_CRON";
 
-    Logger log = Logger.getLogger("cyprusfuelguide");
+    private Logger log = Logger.getLogger("cyprusfuelguide");
 
     private static String magic = null;
 
@@ -69,29 +69,32 @@ public class AdminSyncServlet extends HttpServlet {
             }
         }
 
-
         boolean forceSync = request.getParameter("forceSync") != null;
 
         final Parameter syncOnCronParameter = ParameterFactory.getParameterByName(PARAMETER_SYNC_ON_CRON);
         final boolean syncOnCron = syncOnCronParameter != null && "true".equalsIgnoreCase(syncOnCronParameter.getParameterValue());
 
-        if(forceSync || syncOnCron) { // only proceed if either: 1. the 'forceSync' parameter was set, or 2. the syncOnCron parameter is set to true
+        if(forceSync || syncOnCron) { // only proceed if either: 1. the 'forceSync' parameter was set int the URL, or 2. the syncOnCron parameter is set to true
             log.info("Scheduling sync events ...");
 
             final Queue queue = QueueFactory.getDefaultQueue();
 
+
             long delay = 0L;
+            boolean oneTimeFire = syncStations; // this is used so that the syncStations is executed only the first time (if at any)
+
             // schedule the request/poll servlets for each fuel type
             for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
                 TaskOptions taskOptions = TaskOptions.Builder
                         .withUrl("/sync/request")
                         .param("magic", magic)
                         .param("fuelType", fuelType.getCodeAsString())
-                        .param("syncStations", Boolean.toString(syncStations))
+                        .param("syncStations", Boolean.toString(oneTimeFire))
                         .countdownMillis(delay)
                         .method(TaskOptions.Method.GET);
                 queue.add(taskOptions);
                 delay += 60000; // put 60 seconds between individual request tasks
+                oneTimeFire = false;
             }
 
             delay += 60000; // put an additional 60 seconds before the update call (as the last poll will be executed at +90, the update is scheduled for +120)
