@@ -1,7 +1,12 @@
 package com.aspectsense.fuel.server.json;
 
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
+import com.google.appengine.labs.repackaged.org.json.JSONArray;
+import com.google.appengine.labs.repackaged.org.json.JSONException;
+import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -33,5 +38,22 @@ public class PricesParser {
         jsonStringBuilder.append("]\n");
 
         return jsonStringBuilder.toString();
+    }
+
+    public static Map<String,Integer> fromPricesJson(final String pricesJson) {
+        final Map<String,Integer> pricesMap = new HashMap<>();
+        try {
+            final JSONArray jsonArray = new JSONArray(pricesJson);
+            for(int i = 0; i < jsonArray.length(); i++) {
+                final JSONObject jsonObject = jsonArray.getJSONObject(i);
+                final String stationCode = jsonObject.getString("stationCode");
+                final int price = jsonObject.getInt("price");
+                pricesMap.put(stationCode, price);
+            }
+        } catch (JSONException jsone) {
+            throw new RuntimeException(jsone);
+        }
+
+        return pricesMap;
     }
 }

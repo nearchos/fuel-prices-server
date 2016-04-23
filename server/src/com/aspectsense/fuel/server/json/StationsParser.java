@@ -51,6 +51,14 @@ public class StationsParser {
         return stations;
     }
 
+    public static Map<String,Station> jsonArrayToMap(final String json) {
+        try {
+            return jsonArrayToMap(new JSONArray(json));
+        } catch (JSONException jsone) {
+            throw new RuntimeException(jsone);
+        }
+    }
+
     public static Map<String,Station> jsonArrayToMap(final JSONArray stationsJsonArray) {
         final Vector<Station> allStations = fromStationsJsonArray(stationsJsonArray);
         final Map<String,Station> map = new HashMap<>();

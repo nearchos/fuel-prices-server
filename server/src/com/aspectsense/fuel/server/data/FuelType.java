@@ -9,11 +9,11 @@ import java.util.Map;
  */
 public enum FuelType {
 
-    UNLEADED_95(1, "unleaded 95"),
-    UNLEADED_98(2, "unleaded 98"),
-    DIESEL(3, "diesel"),
-    HEATING(4, "heating"),
-    KEROSENE(5, "kerosene");
+    UNLEADED_95(1, "unleaded 95",   "αμόλυβδη 95"),
+    UNLEADED_98(2, "unleaded 98",   "αμόλυβδη 98"),
+    DIESEL(     3, "diesel",        "πετρέλαιο diesel"),
+    HEATING(    4, "heating",       "πετρέλαιο θέρμανσης"),
+    KEROSENE(   5, "kerosene",      "κηροζίνη");
 
     public static final FuelType [] ALL_FUEL_TYPES = new FuelType[] {
             UNLEADED_95,
@@ -24,11 +24,13 @@ public enum FuelType {
     };
 
     private final int code;
-    private final String name;
+    private final String nameEn;
+    private final String nameEl;
 
-    FuelType(final int code, final String name) {
+    FuelType(final int code, final String nameEn, final String nameEl) {
         this.code = code;
-        this.name = name;
+        this.nameEn = nameEn;
+        this.nameEl = nameEl;
     }
 
     public int getCode() {
@@ -40,12 +42,20 @@ public enum FuelType {
     }
 
     public String getName() {
-        return name;
+        return nameEn;
+    }
+
+    public String getNameEn() {
+        return nameEn;
+    }
+
+    public String getNameEl() {
+        return nameEl;
     }
 
     @Override
     public String toString() {
-        return "FuelType{code=" + code + ", name='" + name + "\'}";
+        return "FuelType{code=" + code + ", name='" + nameEn + "\'}";
     }
 
     public static Map<Integer,FuelType> getCodeToFuelTypeMap() {

@@ -175,7 +175,30 @@
         <servlet-name>PrivacyServlet</servlet-name>
         <url-pattern>/privacy</url-pattern>
     </servlet-mapping>
+
+    <!--todo edit and/or delete-->
+    <servlet>
+        <servlet-name>StationServlet</servlet-name>
+        <jsp-file>/station.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StationServlet</servlet-name>
+        <url-pattern>/station</url-pattern>
+    </servlet-mapping>
+    <servlet>
+        <servlet-name>TempServlet</servlet-name>
+        <jsp-file>/home.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>TempServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>TempServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
     <!--End of Generic pages-->
+
 
     <!--Security constraints-->
     <security-constraint>
