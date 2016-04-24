@@ -59,6 +59,8 @@
             z-index: 900;
         }
     </style>
+    <link rel="alternate" href="android-app://com.aspectsense.fuelguidecy/http/cyprusfuelguide.com/station" />
+
 </head>
 <body>
 
