@@ -31,6 +31,7 @@
     <static-files>
         <include path="/robots.txt" />
         <include path="/favicon.ico" />
+        <include path="/google79bd7e77f9ffe0e4.html" />
         <include path="/images/**" />
         <include path="/css/**" />
     </static-files>
