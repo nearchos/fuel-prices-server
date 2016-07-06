@@ -134,6 +134,9 @@ public class ApiSyncServlet extends HttpServlet {
             modifiedStations.add(station);
         }
 
+        // no station was removed
+        final Vector<Station> removedStations = new Vector<>();
+
         // add all offlines
         final Vector<Offline> modifiedOfflines = new Vector<>();
         for(final Map.Entry<String, Boolean> targetOfflineEntry : targetOfflines.entrySet()) {
@@ -149,7 +152,7 @@ public class ApiSyncServlet extends HttpServlet {
             modifiedPrices.add(targetPrice);
         }
 
-        return new Modifications(modifiedStations, modifiedOfflines, modifiedPrices);
+        return new Modifications(modifiedStations, removedStations, modifiedOfflines, modifiedPrices);
 
     }
 
@@ -193,6 +196,14 @@ public class ApiSyncServlet extends HttpServlet {
             }
         }
 
+        // compute removed stations
+        final Vector<Station> removedStations = new Vector<>();
+        for(final Station sourceStation : sourceCodeToStationsMap.values()) {
+            if(!targetStations.contains(sourceStation)) {
+                removedStations.add(sourceStation);
+            }
+        }
+
         // compute differences in offlines
         final Vector<Offline> modifiedOfflines = new Vector<>();
         for(final Map.Entry<String, Boolean> targetOfflineEntry : targetOfflines.entrySet()) {
@@ -213,7 +224,7 @@ public class ApiSyncServlet extends HttpServlet {
             }
         }
 
-        return new Modifications(modifiedStations, modifiedOfflines, modifiedPrices);
+        return new Modifications(modifiedStations, removedStations, modifiedOfflines, modifiedPrices);
     }
 
     public static String formReplyMessage(final long fromTimestamp,
@@ -226,6 +237,7 @@ public class ApiSyncServlet extends HttpServlet {
                 .append(", \"stations\": [");
 
         final Vector<Station> modifiedStations = modifications.modifiedStations;
+        final Vector<Station> removedStations = modifications.removedStations;
         final Vector<Offline> modifiedOfflines = modifications.modifiedOfflines;
         final Vector<Price> modifiedPrices = modifications.modifiedPrices;
         final int numberOfModifications = modifications.getSize();
@@ -233,6 +245,13 @@ public class ApiSyncServlet extends HttpServlet {
         // add station updates
         for(int i = 0; i < modifiedStations.size(); i++) {
             stringBuilder.append(StationParser.toStationJson(modifiedStations.elementAt(i))).append(i < modifiedStations.size() - 1 ? ",\n" : "\n");
+        }
+
+        stringBuilder.append("], \"removedStations\": [");
+
+        // add removed stations
+        for(int i = 0; i < removedStations.size(); i++) {
+            stringBuilder.append(StationParser.toStationJson(removedStations.elementAt(i))).append(i < modifiedStations.size() - 1 ? ",\n" : "\n");
         }
 
         stringBuilder.append("], \"offlines\": [");
@@ -268,11 +287,13 @@ public class ApiSyncServlet extends HttpServlet {
     public static class Modifications implements Serializable {
 
         private final Vector<Station> modifiedStations;
+        private final Vector<Station> removedStations;
         private final Vector<Offline> modifiedOfflines;
         private final Vector<Price> modifiedPrices;
 
-        Modifications(final Vector<Station> modifiedStations, final Vector<Offline> modifiedOfflines, final Vector<Price> modifiedPrices) {
+        Modifications(final Vector<Station> modifiedStations, final Vector<Station> removedStations, final Vector<Offline> modifiedOfflines, final Vector<Price> modifiedPrices) {
             this.modifiedStations = modifiedStations;
+            this.removedStations = removedStations;
             this.modifiedOfflines = modifiedOfflines;
             this.modifiedPrices = modifiedPrices;
         }
@@ -283,6 +304,10 @@ public class ApiSyncServlet extends HttpServlet {
 
         public Vector<Station> getModifiedStations() {
             return modifiedStations;
+        }
+
+        public Vector<Station> getRemovedStations() {
+            return removedStations;
         }
 
         public Vector<Offline> getModifiedOfflines() {

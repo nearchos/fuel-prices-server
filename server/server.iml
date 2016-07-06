@@ -13,7 +13,7 @@
     </facet>
     <facet type="google-app-engine" name="Google App Engine">
       <configuration>
-        <sdk-home-path>C:/Program Files/appengine-java-sdk-1.9.32</sdk-home-path>
+        <sdk-home-path>C:/Program Files/appengine-java-sdk-1.9.38</sdk-home-path>
         <run-enhancer-on-make>true</run-enhancer-on-make>
         <files-to-enhance>
           <file path="$MODULE_DIR$/src" />
@@ -29,7 +29,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="AppEngine Dev 1.9.32" level="application_server_libraries" />
-    <orderEntry type="library" name="AppEngine API" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="AppEngine Dev 1.9.38" level="application_server_libraries" />
+    <orderEntry type="library" name="AppEngine API 1.9.38" level="application" />
   </component>
 </module>

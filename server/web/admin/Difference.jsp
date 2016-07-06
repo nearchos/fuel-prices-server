@@ -104,6 +104,7 @@ You are not logged in!
                 final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetJsonObject.getJSONArray("prices"));
 
                 final Vector<Station> modifiedStations = modifications.getModifiedStations();
+                final Vector<Station> removedStations = modifications.getRemovedStations();
                 final Vector<Offline> modifiedOfflines= modifications.getModifiedOfflines();
                 final Vector<Price> modifiedPrices = modifications.getModifiedPrices();
                 for(final Station station : modifiedStations) {
@@ -111,6 +112,15 @@ You are not logged in!
         <tr bgcolor="aqua">
             <td><%=sourceStations.get(station.getStationCode())%></td>
             <td><%=targetStations.get(station.getStationCode())%></td>
+        </tr>
+<%
+                }
+
+                for(final Station station : removedStations) {
+%>
+        <tr bgcolor="#8b0000">
+            <td><%=sourceStations.get(station.getStationCode())%></td>
+            <td>REMOVED</td>
         </tr>
 <%
                 }
