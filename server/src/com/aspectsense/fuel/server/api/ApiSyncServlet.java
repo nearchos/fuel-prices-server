@@ -247,11 +247,11 @@ public class ApiSyncServlet extends HttpServlet {
             stringBuilder.append(StationParser.toStationJson(modifiedStations.elementAt(i))).append(i < modifiedStations.size() - 1 ? ",\n" : "\n");
         }
 
-        stringBuilder.append("], \"removedStations\": [");
+        stringBuilder.append("], \"removedStations\": [\n");
 
         // add removed stations
         for(int i = 0; i < removedStations.size(); i++) {
-            stringBuilder.append(StationParser.toStationJson(removedStations.elementAt(i))).append(i < modifiedStations.size() - 1 ? ",\n" : "\n");
+            stringBuilder.append(StationParser.toStationJson(removedStations.elementAt(i))).append(i < removedStations.size() - 1 ? ",\n" : "\n");
         }
 
         stringBuilder.append("], \"offlines\": [");
