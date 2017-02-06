@@ -124,6 +124,16 @@
         <servlet-name>AdminSyncServlet</servlet-name>
         <url-pattern>/admin/sync-stations</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>WeeklyReportServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.WeeklyReportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WeeklyReportServlet</servlet-name>
+        <url-pattern>/admin/weekly-report</url-pattern>
+    </servlet-mapping>
+
     <!--End of Admin Mappings-->
 
     <!--Internal Sync servlet mappings-->

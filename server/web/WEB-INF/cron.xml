@@ -32,4 +32,11 @@
         <timezone>Asia/Nicosia</timezone>
     </cron>
 
+    <cron>
+        <url>/admin/weekly-report</url>
+        <description>Send weekly report by email</description>
+        <schedule>every saturday 02:30</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
 </cronentries>

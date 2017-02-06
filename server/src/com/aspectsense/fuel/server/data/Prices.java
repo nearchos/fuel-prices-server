@@ -63,24 +63,41 @@ public class Prices implements Serializable {
         return lastUpdated;
     }
 
-    public Map<String,Integer> getStationCodeToPriceInMillieurosMap() {
-        final Map<String,Integer> stationCodeToPriceInMillieurosMap = new HashMap<>();
+    public Map<String,PriceInMillieurosAndTimestamp> getStationCodeToPriceInMillieurosAndTimestampMap() {
+        final Map<String,PriceInMillieurosAndTimestamp> stationCodeToPriceInMillieurosAndTimestampMap = new HashMap<>();
         try {
             // parse JSON
             final JSONArray prices = new JSONArray(json);
             for(int i = 0; i < prices.length(); i++) {
-                JSONObject price = prices.getJSONObject(i);
+                final JSONObject price = prices.getJSONObject(i);
                 final String stationCode = price.getString("stationCode");
-                final String priceString = price.getString("price");
-                int priceInMillieuros;
-                try { priceInMillieuros = (int) Double.parseDouble(priceString); } catch (NumberFormatException nfe) { priceInMillieuros = 0; }
-                stationCodeToPriceInMillieurosMap.put(stationCode, priceInMillieuros);
+                final int priceInMillieuros = price.getInt("price");
+                final long timestamp = price.has("timestamp") ? price.getLong("timestamp") : 0;
+                stationCodeToPriceInMillieurosAndTimestampMap.put(stationCode, new PriceInMillieurosAndTimestamp(priceInMillieuros, timestamp));
             }
         } catch (JSONException jsone) {
             log.severe("JSON Error: " + jsone);
             log.severe("Error while parsing JSON: " + json);
             throw new RuntimeException(jsone);
         }
-        return stationCodeToPriceInMillieurosMap;
+        return stationCodeToPriceInMillieurosAndTimestampMap;
+    }
+
+    public class PriceInMillieurosAndTimestamp {
+        private int priceInMillieuros;
+        private long timestamp;
+
+        public PriceInMillieurosAndTimestamp(final int priceInMillieuros, final long timestamp) {
+            this.priceInMillieuros = priceInMillieuros;
+            this.timestamp = timestamp;
+        }
+
+        public int getPriceInMillieuros() {
+            return priceInMillieuros;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
     }
 }

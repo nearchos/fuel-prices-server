@@ -58,7 +58,7 @@ You are not logged in!
         final Vector<SyncMessage> syncMessages = SyncMessageFactory.queryLatestSyncMessages(NUM_OF_ENTRIES_TO_RETURN);
 %>
 
-<h1>Console</h1>
+<h1>Sync Messages</h1>
 
     <table border="1">
         <tr>
@@ -87,7 +87,7 @@ You are not logged in!
                 long minutes = (distanceFromPreviousInMilliseconds - (hours * 60 * 60 * 1000)) / (60 * 1000);
                 long seconds = (distanceFromPreviousInMilliseconds - (minutes * 60 * 1000)) / 1000L;
 %>
-                <a href="/admin/difference?from=<%=syncMessage.getLastUpdated()%>&to=<%=nextSyncMessage.getLastUpdated()%>"><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
+                <a href="/admin/difference?from=<%=nextSyncMessage.getLastUpdated()%>&to=<%=syncMessage.getLastUpdated()%>"><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
 <%
             }
 %>

@@ -50,7 +50,8 @@ public class PricesFactory {
     public static void addPrices(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final long lastUpdated) {
         // add the Prices to the datastore ONLY IF non empty
         if(!petroleumPriceDetails.isEmpty()) {
-            final String json = PricesParser.toPricesJson(petroleumPriceDetails);
+            final Prices latestPrices = PricesFactory.getLatestPrices(fuelType);
+            final String json = PricesParser.toPricesJson(petroleumPriceDetails, latestPrices, lastUpdated);
             final Text jsonText = new Text(json);
             addPrices(fuelType, jsonText, lastUpdated);
         }

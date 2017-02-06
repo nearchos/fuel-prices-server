@@ -20,6 +20,7 @@ package com.aspectsense.fuel.server.sync;
 import com.aspectsense.fuel.server.api.ApiSyncServlet;
 import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.*;
+import com.aspectsense.fuel.server.json.PriceParser;
 import com.aspectsense.fuel.server.json.StationsParser;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.memcache.MemcacheService;
@@ -67,10 +68,11 @@ public class UpdateDatastoreServlet extends HttpServlet {
         final Vector<Station> allStations = stations != null ? StationsParser.fromStationsJson(stations.getJson()) : new Vector<Station>();
         final Offlines offlines = OfflinesFactory.getLatestOfflines();
 
-        final Map<FuelType, Map<String,Integer>> fuelTypeToStationCodeToPriceInMillieurosMap = new HashMap<>();
+        final Map<FuelType, Map<String,Prices.PriceInMillieurosAndTimestamp>> fuelTypeToStationCodeToPriceInMillieurosMap = new HashMap<>();
         for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
             final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
-            fuelTypeToStationCodeToPriceInMillieurosMap.put(fuelType, prices.getStationCodeToPriceInMillieurosMap());
+            assert prices != null;
+            fuelTypeToStationCodeToPriceInMillieurosMap.put(fuelType, prices.getStationCodeToPriceInMillieurosAndTimestampMap());
         }
 
         final StringBuilder stringBuilder = new StringBuilder();
@@ -82,26 +84,18 @@ public class UpdateDatastoreServlet extends HttpServlet {
         final int numOfStations = allStations.size();
         int counter  = 0;
         for(final Station station : allStations) {
-            stringBuilder.append("    { \"stationCode\": \"").append(station.getStationCode()).append("\", \"prices\": [ ");
-            int fuelTypeCounter = 0;
-            for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-                final Map<String,Integer> stationCodeToPriceInMillieurosMap = fuelTypeToStationCodeToPriceInMillieurosMap.get(fuelType);
-                final int priceInMillieuros;
-                if(stationCodeToPriceInMillieurosMap == null) {
-                    priceInMillieuros = 0;
-                } else if(stationCodeToPriceInMillieurosMap.containsKey(station.getStationCode())) {
-                    priceInMillieuros = stationCodeToPriceInMillieurosMap.get(station.getStationCode());
-                } else {
-                    priceInMillieuros = 0;
-                }
-                stringBuilder.append(priceInMillieuros).append(fuelTypeCounter++ < FuelType.ALL_FUEL_TYPES.length - 1 ? ", " : "");
-            }
-            stringBuilder.append(++counter >= numOfStations ? " ] }\n" : " ] },\n");
+            final String stationCode = station.getStationCode();
+            final Price price = getPrice(stationCode, fuelTypeToStationCodeToPriceInMillieurosMap);
+            stringBuilder.append("    ").append(PriceParser.toJson(price));
+            stringBuilder.append(++counter >= numOfStations ? "\n" : ",\n");
         }
         stringBuilder.append("  ]");
         stringBuilder.append("}");
 
         final String currentJson = stringBuilder.toString();
+
+        int numberOfChanges = 0;
+
         // compute number of differences since last update and ignore saving the SyncMessage is there are no changes
         final SyncMessage latestSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
         if(latestSyncMessage == null) {
@@ -110,7 +104,7 @@ public class UpdateDatastoreServlet extends HttpServlet {
             final String latestJson = latestSyncMessage.getJson();
             try {
                 final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(latestJson, currentJson);
-                final int numberOfChanges = modifications.getSize();
+                numberOfChanges = modifications.getSize();
                 if(numberOfChanges > 0) {
                     SyncMessageFactory.addSyncMessage(new Text(currentJson), numberOfChanges, updateTimestamp);
                 } else {
@@ -125,15 +119,36 @@ public class UpdateDatastoreServlet extends HttpServlet {
         final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(ApiSyncServlet.SYNC_NAMESPACE);
         memcacheService.clearAll();
 
-        // todo check if there has been an update in the last couple of hours, and email an error message if not
-
-        // todo delete everything that is older than say 7 days from prices, offlines, and stations
-
-        // todo send weekly emails with updates (only SynCMessages)
+        // check if there has been an update in the last 24 hours...
+        if(latestSyncMessage != null && numberOfChanges == 0) {
+            final long lastUpdated = latestSyncMessage.getLastUpdated();
+            if(System.currentTimeMillis() - lastUpdated > 24L*60*60*1000) {
+                // todo send an email with a warning message if no updates
+            }
+        }
 
         printWriter.print("{ \"status\": \"OK\", \"debug\": " + debug + " }\n");
         if(debug) {
             printWriter.print("DEBUG: Generated JSON:\n" + currentJson);
         }
+    }
+
+    private Price getPrice(final String stationCode, final Map<FuelType, Map<String,Prices.PriceInMillieurosAndTimestamp>> fuelTypeToStationCodeToPriceInMillieurosMap) {
+        final int [] prices = new int[FuelType.ALL_FUEL_TYPES.length];
+        final long [] timestamps = new long[FuelType.ALL_FUEL_TYPES.length];
+        int counter = 0;
+        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
+            final Map<String,Prices.PriceInMillieurosAndTimestamp> stationCodeToPriceInMillieurosAndTimestampMap = fuelTypeToStationCodeToPriceInMillieurosMap.get(fuelType);
+            final Prices.PriceInMillieurosAndTimestamp priceInMillieurosAndTimestamp = stationCodeToPriceInMillieurosAndTimestampMap.get(stationCode);
+            if(priceInMillieurosAndTimestamp != null) {
+                prices[counter] = priceInMillieurosAndTimestamp.getPriceInMillieuros();
+                timestamps[counter] = priceInMillieurosAndTimestamp.getTimestamp();
+            } else {
+                prices[counter] = 0;
+                timestamps[counter] = 0;
+            }
+            counter++;
+        }
+        return new Price(stationCode, prices, timestamps);
     }
 }

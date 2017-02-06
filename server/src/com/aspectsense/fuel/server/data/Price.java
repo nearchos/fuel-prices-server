@@ -11,10 +11,12 @@ public class Price implements Serializable {
 
     private final String stationCode;
     private final int [] prices;
+    private final long [] timestamps;
 
-    public Price(String stationCode, int [] prices) {
+    public Price(final String stationCode, final int [] prices, final long [] timestamps) {
         this.stationCode = stationCode;
         this.prices = prices;
+        this.timestamps = timestamps;
     }
 
     public String getStationCode() {
@@ -25,8 +27,12 @@ public class Price implements Serializable {
         return prices;
     }
 
+    public long[] getTimestamps() {
+        return timestamps;
+    }
+
     @Override
     public String toString() {
-        return stationCode + "-> " + Arrays.toString(prices);
+        return stationCode + " -> " + Arrays.toString(prices) + " (" + Arrays.toString(timestamps) + ")";
     }
 }

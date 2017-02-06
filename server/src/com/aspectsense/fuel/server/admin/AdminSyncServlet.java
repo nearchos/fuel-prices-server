@@ -74,11 +74,10 @@ public class AdminSyncServlet extends HttpServlet {
         final Parameter syncOnCronParameter = ParameterFactory.getParameterByName(PARAMETER_SYNC_ON_CRON);
         final boolean syncOnCron = syncOnCronParameter != null && "true".equalsIgnoreCase(syncOnCronParameter.getParameterValue());
 
-        if(forceSync || syncOnCron) { // only proceed if either: 1. the 'forceSync' parameter was set int the URL, or 2. the syncOnCron parameter is set to true
+        if(forceSync || syncOnCron) { // only proceed if either: 1. the 'forceSync' parameter was set via the URL, or 2. the syncOnCron parameter is set to true
             log.info("Scheduling sync events ...");
 
             final Queue queue = QueueFactory.getDefaultQueue();
-
 
             long delay = 0L;
             boolean oneTimeFire = syncStations; // this is used so that the syncStations is executed only the first time (if at any)
@@ -106,7 +105,7 @@ public class AdminSyncServlet extends HttpServlet {
                     .method(TaskOptions.Method.GET);
             queue.add(taskOptions);
         } else {
-            log.info("SKIPPING: Scheduling sync events (parameter SYNC_ON_CRON) is true");
+            log.info("SKIPPING: Scheduling sync events (neither parameter 'forceSync' in URL or 'SYNC_ON_CRON' were true)");
         }
     }
 }

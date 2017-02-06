@@ -49,4 +49,8 @@ public class Parameter implements Serializable {
     public String getParameterValue() {
         return value;
     }
+
+    public boolean getValueAsBoolean() {
+        return "true".equalsIgnoreCase(value);
+    }
 }

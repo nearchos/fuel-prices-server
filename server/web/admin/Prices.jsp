@@ -52,7 +52,7 @@ You are not logged in!
 <p>You are not admin!</p>
 <%
     } else {
-        final Map<FuelType,Map<String,Integer>> fuelTypesToPricesMap = new HashMap<>();
+        final Map<FuelType,Map<String,Prices.PriceInMillieurosAndTimestamp>> fuelTypesToPricesMap = new HashMap<>();
 %>
 
 <h1>Prices</h1>
@@ -66,7 +66,7 @@ You are not logged in!
 <%
         for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
             final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
-            fuelTypesToPricesMap.put(fuelType, prices.getStationCodeToPriceInMillieurosMap());
+            fuelTypesToPricesMap.put(fuelType, prices.getStationCodeToPriceInMillieurosAndTimestampMap());
 %>
             <th>
                 <%=fuelType.getName()%>
@@ -89,13 +89,14 @@ You are not logged in!
             <td><%=station.getStationAddress()%>, <%=station.getStationDistrict()%>, <%=station.getStationCity()%></td>
 <%
             for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-                final Map<String,Integer> stationCodeToPriceInMillieurosMap = fuelTypesToPricesMap.get(fuelType);
+                final Map<String,Prices.PriceInMillieurosAndTimestamp> stationCodeToPriceInMillieurosAndTimestampMap = fuelTypesToPricesMap.get(fuelType);
                 final String priceFormatted;
-                if(stationCodeToPriceInMillieurosMap == null) {
+                if(stationCodeToPriceInMillieurosAndTimestampMap == null) {
                     priceFormatted = "unknown";
                 } else {
-                    if(stationCodeToPriceInMillieurosMap.containsKey(stationCode)) {
-                        priceFormatted = String.format("€%5.3f", stationCodeToPriceInMillieurosMap.get(stationCode) / 1000d);
+                    if(stationCodeToPriceInMillieurosAndTimestampMap.containsKey(stationCode)) {
+                        final Prices.PriceInMillieurosAndTimestamp priceInMillieurosAndTimestamp = stationCodeToPriceInMillieurosAndTimestampMap.get(stationCode);
+                        priceFormatted = String.format("€%5.3f", priceInMillieurosAndTimestamp.getPriceInMillieuros() / 1000d);
                     } else {
                         priceFormatted = "unknown station";
                     }

@@ -203,10 +203,9 @@ public class PollServlet extends HttpServlet {
         }
 
         // sync prices
-//        final Prices prices =
         PricesFactory.addPrices(petroleumPriceDetails, fuelType, updateTimestamp);
 
-        // sync offliens
+        // sync offlines
         OfflinesFactory.addOfflines(petroleumPriceDetails, updateTimestamp);
 
         return numOfChanges;

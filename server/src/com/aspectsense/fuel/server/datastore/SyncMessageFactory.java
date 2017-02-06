@@ -3,7 +3,9 @@ package com.aspectsense.fuel.server.datastore;
 import com.aspectsense.fuel.server.data.SyncMessage;
 import com.google.appengine.api.datastore.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -66,6 +68,38 @@ public class SyncMessageFactory {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns all messages with a 'last_updated' timestamp greater than 'from' and less than or equal to 'to'.
+     *
+     * @param from
+     * @param to
+     * @param delete
+     * @return
+     */
+    static public Map<Long, String> querySyncMessage(final long from, final long to, final boolean delete) {
+        final Map<Long, String> syncMessages = new HashMap<>();
+
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query.Filter filterFrom = new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.GREATER_THAN, from);
+        final Query.Filter filterTo = new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.LESS_THAN_OR_EQUAL, to);
+        final Query.CompositeFilter filterFromTo = Query.CompositeFilterOperator.and(filterFrom, filterTo);
+        final Query query = new Query(KIND).setFilter(filterFromTo).addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
+
+        final Vector<Key> allKeys = new Vector<Key>();
+
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        for(Entity entity : preparedQuery.asIterable()) {
+            final SyncMessage syncMessage = getFromEntity(entity);
+            syncMessages.put(syncMessage.getLastUpdated(), syncMessage.getJson());
+            allKeys.add(entity.getKey());
+        }
+        if(delete)
+        {
+            datastoreService.delete(allKeys);
+        }
+        return syncMessages;
     }
 
     static public Key addSyncMessage(Text json, int numOfChanges, long lastUpdated) {
