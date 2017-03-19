@@ -134,6 +134,15 @@
         <url-pattern>/admin/weekly-report</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>DailySummaryServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.DailySummaryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DailySummaryServlet</servlet-name>
+        <url-pattern>/admin/daily-summary</url-pattern>
+    </servlet-mapping>
+
     <!--End of Admin Mappings-->
 
     <!--Internal Sync servlet mappings-->
@@ -166,6 +175,7 @@
     <!--End of Internal Sync servlet mappings-->
 
     <!--External API servlet mappings-->
+
     <servlet>
         <servlet-name>ApiSyncServlet</servlet-name>
         <servlet-class>com.aspectsense.fuel.server.api.ApiSyncServlet</servlet-class>
@@ -174,6 +184,16 @@
         <servlet-name>ApiSyncServlet</servlet-name>
         <url-pattern>/api/sync</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ApiStatisticsServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.api.ApiStatisticsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ApiStatisticsServlet</servlet-name>
+        <url-pattern>/api/statistics</url-pattern>
+    </servlet-mapping>
+
     <!--End of External API servlet mappings-->
 
     <!--Web-app pages-->

@@ -39,4 +39,11 @@
         <timezone>Asia/Nicosia</timezone>
     </cron>
 
+    <cron>
+        <url>/admin/daily-summary</url>
+        <description>Daily create a report of the daily summary (latest prices  per station and fuel type)</description>
+        <schedule>every day 23:59</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
 </cronentries>
