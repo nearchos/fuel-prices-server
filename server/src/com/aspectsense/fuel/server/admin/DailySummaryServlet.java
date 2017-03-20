@@ -76,7 +76,7 @@ public class DailySummaryServlet extends HttpServlet {
             stations.addAll(fuelTypeToStationCodeToPriceInMillieurosMap.get(fuelType).keySet());
         }
 
-        final StringBuilder json = new StringBuilder("{");
+        final StringBuilder json = new StringBuilder("{\n");
         final int numOfStations = stations.size();
         int i = 0;
         for(final String station : stations) {
@@ -88,7 +88,7 @@ public class DailySummaryServlet extends HttpServlet {
                 prices[j] = priceInMillieurosAndTimestamp == null ? 0 : priceInMillieurosAndTimestamp.getPriceInMillieuros();
                 j++;
             }
-            json.append(" \"").append(station).append("\": ").append(Arrays.toString(prices)).append(i < numOfStations ? ",\n" : "\n");
+            json.append("  \"").append(station).append("\": ").append(Arrays.toString(prices)).append(i < numOfStations ? ",\n" : "\n");
         }
         json.append("}");
 

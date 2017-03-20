@@ -93,7 +93,7 @@ public class ApiStatisticsServlet extends HttpServlet {
                 if(dailySummaryAsJson != null) {
                     dailySummariesAsJson.put(dateS, dailySummaryAsJson);
                 }
-                currentTimestamp += ONE_DAY;
+                currentTimestamp -= ONE_DAY;
             }
 
             final String statisticsMessageAsJson = createStatisticsMessageAsJson(dailySummariesAsJson, today);
@@ -158,9 +158,47 @@ public class ApiStatisticsServlet extends HttpServlet {
             stationsToFuelTypeToTimestampedPricesMap.put(station, fuelTypeToTimestampedPricesMap);
         }
 
+        // compute Cyprus average
+        final Map<FuelType, Integer> fuelTypeToSumsMap = new HashMap<>();
+        final Map<FuelType, Integer> fuelTypeToCountsMap = new HashMap<>();
+        for(int i = 0; i < FuelType.ALL_FUEL_TYPES.length; i++) {
+            fuelTypeToSumsMap.put(FuelType.ALL_FUEL_TYPES[i], 0);
+            fuelTypeToCountsMap.put(FuelType.ALL_FUEL_TYPES[i], 0);
+        }
+
+        for(final String date : datesToStationsToPrices.keySet()) {
+            final Map<String, Integer[]> stationsToPrices = datesToStationsToPrices.get(date);
+            for(final String station : stationsToPrices.keySet()) {
+                final Integer [] prices = stationsToPrices.get(station);
+                for(int i = 0; i < FuelType.ALL_FUEL_TYPES.length; i++) {
+                    if(prices[i] != 0) {
+                        {
+                            int sum = fuelTypeToSumsMap.get(FuelType.ALL_FUEL_TYPES[i]);
+                            fuelTypeToSumsMap.put(FuelType.ALL_FUEL_TYPES[i], sum + prices[i]);
+                        }
+                        {
+                            int count = fuelTypeToCountsMap.get(FuelType.ALL_FUEL_TYPES[i]);
+                            fuelTypeToCountsMap.put(FuelType.ALL_FUEL_TYPES[i], count + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        final double [] averages = new double[FuelType.ALL_FUEL_TYPES.length];
+        for(int i = 0; i < FuelType.ALL_FUEL_TYPES.length; i++) {
+            int sum = fuelTypeToSumsMap.get(FuelType.ALL_FUEL_TYPES[i]);
+            int count = fuelTypeToCountsMap.get(FuelType.ALL_FUEL_TYPES[i]);
+            if(count > 0) {
+                averages[i] = sum * 1d / count;
+            } else {
+                averages[i] = 0d;
+            }
+        }
+
         final long end = System.currentTimeMillis();
         final String duration = String.format(Locale.US, "%.2f seconds", (end - start) / 1000d);
 
-        return StatisticsParser.toStatisticsJson(stationsToFuelTypeToTimestampedPricesMap, duration, today);
+        return StatisticsParser.toStatisticsJson(stationsToFuelTypeToTimestampedPricesMap, averages, duration, today);
     }
 }

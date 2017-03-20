@@ -34,11 +34,11 @@ import java.util.Set;
 public class StatisticsParser {
 
     public static String toStatisticsJson(final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap,
-                                          final String duration, final String today) throws JSONException {
+                                          final double [] averages, final String duration, final String today) throws JSONException {
 
         // the generated message will have for each station and each fuel type...
         // stationCode -> timestamps: [date-1, date-2, date-3, ..., date-N], prices: [price-1, price-2, price-3, ..., price-N]
-        final StringBuilder stringBuilder = new StringBuilder("{");
+        final StringBuilder stringBuilder = new StringBuilder("{\n");
         stringBuilder.append("  \"date\": \"").append(today).append("\",\n");
         stringBuilder.append("  \"duration\": \"").append(duration).append("\",\n");
         stringBuilder.append("  \"stations\": {\n");
@@ -63,7 +63,8 @@ public class StatisticsParser {
             stringBuilder.append(count < allStations.size() ? "    },\n" : "    }\n");
         }
 
-        stringBuilder.append("  }\n");
+        stringBuilder.append("  },\n");
+        stringBuilder.append("  \"averages\": ").append(Arrays.toString(averages)).append("\n");
         stringBuilder.append("}");
 
         return stringBuilder.toString();
