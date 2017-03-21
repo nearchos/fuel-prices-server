@@ -21,9 +21,7 @@ import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.TimestampedPrices;
 import com.google.appengine.labs.repackaged.org.json.JSONException;
 
-import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * fuel-prices-server
@@ -34,15 +32,27 @@ import java.util.Set;
 public class StatisticsParser {
 
     public static String toStatisticsJson(final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap,
-                                          final double [] averages, final String duration, final String today) throws JSONException {
+                                          final Map<String,Double[]> uniqueIncludedDatesToAverages,
+                                          final String duration, final String today) throws JSONException {
 
         // the generated message will have for each station and each fuel type...
         // stationCode -> timestamps: [date-1, date-2, date-3, ..., date-N], prices: [price-1, price-2, price-3, ..., price-N]
         final StringBuilder stringBuilder = new StringBuilder("{\n");
         stringBuilder.append("  \"date\": \"").append(today).append("\",\n");
         stringBuilder.append("  \"duration\": \"").append(duration).append("\",\n");
-        stringBuilder.append("  \"stations\": {\n");
+        // averages "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
+        stringBuilder.append("  \"averages\": {\n");
+        final Vector<String> allDatesSorted = new Vector<>(uniqueIncludedDatesToAverages.keySet());
+        Collections.sort(allDatesSorted);
+        int countDates = 0;
+        for(final String dateS : allDatesSorted) {
+            countDates++;
+            final Double [] averages = uniqueIncludedDatesToAverages.get(dateS);
+            stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(averages)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+        }
+        stringBuilder.append("  },\n");
 
+        stringBuilder.append("  \"stations\": {\n");
         int count = 0;
         final Set<String> allStations = stationsToFuelTypeToTimestampedPricesMap.keySet();
         for(final String station : allStations) {
@@ -63,10 +73,21 @@ public class StatisticsParser {
             stringBuilder.append(count < allStations.size() ? "    },\n" : "    }\n");
         }
 
-        stringBuilder.append("  },\n");
-        stringBuilder.append("  \"averages\": ").append(Arrays.toString(averages)).append("\n");
+        stringBuilder.append("  }\n");
         stringBuilder.append("}");
 
+        return stringBuilder.toString();
+    }
+
+    private static String toJsonArray(final Set<String> strings) {
+        final Vector<String> sortedStrings = new Vector<>(strings);
+        Collections.sort(sortedStrings);
+        final StringBuilder stringBuilder = new StringBuilder("[");
+        int counter = 0;
+        for(final String s : sortedStrings) {
+            counter++;
+            stringBuilder.append("\"").append(s).append("\"").append(counter < sortedStrings.size() ? ", " : "]");
+        }
         return stringBuilder.toString();
     }
 }
