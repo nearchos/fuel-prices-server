@@ -121,37 +121,37 @@ public class ApiStatisticsServlet extends HttpServlet {
         }
     }
 
-    private String createStatisticsMessageAsJson(final Map<String,String> dailySummariesAsJson, final String today)
+    private String createStatisticsMessageAsJson(final Map<String,String> datesToDailySummariesAsJsonMap, final String today)
             throws JSONException {
 
         final long start = System.currentTimeMillis();
 
         final Set<String> allStations = new HashSet<>();
         final Map<String, Map<String, Integer[]>> datesToStationsToPrices = new HashMap<>();
-        for(final String dateS : dailySummariesAsJson.keySet()) {
-            final Map<String, Integer[]> stationsToPrices = DailySummaryParser.fromDailySummaryJson(dailySummariesAsJson.get(dateS));
+        for(final String dateS : datesToDailySummariesAsJsonMap.keySet()) {
+            final Map<String, Integer[]> stationsToPrices = DailySummaryParser.fromDailySummaryJson(datesToDailySummariesAsJsonMap.get(dateS));
             allStations.addAll(stationsToPrices.keySet());
             datesToStationsToPrices.put(dateS, stationsToPrices);
         }
 
-        final Vector<String> sortedDates = new Vector<>(dailySummariesAsJson.keySet());
-        Collections.sort(sortedDates);
+        final Vector<String> allDatesSorted = new Vector<>(datesToDailySummariesAsJsonMap.keySet());
+        Collections.sort(allDatesSorted);
 
         // the generated message will have for each station and each fuel type...
         // stationCode -> timestamps: [date-1, date-2, date-3, ..., date-N], prices: [price-1, price-2, price-3, ..., price-N]
-        final String firstDate = sortedDates.get(0);
+        final String firstDate = allDatesSorted.get(0);
         final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap = new HashMap<>();
         for(final String station : allStations) {
             final Map<FuelType, TimestampedPrices> fuelTypeToTimestampedPricesMap = new HashMap<>();
-            for(int j = 0; j < FuelType.ALL_FUEL_TYPES.length; j++) {
-                final FuelType fuelType = FuelType.ALL_FUEL_TYPES[j];
-                final Integer [] lastPrices = datesToStationsToPrices.get(firstDate).get(station);
-                final TimestampedPrices timestampedPrices = new TimestampedPrices(firstDate, lastPrices[j]);
-                for(int i = 1; i < sortedDates.size(); i++) {
-                    final Integer [] currentPrices = datesToStationsToPrices.get(sortedDates.get(i)).get(station);
-                    if(!currentPrices[i].equals(lastPrices[i])) {
-                        timestampedPrices.add(sortedDates.get(i), currentPrices[i]);
-                        lastPrices[i] = currentPrices[i];
+            for(int fuelTypeIndex = 0; fuelTypeIndex < FuelType.ALL_FUEL_TYPES.length; fuelTypeIndex++) {
+                final FuelType fuelType = FuelType.ALL_FUEL_TYPES[fuelTypeIndex];
+                final Integer [] lastPrices = datesToStationsToPrices.get(firstDate).get(station); // [ unleaded95Price, unleaded98Price, ..., heatingPrice]
+                final TimestampedPrices timestampedPrices = new TimestampedPrices(firstDate, lastPrices[fuelTypeIndex]);
+                for(int dateIndex = 1; dateIndex < allDatesSorted.size(); dateIndex++) {
+                    final Integer [] currentPrices = datesToStationsToPrices.get(allDatesSorted.get(dateIndex)).get(station);
+                    if(!currentPrices[fuelTypeIndex].equals(lastPrices[fuelTypeIndex])) {
+                        timestampedPrices.add(allDatesSorted.get(dateIndex), currentPrices[fuelTypeIndex]);
+                        lastPrices[fuelTypeIndex] = currentPrices[fuelTypeIndex];
                     }
                 }
                 fuelTypeToTimestampedPricesMap.put(fuelType, timestampedPrices);
@@ -163,7 +163,7 @@ public class ApiStatisticsServlet extends HttpServlet {
         // first initialize the sums and counts to 0
         final Map<String, Map<FuelType, Integer>> dateToFuelTypeToSumsMap = new HashMap<>();
         final Map<String, Map<FuelType, Integer>> dateToFuelTypeToCountsMap = new HashMap<>();
-        for(final String date : dailySummariesAsJson.keySet()) {
+        for(final String date : datesToDailySummariesAsJsonMap.keySet()) {
             final Map<FuelType, Integer> fuelTypeToSumsMap = new HashMap<>();
             final Map<FuelType, Integer> fuelTypeToCountsMap = new HashMap<>();
             for(int i = 0; i < FuelType.ALL_FUEL_TYPES.length; i++) {
@@ -175,7 +175,7 @@ public class ApiStatisticsServlet extends HttpServlet {
         }
 
         // next add the sums and the counts for all dates and for all stations
-        for(final String date : dailySummariesAsJson.keySet()) {
+        for(final String date : datesToDailySummariesAsJsonMap.keySet()) {
             final Map<String, Integer[]> stationsToPrices = datesToStationsToPrices.get(date);
             final Map<FuelType, Integer> fuelTypeToSumsMap = dateToFuelTypeToSumsMap.get(date);
             final Map<FuelType, Integer> fuelTypeToCountsMap = dateToFuelTypeToCountsMap.get(date);
@@ -194,7 +194,7 @@ public class ApiStatisticsServlet extends HttpServlet {
 
         final Map<String,Double[]> uniqueIncludedDatesToAverages = new HashMap<>();
 
-        for(final String date : dailySummariesAsJson.keySet()) {
+        for(final String date : datesToDailySummariesAsJsonMap.keySet()) {
             final Map<FuelType, Integer> fuelTypeToSumsMap = dateToFuelTypeToSumsMap.get(date);
             final Map<FuelType, Integer> fuelTypeToCountsMap = dateToFuelTypeToCountsMap.get(date);
             final Double [] averages = new Double[FuelType.ALL_FUEL_TYPES.length];
