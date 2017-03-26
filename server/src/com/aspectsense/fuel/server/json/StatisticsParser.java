@@ -32,7 +32,10 @@ import java.util.*;
 public class StatisticsParser {
 
     public static String toStatisticsJson(final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap,
-                                          final Map<String,Double[]> uniqueIncludedDatesToAverages,
+                                          final Map<String,Double[]> uniqueIncludedDatesToMeans,
+                                          final Map<String,Integer[]> uniqueIncludedDatesToMedians,
+                                          final Map<String,Integer[]> uniqueIncludedDatesToMins,
+                                          final Map<String,Integer[]> uniqueIncludedDatesToMaxs,
                                           final String duration, final String today) throws JSONException {
 
         // the generated message will have for each station and each fuel type...
@@ -40,17 +43,57 @@ public class StatisticsParser {
         final StringBuilder stringBuilder = new StringBuilder("{\n");
         stringBuilder.append("  \"date\": \"").append(today).append("\",\n");
         stringBuilder.append("  \"duration\": \"").append(duration).append("\",\n");
-        // averages "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
-        stringBuilder.append("  \"averages\": {\n");
-        final Vector<String> allDatesSorted = new Vector<>(uniqueIncludedDatesToAverages.keySet());
+
+        final Vector<String> allDatesSorted = new Vector<>(uniqueIncludedDatesToMeans.keySet());
         Collections.sort(allDatesSorted);
-        int countDates = 0;
-        for(final String dateS : allDatesSorted) {
-            countDates++;
-            final Double [] averages = uniqueIncludedDatesToAverages.get(dateS);
-            stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(averages)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+
+        // means "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
+        {
+            stringBuilder.append("  \"means\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Double [] means = uniqueIncludedDatesToMeans.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(means)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
         }
-        stringBuilder.append("  },\n");
+
+        // medians "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
+        {
+            stringBuilder.append("  \"medians\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Integer [] medians = uniqueIncludedDatesToMedians.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(medians)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // mins "date": [1234, 2333, 1333, 2433, 0933], ...
+        {
+            stringBuilder.append("  \"mins\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Integer [] mins = uniqueIncludedDatesToMins.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(mins)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // maxs "date": [1234, 2333, 1333, 2433, 0933], ...
+        {
+            stringBuilder.append("  \"maxs\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Integer [] maxs = uniqueIncludedDatesToMaxs.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(maxs)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
 
         stringBuilder.append("  \"stations\": {\n");
         int count = 0;
