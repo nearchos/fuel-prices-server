@@ -33,15 +33,20 @@ import java.util.Map;
  */
 public class DailySummaryParser {
 
-    public static Map<String, Integer[]> fromDailySummaryJson(final String json) throws JSONException {
-
-        final Map<String, Integer[]> stationsToPricesMap = new HashMap<>();
+    public static DailySummaryBundle fromDailySummaryJson(final String json) throws JSONException {
 
         final JSONObject jsonObject = new JSONObject(json);
-        final Iterator iterator = jsonObject.keys();
+
+        final double crudeOilPriceInUSD = jsonObject.has("crudeOilInUsd") ? jsonObject.getDouble("crudeOilInUsd") : 0d;
+        final double eurToUsd = jsonObject.has("eurUsd") ? jsonObject.getDouble("eurUsd") : 0d;
+        final double eurToGbp = jsonObject.has("eurGbp") ? jsonObject.getDouble("eurGbp") : 0d;
+
+        final Map<String, Integer[]> stationsToPricesMap = new HashMap<>();
+        final JSONObject stationsObject = jsonObject.has("stations") ? jsonObject.getJSONObject("stations") : jsonObject;
+        final Iterator iterator = stationsObject.keys();
         while(iterator.hasNext()) {
             final String station = iterator.next().toString();
-            final JSONArray pricesJsonArray = jsonObject.getJSONArray(station);
+            final JSONArray pricesJsonArray = stationsObject.getJSONArray(station);
             final Integer [] prices = new Integer[pricesJsonArray.length()];
             for(int i = 0; i < prices.length; i++) {
                 prices[i] = pricesJsonArray.getInt(i);
@@ -49,6 +54,6 @@ public class DailySummaryParser {
             stationsToPricesMap.put(station, prices);
         }
 
-        return stationsToPricesMap;
+        return new DailySummaryBundle(crudeOilPriceInUSD, eurToUsd, eurToGbp, stationsToPricesMap);
     }
 }

@@ -35,6 +35,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.logging.Logger;
 
+import static com.aspectsense.fuel.server.util.Util.convertStreamToString;
+
 /**
  * fuel-prices-server
  *
@@ -139,7 +141,7 @@ public class RequestServlet extends HttpServlet {
         }
 
         final InputStream stdInputStream = httpURLConnection.getInputStream();
-        final String receivedMessage = Util.convertStreamToString(stdInputStream);
+        final String receivedMessage = convertStreamToString(stdInputStream);
         return receivedMessage.substring(receivedMessage.indexOf("<CorrelationID>") + "<CorrelationID>".length(), receivedMessage.indexOf("</CorrelationID>"));
     }
 

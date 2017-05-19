@@ -31,17 +31,23 @@ import java.util.*;
  */
 public class StatisticsParser {
 
-    public static String toStatisticsJson(final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap,
-                                          final Map<String,Double[]> uniqueIncludedDatesToMeans,
-                                          final Map<String,Integer[]> uniqueIncludedDatesToMedians,
-                                          final Map<String,Integer[]> uniqueIncludedDatesToMins,
-                                          final Map<String,Integer[]> uniqueIncludedDatesToMaxs,
-                                          final String duration, final String today) throws JSONException {
+    public static String toStatisticsJson(
+            final Map<String, Double> datesToCrudeOilPriceInUsd,
+            final Map<String, Double> datesToEurUsd,
+            final Map<String, Double> datesToEurGbp,
+            final Map<String, Map<FuelType, TimestampedPrices>> stationsToFuelTypeToTimestampedPricesMap,
+            final Set<String> selectedStations,
+            final Map<String,Double[]> uniqueIncludedDatesToMeans,
+            final Map<String,Integer[]> uniqueIncludedDatesToMedians,
+            final Map<String,Integer[]> uniqueIncludedDatesToMins,
+            final Map<String,Integer[]> uniqueIncludedDatesToMaxs,
+            final String duration, final String from, final String to) throws JSONException {
 
         // the generated message will have for each station and each fuel type...
         // stationCode -> timestamps: [date-1, date-2, date-3, ..., date-N], prices: [price-1, price-2, price-3, ..., price-N]
         final StringBuilder stringBuilder = new StringBuilder("{\n");
-        stringBuilder.append("  \"date\": \"").append(today).append("\",\n");
+        stringBuilder.append("  \"from\": \"").append(from).append("\",\n");
+        stringBuilder.append("  \"to\": \"").append(to).append("\",\n");
         stringBuilder.append("  \"duration\": \"").append(duration).append("\",\n");
 
         final Vector<String> allDatesSorted = new Vector<>(uniqueIncludedDatesToMeans.keySet());
@@ -95,9 +101,49 @@ public class StatisticsParser {
             stringBuilder.append("  },\n");
         }
 
+        // crudeOilPriceInUsd "date": 1.23, ...
+        {
+            stringBuilder.append("  \"crudeOilPricesInUsd\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final double value = datesToCrudeOilPriceInUsd.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(String.format("%.2f", value)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // eurToUsd "date": 1.23, ...
+        {
+            stringBuilder.append("  \"eurToUsd\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final double value = datesToEurUsd.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(String.format("%.2f", value)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // eurToGbp "date": 1.23, ...
+        {
+            stringBuilder.append("  \"eurToGbp\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final double value = datesToEurGbp.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(String.format("%.2f", value)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        final Set<String> allStations = stationsToFuelTypeToTimestampedPricesMap.keySet();
+        // filter selected stations only
+        allStations.retainAll(selectedStations);
+
+        stringBuilder.append("  \"numOfStations\": ").append(allStations.size()).append(",\n");
         stringBuilder.append("  \"stations\": {\n");
         int count = 0;
-        final Set<String> allStations = stationsToFuelTypeToTimestampedPricesMap.keySet();
         for(final String station : allStations) {
             count++;
             final Map<FuelType, TimestampedPrices> fuelTypeToTimestampedPricesMap = stationsToFuelTypeToTimestampedPricesMap.get(station);

@@ -4,6 +4,7 @@ import com.aspectsense.fuel.server.data.City;
 import com.aspectsense.fuel.server.data.Station;
 import com.aspectsense.fuel.server.datastore.StationsFactory;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -11,6 +12,8 @@ import java.util.*;
  * 13-Feb-16.
  */
 public class Util {
+
+    public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     public static String sanitizeForJSON(String unsanitized) {
         if(unsanitized == null) {

@@ -33,6 +33,8 @@ import java.net.URL;
 import java.util.Vector;
 import java.util.logging.Logger;
 
+import static com.aspectsense.fuel.server.util.Util.convertStreamToString;
+
 /**
  * fuel-prices-server
  *
@@ -148,7 +150,7 @@ public class PollServlet extends HttpServlet {
 //        int responseCode = conn.getResponseCode();
 
         final InputStream stdInputStream = conn.getInputStream();
-        reply = Util.convertStreamToString(stdInputStream);
+        reply = convertStreamToString(stdInputStream);
         return reply;
     }
 

@@ -17,6 +17,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static com.aspectsense.fuel.server.json.Util.SIMPLE_DATE_FORMAT;
+
 /**
  * @author Nearchos Paspallis
  *         03/02/2017
@@ -28,8 +30,6 @@ public class WeeklyReportServlet extends HttpServlet {
 
     public static final long MILLISECONDS_IN_A_DAY = 24L * 60 * 60 * 1000L;
     public static final long MILLISECONDS_IN_A_WEEK = 7L * MILLISECONDS_IN_A_DAY;
-
-    private static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         response.setContentType("application/json");

@@ -44,11 +44,6 @@ public class Util {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
-    static String convertStreamToString(InputStream inputStream) {
-        final Scanner s = new Scanner(inputStream, "UTF-8").useDelimiter("\\A");
-        return s.hasNext() ? s.next() + "\n" : "";
-    }
-
     static Vector<PetroleumPriceDetail> parseXmlPollResponse(final String xml, final String fuelType) {
 
         Document document = parseXml(xml);
