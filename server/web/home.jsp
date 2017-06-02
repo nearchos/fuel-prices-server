@@ -39,7 +39,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.brown-orange.min.css">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.brown-orange.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
         #view-source {
@@ -166,6 +166,11 @@
             }
         }
     </script>
+
+    <%--support for polyfill modal dialogs (https://github.com/GoogleChrome/dialog-polyfill)--%>
+    <link rel="stylesheet" type="text/css" href="css/dialog-polyfill.css" />
+    <script src="js/dialog-polyfill.js"></script>
+
 </head>
 <body onload="updateFuelType(1); getLocation();">
 
@@ -377,13 +382,14 @@
             </footer>
     </main>
 </div>
-<script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <script>
     function showAboutDialog() {
         var dialog = document.querySelector('#dialog-about');
         dialog.querySelector('.close').addEventListener('click', function() {
             dialog.close();
         });
+        dialogPolyfill.registerDialog(dialog);
         dialog.showModal();
     }
     function showContactDialog() {
@@ -391,6 +397,7 @@
         dialog.querySelector('.close').addEventListener('click', function() {
             dialog.close();
         });
+        dialogPolyfill.registerDialog(dialog);
         dialog.showModal();
     }
 

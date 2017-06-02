@@ -46,7 +46,7 @@
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <link rel="stylesheet" href="https://code.getmdl.io/1.1.3/material.brown-orange.min.css">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.brown-orange.min.css">
     <link rel="stylesheet" href="css/styles.css">
     <style>
         #view-source {
@@ -61,8 +61,42 @@
     </style>
     <link rel="alternate" href="android-app://com.aspectsense.fuelguidecy/http/cyprusfuelguide.com/station" />
 
+<%--support for polyfill modal dialogs (https://github.com/GoogleChrome/dialog-polyfill)--%>
+    <link rel="stylesheet" type="text/css" href="css/dialog-polyfill.css" />
+    <script src="js/dialog-polyfill.js"></script>
+
 </head>
 <body>
+
+<dialog class="mdl-dialog" id="dialog-about">
+    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <div class="mdl-dialog__content">
+        <p>
+            The Cyprus Fuel Guide provides an intuitive way to compare fuel prices in your area and find the best deal for you.
+        </p>
+        <p>
+            Website & App developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a>.
+        </p>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button close">Close</button>
+    </div>
+</dialog>
+
+<dialog class="mdl-dialog" id="dialog-contact">
+    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <div class="mdl-dialog__content">
+        <p>
+            Want to get in touch?
+        </p>
+        <p>
+            Drop us a line at <a href="mailto:hello@cyprusfuelguide.com" target="_blank">hello@cyprusfuelguide.com</a>.
+        </p>
+    </div>
+    <div class="mdl-dialog__actions">
+        <button type="button" class="mdl-button close">Close</button>
+    </div>
+</dialog>
 
 <%
     final String stationCode = request.getParameter("id");
@@ -193,16 +227,32 @@
                 <div class="mdl-logo">Cyprus Fuel Guide</div>
                 <ul class="mdl-mini-footer__link-list">
                     <li><a href="#" onclick="showAboutDialog()">About</a></li>
-                    <li><a href="#" onclick="showContactUsDialog()">Contact us</a></li>
-                    <li><a href="#">Privacy</a></li>
+                    <li><a href="#" onclick="showContactDialog()">Contact us</a></li>
+                    <li><a href="privacy">Privacy</a></li>
                 </ul>
                 <div>Developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a> &copy; <script>document.write(new Date().getFullYear())</script></div>
             </div>
         </footer>
     </main>
 </div>
-<script src="https://code.getmdl.io/1.1.3/material.min.js"></script>
+<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <script>
+    function showAboutDialog() {
+        var dialog = document.querySelector('#dialog-about');
+        dialog.querySelector('.close').addEventListener('click', function() {
+            dialog.close();
+        });
+        dialogPolyfill.registerDialog(dialog);
+        dialog.showModal();
+    }
+    function showContactDialog() {
+        var dialog = document.querySelector('#dialog-contact');
+        dialog.querySelector('.close').addEventListener('click', function() {
+            dialog.close();
+        });
+        dialogPolyfill.registerDialog(dialog);
+        dialog.showModal();
+    }
     function initMap() {
         var mapDiv = document.getElementById('map');
         var map = new google.maps.Map(mapDiv, {
