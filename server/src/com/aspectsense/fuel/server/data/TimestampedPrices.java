@@ -29,8 +29,8 @@ import java.util.Vector;
  */
 public class TimestampedPrices implements Serializable {
 
-    final Vector<String> dates;
-    final Vector<Integer> prices;
+    private final Vector<String> dates;
+    private final Vector<Integer> prices;
 
     public TimestampedPrices() {
         dates = new Vector<>();
@@ -52,8 +52,9 @@ public class TimestampedPrices implements Serializable {
         int counter = 0;
         for(final String date : dates) {
             counter++;
-            stringBuilder.append("\"").append(date).append("\"").append(counter < dates.size() ? ", " : "]");
+            stringBuilder.append("\"").append(date).append("\"").append(counter < dates.size() ? ", " : "");
         }
+        stringBuilder.append("]");
         return stringBuilder.toString();
     }
 

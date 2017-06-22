@@ -114,7 +114,7 @@ public class ApiStatisticsServlet extends HttpServlet {
         }
     }
 
-    private String getStatisticsMessageAsJSON() throws JSONException {
+    public static String getStatisticsMessageAsJSON() throws JSONException {
 
         final long now = System.currentTimeMillis();
         final String to = SIMPLE_DATE_FORMAT.format(new Date(now));
@@ -187,7 +187,7 @@ public class ApiStatisticsServlet extends HttpServlet {
      * @return a JSON-formatted string of the statistics message relevant to the specified dates and filtered stations
      * @throws IOException if a parsing error occurs
      */
-    static String getStatisticsMessageAsJSON(final int duration) throws IOException {
+    public static String getStatisticsMessageAsJSON(final int duration) throws IOException {
         return getStatisticsMessageAsJSON(duration, getAllStationCodes());
     }
 
@@ -320,6 +320,8 @@ public class ApiStatisticsServlet extends HttpServlet {
         // compute means, medians, mins, maxs over time
         final Map<String,Double[]> uniqueIncludedDatesToMeans = new HashMap<>(); // mean = averages
         final Map<String,Integer[]> uniqueIncludedDatesToMedians = new HashMap<>(); // medians = medians
+        final Map<String,Integer[]> uniqueIncludedDatesTo1stQuartiles = new HashMap<>(); // 1st quartiles = medians from firsts to medians
+        final Map<String,Integer[]> uniqueIncludedDatesTo3rdQuartiles = new HashMap<>(); // 3rd quartiles = medians from medians to lasts
         final Map<String,Integer[]> uniqueIncludedDatesToMins = new HashMap<>(); // mins = minimums
         final Map<String,Integer[]> uniqueIncludedDatesToMaxs = new HashMap<>(); // maxs = maximums
 
@@ -367,10 +369,12 @@ public class ApiStatisticsServlet extends HttpServlet {
             uniqueIncludedDatesToMins.put(date, minimums);
         }
 
-        // finally compute medians
+        // finally compute medians, 1st quartiles, and 3rd quartiles
         for(final String date : datesToStationsToPrices.keySet()) {
             final Map<String, Integer[]> stationsToPrices = datesToStationsToPrices.get(date);
             final Integer [] medians = new Integer[FuelType.ALL_FUEL_TYPES.length];
+            final Integer [] quartiles1st = new Integer[FuelType.ALL_FUEL_TYPES.length];
+            final Integer [] quartiles3rd = new Integer[FuelType.ALL_FUEL_TYPES.length];
             for(int i = 0; i < FuelType.ALL_FUEL_TYPES.length; i++) {
                 final Vector<Integer> prices = new Vector<>();
                 for(final String station : stationsToPrices.keySet()) {
@@ -380,8 +384,12 @@ public class ApiStatisticsServlet extends HttpServlet {
                 }
                 Collections.sort(prices);
                 medians[i] = prices.get(prices.size() / 2);
+                quartiles1st[i] = prices.get(prices.size() / 4);
+                quartiles3rd[i] = prices.get(prices.size() * 3 / 4);
             }
             uniqueIncludedDatesToMedians.put(date, medians);
+            uniqueIncludedDatesTo1stQuartiles.put(date, quartiles1st);
+            uniqueIncludedDatesTo3rdQuartiles.put(date, quartiles3rd);
         }
 
         for(final String date : datesToDailySummariesAsJsonMap.keySet()) {
@@ -412,6 +420,8 @@ public class ApiStatisticsServlet extends HttpServlet {
                 selectedStationCodes,
                 uniqueIncludedDatesToMeans,
                 uniqueIncludedDatesToMedians,
+                uniqueIncludedDatesTo1stQuartiles,
+                uniqueIncludedDatesTo3rdQuartiles,
                 uniqueIncludedDatesToMins,
                 uniqueIncludedDatesToMaxs,
                 duration,

@@ -39,6 +39,8 @@ public class StatisticsParser {
             final Set<String> selectedStations,
             final Map<String,Double[]> uniqueIncludedDatesToMeans,
             final Map<String,Integer[]> uniqueIncludedDatesToMedians,
+            final Map<String,Integer[]> uniqueIncludedDatesTo1stQuartiles,
+            final Map<String,Integer[]> uniqueIncludedDatesTo3rdQuartiles,
             final Map<String,Integer[]> uniqueIncludedDatesToMins,
             final Map<String,Integer[]> uniqueIncludedDatesToMaxs,
             final String duration, final String from, final String to) throws JSONException {
@@ -73,6 +75,30 @@ public class StatisticsParser {
                 countDates++;
                 final Integer [] medians = uniqueIncludedDatesToMedians.get(dateS);
                 stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(medians)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // first-quartiles "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
+        {
+            stringBuilder.append("  \"first-quartiles\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Integer [] firstQuartiles = uniqueIncludedDatesTo1stQuartiles.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(firstQuartiles)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
+            }
+            stringBuilder.append("  },\n");
+        }
+
+        // third-quartiles "date": [1.2, 2.3, 1.3, 2.4, 0.9], ...
+        {
+            stringBuilder.append("  \"third-quartiles\": {\n");
+            int countDates = 0;
+            for(final String dateS : allDatesSorted) {
+                countDates++;
+                final Integer [] thirdQuartiles = uniqueIncludedDatesTo3rdQuartiles.get(dateS);
+                stringBuilder.append("    \"").append(dateS).append("\": ").append(Arrays.toString(thirdQuartiles)).append(countDates < allDatesSorted.size() ? ",\n" : "\n");
             }
             stringBuilder.append("  },\n");
         }

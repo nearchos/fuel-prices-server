@@ -221,6 +221,15 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>StatisticsServlet</servlet-name>
+        <jsp-file>/statistics.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StatisticsServlet</servlet-name>
+        <url-pattern>/statistics</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>PrivacyServlet</servlet-name>
         <jsp-file>/privacy.jsp</jsp-file>
     </servlet>

@@ -175,7 +175,7 @@
 <body onload="updateFuelType(1); getLocation();">
 
 <dialog class="mdl-dialog" id="dialog-about">
-    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <span><img src="images/favicon.png" title="Cyprus Fuel Guide"/>&nbsp;<b style="font-size: medium">Cyprus Fuel Guide</b></span>
     <div class="mdl-dialog__content">
         <p>
             The Cyprus Fuel Guide provides an intuitive way to compare fuel prices in your area and find the best deal for you.
@@ -190,7 +190,7 @@
 </dialog>
 
 <dialog class="mdl-dialog" id="dialog-contact">
-    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <span><img src="images/favicon.png" title="Cyprus Fuel Guide"/>&nbsp;<b style="font-size: medium">Cyprus Fuel Guide</b></span>
     <div class="mdl-dialog__content">
         <p>
             Want to get in touch?
@@ -369,17 +369,17 @@
                 </div>
             </div>
         </div>
-            <footer class="mdl-mini-footer">
-                <div class="mdl-mini-footer__left-section">
-                    <div class="mdl-logo">Cyprus Fuel Guide</div>
-                    <ul class="mdl-mini-footer__link-list">
-                        <li><a href="#" onclick="showAboutDialog()">About</a></li>
-                        <li><a href="#" onclick="showContactDialog()">Contact</a></li>
-                        <li><a href="privacy">Privacy & Terms</a></li>
-                    </ul>
-                    <div>Developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a> &copy; <script>document.write(new Date().getFullYear())</script></div>
-                </div>
-            </footer>
+        <footer class="mdl-mini-footer">
+            <div class="mdl-mini-footer__left-section">
+                <div class="mdl-logo">Cyprus Fuel Guide</div>
+                <ul class="mdl-mini-footer__link-list">
+                    <li><a href="#" onclick="showAboutDialog()">About</a></li>
+                    <li><a href="#" onclick="showContactDialog()">Contact</a></li>
+                    <li><a href="privacy">Privacy & Terms</a></li>
+                </ul>
+                <div>Developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a> &copy; <script>document.write(new Date().getFullYear())</script></div>
+            </div>
+        </footer>
     </main>
 </div>
 <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>

@@ -75,7 +75,7 @@ Time: 10:19
 <body>
 
 <dialog class="mdl-dialog" id="dialog-about">
-    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <span><img src="images/favicon.png" title="Cyprus Fuel Guide"/>&nbsp;<b style="font-size: medium">Cyprus Fuel Guide</b></span>
     <div class="mdl-dialog__content">
         <p>
             The Cyprus Fuel Guide provides an intuitive way to compare fuel prices in your area and find the best deal for you.
@@ -90,7 +90,7 @@ Time: 10:19
 </dialog>
 
 <dialog class="mdl-dialog" id="dialog-contact">
-    <span><img src="images/favicon.png" title="Cyprus Pharmacy Guide"/>&nbsp;<b style="font-size: medium">Cyprus Pharmacy Guide</b></span>
+    <span><img src="images/favicon.png" title="Cyprus Fuel Guide"/>&nbsp;<b style="font-size: medium">Cyprus Fuel Guide</b></span>
     <div class="mdl-dialog__content">
         <p>
             Want to get in touch?
@@ -187,6 +187,7 @@ Time: 10:19
             <div class="mdl-mini-footer__left-section">
                 <div class="mdl-logo">Cyprus Fuel Guide</div>
                 <ul class="mdl-mini-footer__link-list">
+                    <li><a href="http://cyprusfuelguide.com">Home</a></li>
                     <li><a href="#" onclick="showAboutDialog()">About</a></li>
                     <li><a href="#" onclick="showContactDialog()">Contact us</a></li>
                     <%--<li><a href="#">Privacy</a></li>--%>
