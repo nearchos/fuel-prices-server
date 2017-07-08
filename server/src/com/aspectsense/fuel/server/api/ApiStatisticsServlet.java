@@ -199,7 +199,7 @@ public class ApiStatisticsServlet extends HttpServlet {
      * @return a JSON-formatted string of the statistics message relevant to the specified dates and filtered stations
      * @throws IOException if a parsing error occurs
      */
-    static String getStatisticsMessageByCityAsJSON(final int duration, final String city) throws IOException {
+    public static String getStatisticsMessageByCityAsJSON(final int duration, final String city) throws IOException {
         return getStatisticsMessageAsJSON(duration, filterStationCodesByCity(city));
     }
 
@@ -211,7 +211,7 @@ public class ApiStatisticsServlet extends HttpServlet {
      * @return a JSON-formatted string of the statistics message relevant to the specified dates and filtered stations
      * @throws IOException if a parsing error occurs
      */
-    static String getStatisticsMessageByDistrictAsJSON(final int duration, final String district) throws IOException {
+    public static String getStatisticsMessageByDistrictAsJSON(final int duration, final String district) throws IOException {
         return getStatisticsMessageAsJSON(duration, filterStationCodesByDistrict(district));
     }
 

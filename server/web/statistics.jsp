@@ -61,6 +61,8 @@
         String JSON;
         try {
             JSON = ApiStatisticsServlet.getStatisticsMessageAsJSON(365);
+//            JSON = ApiStatisticsServlet.getStatisticsMessageByCityAsJSON(365, "ΛΕΜΕΣΟΣ");
+//            JSON = ApiStatisticsServlet.getStatisticsMessageByDistrictAsJSON(365, "Αγία Βαρβάρα");
         } catch (IOException ioe) {
             JSON = "{ \"status\": \"error: \"" + ioe.getMessage() + " }";
         }
