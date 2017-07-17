@@ -73,14 +73,18 @@ public class DailySummaryServlet extends HttpServlet {
             return;
         }
 
+        final int MAX_NUM_OF_TRIES = 3;
         // get latest crude oil price
         double crudeOilPrice = 0d; // default is zero (i.e. unknown)
-        try {
-            final String receivedPriceS = makeRequest(CRUDE_OIL_PRICE_SERVICE_URL);
-            crudeOilPrice = Double.parseDouble(receivedPriceS.trim());
-        } catch (final IOException | NumberFormatException e) {
-            final String error = "SyncCrudeOilPrice error -> " + e.getMessage();
-            log(error);
+        for(int tries = 0; tries < MAX_NUM_OF_TRIES; tries++) {
+            try {
+                final String receivedPriceS = makeRequest(CRUDE_OIL_PRICE_SERVICE_URL);
+                crudeOilPrice = Double.parseDouble(receivedPriceS.trim());
+                break;
+            } catch (final IOException | NumberFormatException e) {
+                final String error = "SyncCrudeOilPrice error -> " + e.getMessage();
+                log.warning(error);
+            }
         }
 
         // get latest EURUSD and EURGBP rates
@@ -93,7 +97,7 @@ public class DailySummaryServlet extends HttpServlet {
             eurGbp = replyJsonObject.getJSONObject("rates").getDouble("GBP");
         } catch (final IOException | JSONException e) {
             final String error = "SyncExchangeRates error -> " + e.getMessage();
-            System.out.println(error); // todo log
+            log.warning(error);
         }
 
         final Map<FuelType, Map<String,Prices.PriceInMillieurosAndTimestamp>> fuelTypeToStationCodeToPriceInMillieurosMap = new HashMap<>();

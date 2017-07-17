@@ -39,6 +39,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:regular,bold,italic,thin,light,bolditalic,black,medium&amp;lang=en">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.brown-orange.min.css">
+    <script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
     <link rel="stylesheet" href="css/styles.css">
     <style>
         #view-source {
@@ -55,24 +56,36 @@
     <%--support for polyfill modal dialogs (https://github.com/GoogleChrome/dialog-polyfill)--%>
     <link rel="stylesheet" type="text/css" href="css/dialog-polyfill.css" />
     <script src="js/dialog-polyfill.js"></script>
+    <script src="js/echarts.min.js"></script>
 
-    <script type="javascript">
+    <script language="javascript">
+        // init city and/or district
+        var selectedCity = <%= request.getParameter("city") == null ? 0 : "\"" + request.getParameter("city") + "\"" %>;
+        var selectedDistrict = <%= request.getParameter("district") == null ? 0 : "\"" + request.getParameter("district") + "\"" %>;
+
         <%
+        final String district = request.getParameter("district");
+        final String city = request.getParameter("city");
+        // todo handle duration too (currently always 365, but could be set as 30..365)
         String JSON;
         try {
-            JSON = ApiStatisticsServlet.getStatisticsMessageAsJSON(365);
-//            JSON = ApiStatisticsServlet.getStatisticsMessageByCityAsJSON(365, "ΛΕΜΕΣΟΣ");
-//            JSON = ApiStatisticsServlet.getStatisticsMessageByDistrictAsJSON(365, "Αγία Βαρβάρα");
+            if(district != null) {
+                JSON = ApiStatisticsServlet.getStatisticsMessageByDistrictAsJSON(365, district);
+            } else if(city != null) {
+                JSON = ApiStatisticsServlet.getStatisticsMessageByCityAsJSON(365, city);
+            } else {
+                JSON = ApiStatisticsServlet.getStatisticsMessageAsJSON(365);
+            }
         } catch (IOException ioe) {
             JSON = "{ \"status\": \"error: \"" + ioe.getMessage() + " }";
         }
         %>
-        var STATISTICS_AS_JSON = '<%=JSON%>';
+        var STATISTICS_AS_JSON = <%=JSON%>;
     </script>
 
 </head>
 
-<body onload="init();">
+<body onload="init()">
 
 <dialog class="mdl-dialog" id="dialog-about">
     <span><img src="http://cyprusfuelguide.com/images/favicon.png" title="Cyprus Fuel Guide"/>&nbsp;<b style="font-size: medium">Cyprus Fuel Guide</b></span>
@@ -165,6 +178,11 @@
                         <select class="option-input option-dropdown" id="district-dropdown">
                             <option selected="selected" value="0">All districts</option>
                         </select>
+
+                        <!-- Accent-colored raised button with ripple -->
+                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="apply()">
+                            <span>Apply</span>
+                        </button>
                     </div>
 
                 </div>
@@ -176,9 +194,7 @@
             <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
 
                 <div class="mdl-card__title mdl-color--white">
-                    <div class="page-content">
-                        <h2 class="mdl-card__title-text">Visualizations go here...</h2>
-                    </div>
+                    <div id="graph" style="width:100%; height: 400px">graph goes here...</div>
                 </div>
 
                 <div class="mdl-card__title mdl-color--white">
@@ -187,13 +203,12 @@
                             <li><b>Fuel type</b>: <span id="fuel-type-name">hello world!</span></li>
                             <li><b>City name</b>: <span id="city-name">All cities</span></li>
                             <li><b>District name</b>: <span id="district-name">All districts</span></li>
+                            <li><b>Number of stations</b>: <span id="num-of-stations">n/a</span></li>
                         </ul>
-
                     </div>
                 </div>
 
             </div>
-
         </div>
 
         <footer class="mdl-mini-footer">
@@ -213,8 +228,7 @@
 
 </div>
 
-<script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-<script>
+<script language="javascript">
     function showAboutDialog() {
         var dialog = document.querySelector('#dialog-about');
         dialog.querySelector('.close').addEventListener('click', function() {
@@ -239,54 +253,102 @@
     var paphosOptions = ["Χλώρακα", "Στρουμπί", "Τάφοι των Βασιλέων", "Πάφος", "Τίμη", "Πόλης Χρυσοχούς", "Μανδριά", "Γεροσκήπου", "Τρεμιθούσα", "Νικόκλεια", "Εμπα", "Μεσόγη", "Αργάκα", "Πέγεια"];
     var famagustaOptions = ["Βρυσούλες", "Φρέναρος", "Λιοπέτρι", "Πρωταράς", "Αγία Νάπα", "Δασάκι της Άχνας", "Σωτήρα", "Αυγόρου", "Δερύνεια", "Παραλίμνι"];
 
+    var cityDropdown = document.getElementById('city-dropdown');
+    var districtDropdown = document.getElementById("district-dropdown");
+
     function init() {
 
         updateFuelType(1);
 
-        var districtDropdown = document.getElementById("district-dropdown");
-        districtDropdown.disabled = true;
-
-        document.getElementById('city-dropdown').addEventListener('change', function(e) {
-            districtDropdown.options.length = 0;
-            createOption(districtDropdown, "All districts", "0");
-            switch(this.value) {
-                case "0":
-                    break;
-                case "ΛΕΥΚΩΣΙΑ":
-                    for(var i = 0; i < nicosiaOptions.length; i++) {
-                        createOption(districtDropdown, nicosiaOptions[i], nicosiaOptions[i]);
-                    }
-                    break;
-                case "ΛΕΜΕΣΟΣ":
-                    for(var i = 0; i < limassolOptions.length; i++) {
-                        createOption(districtDropdown, limassolOptions[i], limassolOptions[i]);
-                    }
-                    break;
-                case "ΛΑΡΝΑΚΑ":
-                    for(var i = 0; i < larnacaOptions.length; i++) {
-                        createOption(districtDropdown, larnacaOptions[i], larnacaOptions[i]);
-                    }
-                    break;
-                case "ΠΑΦΟΣ":
-                    for(var i = 0; i < paphosOptions.length; i++) {
-                        createOption(districtDropdown, paphosOptions[i], paphosOptions[i]);
-                    }
-                    break;
-                case "ΑΜΜΟΧΩΣΤΟΣ":
-                    for(var i = 0; i < famagustaOptions.length; i++) {
-                        createOption(districtDropdown, famagustaOptions[i], famagustaOptions[i]);
-                    }
-                    break;
-            }
-
-            document.getElementById("district-dropdown").disabled = this.value === "0"; //enable when value of city select is changed
-
-            document.getElementById("city-name").innerHTML = this.value;
+        cityDropdown.addEventListener('change', function(e) {
+            selectedCity = this.value;
+            handleCitySelection();
         });
 
-        document.getElementById('district-dropdown').addEventListener('change', function(e) {
-            document.getElementById("district-name").innerHTML = this.value;
+        handleCitySelection();
+
+        // handle district initialization
+        districtDropdown.disabled = false;
+
+        if(selectedCity == 0) {
+            cityDropdown.selectedIndex = 0;
+            districtDropdown.disabled = true;
+        } else if(selectedCity === "ΛΕΥΚΩΣΙΑ") {
+            cityDropdown.selectedIndex = 1;
+            districtDropdown.selectedIndex = nicosiaOptions.indexOf(selectedDistrict) + 1;
+        } else if(selectedCity === "ΛΕΜΕΣΟΣ") {
+            cityDropdown.selectedIndex = 2;
+            districtDropdown.selectedIndex = limassolOptions.indexOf(selectedDistrict) + 1;
+        } else if(selectedCity === "ΛΑΡΝΑΚΑ") {
+            cityDropdown.selectedIndex = 3;
+            districtDropdown.selectedIndex = larnacaOptions.indexOf(selectedDistrict) + 1;
+        } else if(selectedCity === "ΠΑΦΟΣ") {
+            cityDropdown.selectedIndex = 4;
+            districtDropdown.selectedIndex = paphosOptions.indexOf(selectedDistrict) + 1;
+        } else if(selectedCity === "ΑΜΜΟΧΩΣΤΟΣ") {
+            cityDropdown.selectedIndex = 5;
+            districtDropdown.selectedIndex = famagustaOptions.indexOf(selectedDistrict) + 1;
+        }
+
+        districtDropdown.addEventListener('change', function(e) {
+            selectedDistrict = this.value;
+            document.getElementById("district-name").innerHTML = selectedDistrict == 0 ? "All districts" : selectedDistrict;
         });
+
+        document.getElementById("city-name").innerHTML = selectedCity == 0 ? "All cities" : selectedCity;
+        document.getElementById("district-name").innerHTML = selectedDistrict == 0 ? "All districts" : selectedDistrict;
+        document.getElementById("num-of-stations").innerHTML = STATISTICS_AS_JSON.numOfStations;
+    }
+
+    function handleCitySelection() {
+        districtDropdown.options.length = 0;
+        createOption(districtDropdown, "All districts", "0");
+        var i;
+        switch(selectedCity) {
+            case "ΛΕΥΚΩΣΙΑ":
+                for(i = 0; i < nicosiaOptions.length; i++) {
+                    createOption(districtDropdown, nicosiaOptions[i], nicosiaOptions[i]);
+                }
+                break;
+            case "ΛΕΜΕΣΟΣ":
+                for(i = 0; i < limassolOptions.length; i++) {
+                    createOption(districtDropdown, limassolOptions[i], limassolOptions[i]);
+                }
+                break;
+            case "ΛΑΡΝΑΚΑ":
+                for(i = 0; i < larnacaOptions.length; i++) {
+                    createOption(districtDropdown, larnacaOptions[i], larnacaOptions[i]);
+                }
+                break;
+            case "ΠΑΦΟΣ":
+                for(i = 0; i < paphosOptions.length; i++) {
+                    createOption(districtDropdown, paphosOptions[i], paphosOptions[i]);
+                }
+                break;
+            case "ΑΜΜΟΧΩΣΤΟΣ":
+                for(i = 0; i < famagustaOptions.length; i++) {
+                    createOption(districtDropdown, famagustaOptions[i], famagustaOptions[i]);
+                }
+                break;
+            default:
+                selectedCity = "All cities";
+        }
+
+        document.getElementById("city-name").innerHTML = selectedCity;
+    }
+
+    function apply() {
+        var url = "http://cyprusfuelguide.com/statistics"; // base URL
+        if(selectedCity != 0 && selectedDistrict != 0) {
+            // refresh page with city parameter
+            url += ('?city=' + selectedCity + "&district=" + selectedDistrict);
+        } else if (selectedCity != 0) {
+            // refresh page with city parameter
+            url += ('?city=' + selectedCity);
+        }
+//        console.log("url: " + url);
+        window.location.href = url;
+        // else do nothing
     }
 
     function createOption(ddl, text, value) {
@@ -309,6 +371,159 @@
                 document.getElementById("fuel-type-name").innerHTML = fuelNames[i];
             }
         }
+
+        populateWithType(fuelTypeCode);
+    }
+
+    // Graph code
+
+    function round (value, decimals) {
+        return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+    }
+
+    var oilPrices = [];
+
+    for (var key in STATISTICS_AS_JSON.crudeOilPricesInUsd) {
+        if (!STATISTICS_AS_JSON.crudeOilPricesInUsd.hasOwnProperty(key)) {
+            continue;
+        }
+
+        var priceInUsd = STATISTICS_AS_JSON.crudeOilPricesInUsd[key],
+            eurToUsd = STATISTICS_AS_JSON.eurToUsd[key],
+            price = '~';
+
+        if (eurToUsd !== 0.00 && priceInUsd !== 0.00) {
+            price = round(priceInUsd * (1 / eurToUsd), 2);
+        }
+
+        oilPrices.push(price);
+    }
+
+    var graph = echarts.init(document.getElementById('graph'));
+    graph.setOption({
+        title: {
+            text: 'Fuel prices',
+            subtext: ''
+        },
+        tooltip: {
+            trigger: 'axis',
+            formatter: function (params) {
+                var str = '<strong>' + params[0].name + '</strong>';
+
+                str += '<table cellspacing="0">';
+
+                str += '<tr><td style="text-align: right">Oil price:</td><td>€' + parseFloat(params[2].data).toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Max:</td><td>€' + params[1].data[3].toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">3rd quartile:</td><td>€' + params[1].data[0].toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Mean:</td><td>€' + params[0].value.toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">1st quartile:</td><td>€' + params[1].data[1].toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Min:</td><td>€ ' + params[1].data[2].toFixed(2) + '</td><tr>';
+
+                str += '</table>';
+
+                return str;
+            }
+        },
+        legend: {
+            orient: 'horizontal',
+            x: 'center',
+            y: 0
+        },
+        toolbox: {
+            show: false
+        },
+        calculable: true,
+        xAxis: [{
+            type: 'category',
+//          boundaryGap: false,
+            data: Object.keys(STATISTICS_AS_JSON.means)
+        }],
+        yAxis: [
+            {
+                name: 'Fuel price',
+                type: 'value',
+                scale: true
+            },
+            {
+                name: 'Oil price',
+                type: 'value',
+                scale: true
+            }
+        ],
+        grid: [
+            {
+                //height: 800,
+                bottom: 120
+            }
+        ],
+        dataZoom: [
+            {
+                type: 'inside',
+                startValue: '2017-06-13',
+                end: 100,
+                minValueSpan: 10
+            },
+            {
+                show: true,
+                type: 'slider',
+                startValue: '2017-06-13',
+                end: 100,
+                minValueSpan: 10
+            }
+        ]
+    });
+
+    function populateWithType (type) {
+        var data = {
+            means: [],
+            candlestick: [] // [3rd, 1st, min, max]
+        };
+
+        for (var key in STATISTICS_AS_JSON.means) {
+            if (!STATISTICS_AS_JSON.means.hasOwnProperty(key)) {
+                continue;
+            }
+
+            data.means.push(round(STATISTICS_AS_JSON.means[key][type] / 1000, 2));
+
+            data.candlestick.push([
+                round(STATISTICS_AS_JSON['third-quartiles'][key][type] / 1000, 2),
+                round(STATISTICS_AS_JSON['first-quartiles'][key][type] / 1000, 2),
+                round(STATISTICS_AS_JSON.mins[key][type] / 1000, 2),
+                round(STATISTICS_AS_JSON.maxs[key][type] / 1000, 2)
+            ]);
+        }
+
+        graph.setOption({
+            series: [
+                {
+                    name: 'Mean',
+                    type: 'line',
+                    smooth: true,
+                    z: 10,
+                    data: data.means
+                },
+                {
+                    name: 'range',
+                    type: 'k',
+                    data: data.candlestick
+                },
+                {
+                    name: 'Oil price',
+                    type: 'line',
+                    smooth: true,
+                    z: 11,
+                    yAxisIndex: 1,
+                    connectNulls: true,
+                    lineStyle: {
+                        normal: {
+                            color: '#E1D000'
+                        }
+                    },
+                    data: oilPrices
+                }
+            ]
+        });
     }
 </script>
 

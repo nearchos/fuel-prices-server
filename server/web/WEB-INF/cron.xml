@@ -21,14 +21,14 @@
     <cron>
         <url>/admin/sync-prices</url>
         <description>Sync prices with the ministry's server</description>
-        <schedule>every 60 minutes from 8:00 to 20:00</schedule>
+        <schedule>every 60 minutes from 7:00 to 20:00</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 
     <cron>
         <url>/admin/sync-stations</url>
         <description>Sync prices AND station details with the ministry's server</description>
-        <schedule>every 60 minutes from 7:30 to 19:30</schedule>
+        <schedule>every day 6:30</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 

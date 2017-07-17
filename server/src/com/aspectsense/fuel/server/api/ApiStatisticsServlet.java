@@ -75,9 +75,9 @@ public class ApiStatisticsServlet extends HttpServlet {
 
         final String key = request.getParameter("key");
         final String durationS = request.getParameter("duration");
-        int duration = DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD;
+        int duration;
         try {
-            duration = Integer.parseInt(durationS);
+            duration = durationS == null ? DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD : Integer.parseInt(durationS);
         } catch (NumberFormatException nfe) {
             duration = DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD;
             log.warning(nfe.getMessage());
@@ -370,6 +370,9 @@ public class ApiStatisticsServlet extends HttpServlet {
         }
 
         // finally compute medians, 1st quartiles, and 3rd quartiles
+        Integer [] oldMedians = { 0, 0, 0, 0, 0 };
+        Integer [] oldQuartiles1st = { 0, 0, 0, 0, 0 };
+        Integer [] oldQuartiles3rd = { 0, 0, 0, 0, 0 };
         for(final String date : datesToStationsToPrices.keySet()) {
             final Map<String, Integer[]> stationsToPrices = datesToStationsToPrices.get(date);
             final Integer [] medians = new Integer[FuelType.ALL_FUEL_TYPES.length];
@@ -382,14 +385,24 @@ public class ApiStatisticsServlet extends HttpServlet {
                         prices.add(stationsToPrices.get(station)[i]);
                     }
                 }
-                Collections.sort(prices);
-                medians[i] = prices.get(prices.size() / 2);
-                quartiles1st[i] = prices.get(prices.size() / 4);
-                quartiles3rd[i] = prices.get(prices.size() * 3 / 4);
+//log.fine("***prices: " + prices); // todo delete
+                if(prices.isEmpty()) {
+                    medians[i] = oldMedians[i];
+                    quartiles1st[i] = oldQuartiles1st[i];
+                    quartiles3rd[i] = oldQuartiles3rd[i];
+                } else {
+                    Collections.sort(prices);
+                    medians[i] = prices.get(prices.size() / 2);
+                    quartiles1st[i] = prices.get(prices.size() / 4);
+                    quartiles3rd[i] = prices.get(prices.size() * 3 / 4);
+                }
             }
             uniqueIncludedDatesToMedians.put(date, medians);
             uniqueIncludedDatesTo1stQuartiles.put(date, quartiles1st);
             uniqueIncludedDatesTo3rdQuartiles.put(date, quartiles3rd);
+            oldMedians = medians;
+            oldQuartiles1st = quartiles1st;
+            oldQuartiles3rd = quartiles3rd;
         }
 
         for(final String date : datesToDailySummariesAsJsonMap.keySet()) {
