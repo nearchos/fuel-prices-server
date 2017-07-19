@@ -1,7 +1,12 @@
 <%@ page import="com.aspectsense.fuel.server.data.FuelType" %>
 <%@ page import="com.aspectsense.fuel.server.api.ApiStatisticsServlet" %>
 <%@ page import="com.google.appengine.labs.repackaged.org.json.JSONException" %>
-<%@ page import="java.io.IOException" %><%--
+<%@ page import="java.io.IOException" %>
+<%@ page import="static com.aspectsense.fuel.server.api.ApiStatisticsServlet.ONE_DAY" %>
+<%@ page import="static com.aspectsense.fuel.server.json.Util.SIMPLE_DATE_FORMAT" %>
+<%@ page import="java.util.Date" %>
+<%@ page
+        import="static com.aspectsense.fuel.server.api.ApiStatisticsServlet.DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD" %><%--
   Created by Nearchos Paspallis
   Date: 22-Jun-17
   Time: 5:25 PM
@@ -67,18 +72,23 @@
         final String district = request.getParameter("district");
         final String city = request.getParameter("city");
         // todo handle duration too (currently always 365, but could be set as 30..365)
+        final int selectedDuration = 365;
         String JSON;
         try {
             if(district != null) {
-                JSON = ApiStatisticsServlet.getStatisticsMessageByDistrictAsJSON(365, district);
+                JSON = ApiStatisticsServlet.getStatisticsMessageByDistrictAsJSON(selectedDuration, district);
             } else if(city != null) {
-                JSON = ApiStatisticsServlet.getStatisticsMessageByCityAsJSON(365, city);
+                JSON = ApiStatisticsServlet.getStatisticsMessageByCityAsJSON(selectedDuration, city);
             } else {
-                JSON = ApiStatisticsServlet.getStatisticsMessageAsJSON(365);
+                JSON = ApiStatisticsServlet.getStatisticsMessageAsJSON(selectedDuration);
             }
         } catch (IOException ioe) {
-            JSON = "{ \"status\": \"error: \"" + ioe.getMessage() + " }";
+            JSON = "{ \"status\": \"error: " + ioe.getMessage() + "\" }";
         }
+
+        final long fromTimestamp = System.currentTimeMillis() - DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD * ONE_DAY;
+        final String from = SIMPLE_DATE_FORMAT.format(new Date(fromTimestamp));
+
         %>
         var STATISTICS_AS_JSON = <%=JSON%>;
     </script>
@@ -98,7 +108,7 @@
         </p>
         <p>
             The research and implementation in the Statistics page was funded by <a href="http://www.uclancyprus.ac.cy" target="_blank">UCLan Cyprus</a>
-            and by <a href="http://inspirecenter.org/" target="_blank">Inspire Center</a>.
+            and <a href="http://inspirecenter.org/" target="_blank">Inspire Center</a>.
         </p>
         <p>
             <img src="http://cyprusfuelguide.com/images/uclan-cy.png" title="UCLan Cyprus"/>
@@ -268,7 +278,6 @@
         handleCitySelection();
 
         // handle district initialization
-        districtDropdown.disabled = false;
 
         if(selectedCity == 0) {
             cityDropdown.selectedIndex = 0;
@@ -303,6 +312,7 @@
     function handleCitySelection() {
         districtDropdown.options.length = 0;
         createOption(districtDropdown, "All districts", "0");
+        districtDropdown.disabled = false;
         var i;
         switch(selectedCity) {
             case "ΛΕΥΚΩΣΙΑ":
@@ -331,7 +341,8 @@
                 }
                 break;
             default:
-                selectedCity = "All cities";
+                selectedCity = 0;
+                districtDropdown.disabled = true;
         }
 
         document.getElementById("city-name").innerHTML = selectedCity;
@@ -363,7 +374,7 @@
             fuelTypeCode = 1;
         }
         var fuelTypes = ["1", "2", "3", "4", "5"];
-        var fuelNames = ["unleaded 95", "unleaded 98", "diesel", "kerosene", "heating"];
+        var fuelNames = ["unleaded 95", "unleaded 98", "diesel", "heating", "kerosene"];
         var arrayLength = fuelTypes.length;
         var i;
         for (i = 0; i < arrayLength; i++) {
@@ -402,7 +413,7 @@
     var graph = echarts.init(document.getElementById('graph'));
     graph.setOption({
         title: {
-            text: 'Fuel prices',
+            text: 'Fuel prices trend',
             subtext: ''
         },
         tooltip: {
@@ -417,7 +428,7 @@
                 str += '<tr><td style="text-align: right">3rd quartile:</td><td>€' + params[1].data[0].toFixed(2) + '</td><tr>';
                 str += '<tr><td style="text-align: right">Mean:</td><td>€' + params[0].value.toFixed(2) + '</td><tr>';
                 str += '<tr><td style="text-align: right">1st quartile:</td><td>€' + params[1].data[1].toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">Min:</td><td>€ ' + params[1].data[2].toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Min:</td><td>€' + params[1].data[2].toFixed(2) + '</td><tr>';
 
                 str += '</table>';
 
@@ -440,12 +451,12 @@
         }],
         yAxis: [
             {
-                name: 'Fuel price',
+                name: 'Fuel price (€)',
                 type: 'value',
                 scale: true
             },
             {
-                name: 'Oil price',
+                name: 'Oil price (€)',
                 type: 'value',
                 scale: true
             }
@@ -459,14 +470,14 @@
         dataZoom: [
             {
                 type: 'inside',
-                startValue: '2017-06-13',
+                startValue: '<%=from%>',
                 end: 100,
                 minValueSpan: 10
             },
             {
                 show: true,
                 type: 'slider',
-                startValue: '2017-06-13',
+                startValue: '<%=from%>',
                 end: 100,
                 minValueSpan: 10
             }
@@ -474,6 +485,7 @@
     });
 
     function populateWithType (type) {
+        var typeIndex = type-1;
         var data = {
             means: [],
             candlestick: [] // [3rd, 1st, min, max]
@@ -484,13 +496,13 @@
                 continue;
             }
 
-            data.means.push(round(STATISTICS_AS_JSON.means[key][type] / 1000, 2));
+            data.means.push(round(STATISTICS_AS_JSON.means[key][typeIndex] / 1000, 2));
 
             data.candlestick.push([
-                round(STATISTICS_AS_JSON['third-quartiles'][key][type] / 1000, 2),
-                round(STATISTICS_AS_JSON['first-quartiles'][key][type] / 1000, 2),
-                round(STATISTICS_AS_JSON.mins[key][type] / 1000, 2),
-                round(STATISTICS_AS_JSON.maxs[key][type] / 1000, 2)
+                round(STATISTICS_AS_JSON['third-quartiles'][key][typeIndex] / 1000, 2),
+                round(STATISTICS_AS_JSON['first-quartiles'][key][typeIndex] / 1000, 2),
+                round(STATISTICS_AS_JSON.mins[key][typeIndex] / 1000, 2),
+                round(STATISTICS_AS_JSON.maxs[key][typeIndex] / 1000, 2)
             ]);
         }
 
