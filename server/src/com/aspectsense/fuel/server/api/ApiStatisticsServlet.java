@@ -226,7 +226,7 @@ public class ApiStatisticsServlet extends HttpServlet {
     private static String getStatisticsMessageAsJSON(final int duration, final Set<String> selectedStationIds) throws IOException {
 
         final Map<String,String> dailySummariesAsJson = new HashMap<>();
-        // we know that duration in in [DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD, MAX_NUM_OF_DAYS_IN_STATISTICS_PERIOD]
+        // we know that duration is in [DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD, MAX_NUM_OF_DAYS_IN_STATISTICS_PERIOD]
         final long toTimestamp = System.currentTimeMillis();
         final String to = SIMPLE_DATE_FORMAT.format(new Date(toTimestamp));
         final long fromTimestamp = toTimestamp - duration * ONE_DAY;
