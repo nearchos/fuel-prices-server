@@ -453,12 +453,18 @@
             {
                 name: 'Fuel price (€)',
                 type: 'value',
-                scale: true
+                scale: true,
+                nameTextStyle: {
+                    color: 'red'
+                }
             },
             {
                 name: 'Oil price (€)',
                 type: 'value',
-                scale: true
+                scale: true,
+                nameTextStyle: {
+                    color: '#e1d000'
+                }
             }
         ],
         grid: [
