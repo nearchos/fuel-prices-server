@@ -151,6 +151,12 @@ Time: 10:19
                             </p>
 
                             <p class="cfg-privacy-text">
+                                Additional data used in the statistics/visualization pages are
+                                the crude oil prices from <a href="http://finance.yahoo.com" target="_blank">Yahoo! finance</a>,
+                                and EUR/USD rates from <a href="http://fixer.io" target="_blank">fixer.io</a>.
+                            </p>
+
+                            <p class="cfg-privacy-text">
                                 From a technical perspective, this service is built with Java on Google App Engine, along with a healthy amount
                                 of JavaScript. We periodically fetch the updated prices from the Ministry's server and update a Google
                                 Datastore-based database. Our apps
