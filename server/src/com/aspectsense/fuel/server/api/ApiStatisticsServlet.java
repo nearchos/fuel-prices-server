@@ -385,7 +385,7 @@ public class ApiStatisticsServlet extends HttpServlet {
                         prices.add(stationsToPrices.get(station)[i]);
                     }
                 }
-//log.fine("***prices: " + prices); // todo delete
+
                 if(prices.isEmpty()) {
                     medians[i] = oldMedians[i];
                     quartiles1st[i] = oldQuartiles1st[i];

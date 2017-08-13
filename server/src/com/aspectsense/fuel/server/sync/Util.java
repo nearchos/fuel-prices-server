@@ -26,10 +26,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
-import java.util.Scanner;
+import java.io.*;
 import java.util.Vector;
 import java.util.logging.Logger;
 
@@ -102,14 +99,21 @@ public class Util {
                         priceModificationDate = child.getTextContent();
                     } else if ("map_coordinates".equals(name)) {
                         final String mapCoordinates = child.getTextContent();
-                        if(mapCoordinates.contains("N")) {
-                            String latS = mapCoordinates.substring(0, mapCoordinates.indexOf("N"));
-                            String lngS = mapCoordinates.substring(mapCoordinates.indexOf("N")+ 2, mapCoordinates.indexOf("E"));
-                            stationLatitude = convertToLatitudeOrLongitude(latS);
-                            stationLongitude = convertToLatitudeOrLongitude(lngS);
-                        } else {
-                            stationLatitude = mapCoordinates.substring(0, mapCoordinates.indexOf(","));
-                            stationLongitude = mapCoordinates.substring(mapCoordinates.indexOf(",") + 1);
+                        try {
+                            if(mapCoordinates == null || mapCoordinates.isEmpty()) {
+                                stationLatitude = "0";
+                                stationLongitude = "0";
+                            } else if (mapCoordinates.contains("N")) {
+                                String latS = mapCoordinates.substring(0, mapCoordinates.indexOf("N"));
+                                String lngS = mapCoordinates.substring(mapCoordinates.indexOf("N") + 2, mapCoordinates.indexOf("E"));
+                                stationLatitude = convertToLatitudeOrLongitude(latS);
+                                stationLongitude = convertToLatitudeOrLongitude(lngS);
+                            } else {
+                                stationLatitude = mapCoordinates.substring(0, mapCoordinates.indexOf(","));
+                                stationLongitude = mapCoordinates.substring(mapCoordinates.indexOf(",") + 1);
+                            }
+                        } catch (StringIndexOutOfBoundsException sioobe) {
+                            log.warning("Station with no coordinates set: " + stationCode + " (mapCoordinates: " + mapCoordinates + ")");
                         }
                     } else if ("Fuel_Price".equals(name)) {
                         fuelPrice = child.getTextContent();
@@ -157,61 +161,24 @@ public class Util {
         return String.format("%9.6f", d + m / 60d + s / 3600d);
     }
 
-//    public static int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
-//
-//        final Map<String, Station> stationsByStationCode = StationFactory.getAllStationCodesToStations(0);
-//        int numOfChanges = 0;
-//
-//        // update the data for offline stations
-//        final long updateTimestamp = System.currentTimeMillis();
-//
-//        // sync stations, if needed (as indicated by syncStations boolean value)
-//        if(syncStations) {
-//            for(final PetroleumPriceDetail petroleumPriceDetail : petroleumPriceDetails) {
-//                final String stationCode = petroleumPriceDetail.getStationCode();
-//
-//                final Station station = stationsByStationCode.get(stationCode);
-//                if (station == null) { // new station added
-//                    StationFactory.addStation(petroleumPriceDetail.getFuelCompanyCode(),
-//                            petroleumPriceDetail.getFuelCompanyName(),
-//                            petroleumPriceDetail.getStationCode(),
-//                            petroleumPriceDetail.getStationName(),
-//                            petroleumPriceDetail.getStationTelNo(),
-//                            petroleumPriceDetail.getStationCity(),
-//                            petroleumPriceDetail.getStationDistrict(),
-//                            petroleumPriceDetail.getStationAddress(),
-//                            petroleumPriceDetail.getStationLatitude(),
-//                            petroleumPriceDetail.getStationLongitude(),
-//                            updateTimestamp
-//                    );
-//                    numOfChanges++;
-//                } else if (petroleumPriceDetail.hasChanges(station)) { // existing station was edited
-//                    // update datastore entry of the station
-//                    StationFactory.editStation(station.getUuid(),
-//                            petroleumPriceDetail.getFuelCompanyCode(),
-//                            petroleumPriceDetail.getFuelCompanyName(),
-//                            petroleumPriceDetail.getStationCode(),
-//                            petroleumPriceDetail.getStationName(),
-//                            petroleumPriceDetail.getStationTelNo(),
-//                            petroleumPriceDetail.getStationCity(),
-//                            petroleumPriceDetail.getStationDistrict(),
-//                            petroleumPriceDetail.getStationAddress(),
-//                            petroleumPriceDetail.getStationLatitude(),
-//                            petroleumPriceDetail.getStationLongitude(),
-//                            updateTimestamp
-//                    );
-//                    numOfChanges++;
-//                }
+//    public static void main(String[] args) {
+//        try {
+//            System.out.println(new File(".").getAbsolutePath());
+//            final File file = new File("test3.json.txt");
+//            final FileInputStream fileInputStream = new FileInputStream(file);
+//            final byte [] data = new byte[(int) file.length()];
+//            fileInputStream.read(data);
+//            fileInputStream.close();
+//            final String testJsonMessage = new String(data, "UTF-8").substring(1);
+//            for(int i = 0; i < 10; i++) {
+//                System.out.println(i + " -> " + testJsonMessage.charAt(i));
 //            }
+////            System.out.println(">>" + testJsonMessage + "<<");
+//            System.out.println("--------");
+//
+//            parseXmlPollResponse(testJsonMessage, "1");
+//        } catch (IOException ioe) {
+//            System.out.println(ioe.getMessage());
 //        }
-//
-//        // sync prices
-////        final Prices prices =
-//        PricesFactory.addPrices(petroleumPriceDetails, fuelType);
-//
-//        OfflinesFactory.addOfflines(petroleumPriceDetails);
-////        OfflineFactory.updateOfflines(petroleumPriceDetails, updateTimestamp);
-//
-//        return numOfChanges;
 //    }
 }

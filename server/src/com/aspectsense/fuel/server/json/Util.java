@@ -6,12 +6,15 @@ import com.aspectsense.fuel.server.datastore.StationsFactory;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.logging.Logger;
 
 /**
  * @author Nearchos Paspallis
  * 13-Feb-16.
  */
 public class Util {
+
+    public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
     public static final SimpleDateFormat SIMPLE_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
 
@@ -35,7 +38,12 @@ public class Util {
 //        final Map<String, Station> stationsMap = StationsParser.jsonArrayToMap(stationsJson);
 //        final Map<String,Integer> prices = PricesParser.fromPricesJson(pricesJson);
         for(final String stationCode : prices.keySet()) {
-            final City stationCity = City.decode(stationsMap.get(stationCode).getStationCity());
+            final Station station = stationsMap.get(stationCode);
+            if(station == null) {
+                log.warning("Skipping unknown station code: " + stationCode);
+                continue;
+            }
+            final City stationCity = City.decode(station.getStationCity());
             final int price = prices.get(stationCode);
             if(price < cheapestPricesPerCity.get(stationCity)) {
                 cheapestPricesPerCity.put(stationCity, price);

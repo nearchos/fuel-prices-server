@@ -97,21 +97,20 @@ public class PollServlet extends HttpServlet {
         }
 
         try {
-            final String xml = doPoll(correlationId, productionUrlPoll, userId, userPasswordHashed);
             if(debug) {
-                log.info("xml: \n" +xml);
+                log.info("doPoll(correlationId=" + correlationId + ", productionUrlPoll=" + productionUrlPoll + ", userId=" + userId + ", userPasswordHashed=..." + userPasswordHashed.substring(Math.max(0, userPasswordHashed.length()-3)) + ")");
             }
+            final String xml = doPoll(correlationId, productionUrlPoll, userId, userPasswordHashed);
 
             // handle xml
             final Vector<PetroleumPriceDetail> petroleumPriceDetails = Util.parseXmlPollResponse(xml, fuelType);
-//            final int numOfChanges = Util.updateDatastore(petroleumPriceDetails, fuelType, syncStations);
-            final int numOfChanges = updateDatastore(petroleumPriceDetails, fuelType, syncStations);
-            log.info("Util.updateDatastore(petroleumPriceDetails, fuelType) -> " + numOfChanges + ", " +
-                    "elapsed: " + (System.currentTimeMillis() - start));
+
+            updateDatastore(petroleumPriceDetails, fuelType, syncStations);
+            log.info("updateDatastore(petroleumPriceDetails, fuelType=" + fuelType + ", syncStations=" + syncStations + ") -> " + "elapsed: " + (System.currentTimeMillis() - start));
 
             printWriter.println("{ \"result\": \"ok\", " +
-                    "\"numOfChanges\": " + numOfChanges + ", " +
                     "\"fuelType\": \"" + fuelType + "\", " +
+                    "\"syncStations\":" + syncStations + ", " +
                     "\"debug\":" + debug + ", " +
                     (debug ? "\"xml\": \"" + xml + "\", " : "") +
                     "\"elapsed\": " + (System.currentTimeMillis() - start) + " }");
@@ -192,9 +191,7 @@ public class PollServlet extends HttpServlet {
         }
     }
 
-    private int updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
-
-        int numOfChanges = 0;
+    private void updateDatastore(final Vector<PetroleumPriceDetail> petroleumPriceDetails, final String fuelType, final boolean syncStations) {
 
         // update the data for offline stations
         final long updateTimestamp = System.currentTimeMillis();
@@ -209,7 +206,5 @@ public class PollServlet extends HttpServlet {
 
         // sync offlines
         OfflinesFactory.addOfflines(petroleumPriceDetails, updateTimestamp);
-
-        return numOfChanges;
     }
 }
