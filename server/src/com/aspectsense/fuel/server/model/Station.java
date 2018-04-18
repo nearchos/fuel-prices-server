@@ -65,7 +65,7 @@ public class Station implements Serializable {
 
     public String getStationBrand() {
         if(stationBrand != null && !stationBrand.isEmpty()) {
-            return stationBrand;
+            return stationBrand.trim().replaceAll(" ", "-");
         }
         else if(stationCode.startsWith("AG")) return "Agip";
         else if(stationCode.startsWith("EK")) return "Eko";
