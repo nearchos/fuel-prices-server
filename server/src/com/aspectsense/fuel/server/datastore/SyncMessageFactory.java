@@ -1,6 +1,7 @@
 package com.aspectsense.fuel.server.datastore;
 
-import com.aspectsense.fuel.server.data.SyncMessage;
+import com.aspectsense.fuel.server.data.SyncMessageEntity;
+import com.aspectsense.fuel.server.data.SyncMessageEntity;
 import com.google.appengine.api.datastore.*;
 
 import java.util.HashMap;
@@ -16,46 +17,46 @@ import java.util.logging.Logger;
 public class SyncMessageFactory {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
-    public static final String KIND = "SyncMessage";
+    public static final String KIND = "SyncMessageEntity";
 
     public static final String PROPERTY_JSON            = "json";
     public static final String PROPERTY_NUM_OF_CHANGES  = "num_of_changes";
     public static final String PROPERTY_LAST_UPDATED    = "last_updated";
 
     /**
-     * Returns the latest SyncMessage in the datastore, or null if none is found in the datastore
+     * Returns the latest SyncMessageEntity in the datastore, or null if none is found in the datastore
      *
-     * @return the latest SyncMessage in the datastore, or null if none is found in the datastore
+     * @return the latest SyncMessageEntity in the datastore, or null if none is found in the datastore
      */
-    static public SyncMessage queryLatestSyncMessage() {
-        final Vector<SyncMessage> syncMessages = queryLatestSyncMessages(1);
-        if(syncMessages.isEmpty()) {
+    static public SyncMessageEntity queryLatestSyncMessage() {
+        final Vector<SyncMessageEntity> syncMessageEntities = queryLatestSyncMessages(1);
+        if(syncMessageEntities.isEmpty()) {
             return null;
         } else {
-            return syncMessages.firstElement();
+            return syncMessageEntities.firstElement();
         }
     }
 
     /**
-     * Returns a vector containing up to numOfMessagesToFetch of {@link SyncMessage}s
-     * @param numOfMessagesToFetch the number of {@link SyncMessage}s to be retrieved
-     * @return a vector containing up to numOfMessagesToFetch of {@link SyncMessage}s
+     * Returns a vector containing up to numOfMessagesToFetch of {@link SyncMessageEntity}s
+     * @param numOfMessagesToFetch the number of {@link SyncMessageEntity}s to be retrieved
+     * @return a vector containing up to numOfMessagesToFetch of {@link SyncMessageEntity}s
      */
-    static public Vector<SyncMessage> queryLatestSyncMessages(final int numOfMessagesToFetch) {
+    static public Vector<SyncMessageEntity> queryLatestSyncMessages(final int numOfMessagesToFetch) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query query = new Query(KIND).addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
         // assert exactly one (or none) is found
         final FetchOptions fetchOptions = FetchOptions.Builder.withLimit(numOfMessagesToFetch);
         final List<Entity> list = preparedQuery.asList(fetchOptions);
-        final Vector<SyncMessage> syncMessages = new Vector<>();
+        final Vector<SyncMessageEntity> syncMessageEntities = new Vector<>();
         for(final Entity entity : list) {
-            syncMessages.add(getFromEntity(entity));
+            syncMessageEntities.add(getFromEntity(entity));
         }
-        return syncMessages;
+        return syncMessageEntities;
     }
 
-    static public SyncMessage querySyncMessage(final long lastUpdated) {
+    static public SyncMessageEntity querySyncMessage(final long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query.Filter filter = new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.EQUAL, lastUpdated);
         final Query query = new Query(KIND).setFilter(filter).addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
@@ -91,8 +92,8 @@ public class SyncMessageFactory {
 
         final PreparedQuery preparedQuery = datastoreService.prepare(query);
         for(Entity entity : preparedQuery.asIterable()) {
-            final SyncMessage syncMessage = getFromEntity(entity);
-            syncMessages.put(syncMessage.getLastUpdated(), syncMessage.getJson());
+            final SyncMessageEntity syncMessageEntity = getFromEntity(entity);
+            syncMessages.put(syncMessageEntity.getLastUpdated(), syncMessageEntity.getJson());
             allKeys.add(entity.getKey());
         }
         if(delete)
@@ -112,8 +113,8 @@ public class SyncMessageFactory {
         return datastoreService.put(syncMessageEntity);
     }
 
-    static public SyncMessage getFromEntity(final Entity entity) {
-        return new SyncMessage(
+    static public SyncMessageEntity getFromEntity(final Entity entity) {
+        return new SyncMessageEntity(
                 KeyFactory.keyToString(entity.getKey()),
                 ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
                 (entity.hasProperty(PROPERTY_NUM_OF_CHANGES) ? (Long) entity.getProperty(PROPERTY_NUM_OF_CHANGES) : -1L),

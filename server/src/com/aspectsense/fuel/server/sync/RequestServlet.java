@@ -61,7 +61,7 @@ public class RequestServlet extends HttpServlet {
     private static String userPasswordHashed = null;
     private static String productionUrlQuery = null;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();

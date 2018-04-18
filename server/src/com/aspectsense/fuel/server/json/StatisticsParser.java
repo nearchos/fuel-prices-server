@@ -19,7 +19,6 @@ package com.aspectsense.fuel.server.json;
 
 import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.TimestampedPrices;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
 
 import java.util.*;
 
@@ -43,7 +42,7 @@ public class StatisticsParser {
             final Map<String,Integer[]> uniqueIncludedDatesTo3rdQuartiles,
             final Map<String,Integer[]> uniqueIncludedDatesToMins,
             final Map<String,Integer[]> uniqueIncludedDatesToMaxs,
-            final String duration, final String from, final String to) throws JSONException {
+            final String duration, final String from, final String to) {
 
         // the generated message will have for each station and each fuel type...
         // stationCode -> timestamps: [date-1, date-2, date-3, ..., date-N], prices: [price-1, price-2, price-3, ..., price-N]

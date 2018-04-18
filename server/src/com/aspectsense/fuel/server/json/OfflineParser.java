@@ -1,6 +1,6 @@
 package com.aspectsense.fuel.server.json;
 
-import com.aspectsense.fuel.server.data.Offline;
+import com.aspectsense.fuel.server.model.Offline;
 
 /**
  * @author Nearchos Paspallis

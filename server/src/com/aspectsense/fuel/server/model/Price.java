@@ -1,4 +1,4 @@
-package com.aspectsense.fuel.server.data;
+package com.aspectsense.fuel.server.model;
 
 import java.io.Serializable;
 import java.util.Arrays;
@@ -9,9 +9,14 @@ import java.util.Arrays;
  */
 public class Price implements Serializable {
 
-    private final String stationCode;
-    private final int [] prices;
-    private final long [] timestamps;
+    @com.google.gson.annotations.SerializedName("stationCode")
+    private String stationCode;
+    @com.google.gson.annotations.SerializedName("prices")
+    private int [] prices;
+    private long [] timestamps;
+
+    public Price() {
+    }
 
     public Price(final String stationCode, final int [] prices, final long [] timestamps) {
         this.stationCode = stationCode;

@@ -11,15 +11,8 @@
         </webroots>
       </configuration>
     </facet>
-    <facet type="google-app-engine" name="Google App Engine">
-      <configuration>
-        <sdk-home-path>C:/Program Files/appengine-java-sdk-1.9.38</sdk-home-path>
-        <run-enhancer-on-make>true</run-enhancer-on-make>
-        <files-to-enhance>
-          <file path="$MODULE_DIR$/src" />
-        </files-to-enhance>
-        <persistence-api>JDO3</persistence-api>
-      </configuration>
+    <facet type="app-engine-standard" name="Google App Engine">
+      <configuration />
     </facet>
   </component>
   <component name="NewModuleRootManager" inherit-compiler-output="true">
@@ -29,7 +22,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" scope="PROVIDED" name="AppEngine Dev 1.9.38" level="application_server_libraries" />
-    <orderEntry type="library" name="AppEngine API 1.9.38" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="AppEngine Dev 1.9.53" level="application_server_libraries" />
+    <orderEntry type="library" scope="PROVIDED" name="AppEngine API 1.9.53" level="application" />
+    <orderEntry type="library" scope="PROVIDED" name="com.google.appengine:appengine-api-1.0-sdk:Release" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="javax.servlet:servlet-api:2.5" level="project" />
+    <orderEntry type="library" scope="PROVIDED" name="javax.servlet:jstl:1.2" level="project" />
+    <orderEntry type="library" name="com.google.code.gson:gson:2.8.2" level="project" />
   </component>
 </module>

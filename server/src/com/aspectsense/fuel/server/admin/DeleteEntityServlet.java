@@ -49,7 +49,7 @@ public class DeleteEntityServlet extends HttpServlet
     public static final String PROPERTY_UUID = "uuid";
     public static final String REDIRECT_URL = "redirect-url";
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException
     {
         final UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();

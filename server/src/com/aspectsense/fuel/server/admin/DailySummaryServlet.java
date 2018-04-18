@@ -20,13 +20,10 @@ package com.aspectsense.fuel.server.admin;
 import com.aspectsense.fuel.server.data.FuelType;
 import com.aspectsense.fuel.server.data.Parameter;
 import com.aspectsense.fuel.server.data.Prices;
-import com.aspectsense.fuel.server.data.Stations;
 import com.aspectsense.fuel.server.datastore.*;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.aspectsense.fuel.server.model.FixrIoMessage;
+import com.google.gson.Gson;
 
-import javax.mail.*;
-import javax.mail.internet.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -34,10 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -58,7 +53,7 @@ public class DailySummaryServlet extends HttpServlet {
     public static final long MILLISECONDS_IN_A_DAY = 24L * 60 * 60 * 1000L;
     public static final long MILLISECONDS_IN_A_WEEK = 7L * MILLISECONDS_IN_A_DAY;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
 
@@ -92,10 +87,13 @@ public class DailySummaryServlet extends HttpServlet {
         double eurGbp = 0; // default is zero (i.e. unknown)
         try {
             final String exchangeRatesJson = makeRequest(EXCHANGE_RATE_SERVICE_URL);
-            final JSONObject replyJsonObject = new JSONObject(exchangeRatesJson);
-            eurUsd = replyJsonObject.getJSONObject("rates").getDouble("USD");
-            eurGbp = replyJsonObject.getJSONObject("rates").getDouble("GBP");
-        } catch (final IOException | JSONException e) {
+//            final JSONObject replyJsonObject = new JSONObject(exchangeRatesJson);
+//            eurUsd = replyJsonObject.getJSONObject("rates").getDouble("USD");
+            FixrIoMessage fixrIoMessage = new Gson().fromJson(exchangeRatesJson, FixrIoMessage.class);
+            eurUsd = fixrIoMessage.getRate("USD");
+//            eurGbp = replyJsonObject.getJSONObject("rates").getDouble("GBP");
+            eurGbp = eurUsd = fixrIoMessage.getRate("GBP");
+        } catch (final IOException e) {
             final String error = "SyncExchangeRates error -> " + e.getMessage();
             log.warning(error);
         }

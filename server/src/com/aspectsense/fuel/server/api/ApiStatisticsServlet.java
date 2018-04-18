@@ -21,20 +21,19 @@ import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.DailySummaryFactory;
 import com.aspectsense.fuel.server.datastore.StationsFactory;
-import com.aspectsense.fuel.server.json.DailySummaryBundle;
+import com.aspectsense.fuel.server.model.DailySummary;
 import com.aspectsense.fuel.server.json.DailySummaryParser;
 import com.aspectsense.fuel.server.json.StationsParser;
 import com.aspectsense.fuel.server.json.StatisticsParser;
+import com.aspectsense.fuel.server.model.Station;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.ParseException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -65,10 +64,9 @@ public class ApiStatisticsServlet extends HttpServlet {
      * </ol>
      * @param request
      * @param response
-     * @throws ServletException
      * @throws IOException
      */
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
@@ -114,7 +112,7 @@ public class ApiStatisticsServlet extends HttpServlet {
         }
     }
 
-    public static String getStatisticsMessageAsJSON() throws JSONException {
+    public static String getStatisticsMessageAsJSON() {
 
         final long now = System.currentTimeMillis();
         final String to = SIMPLE_DATE_FORMAT.format(new Date(now));
@@ -221,9 +219,8 @@ public class ApiStatisticsServlet extends HttpServlet {
      * {@link @DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD} and {@link @MAX_NUM_OF_DAYS_IN_STATISTICS_PERIOD}
      * @param selectedStationIds
      * @return a JSON-formatted string of the statistics message relevant to the specified dates and filtered stations
-     * @throws IOException
      */
-    private static String getStatisticsMessageAsJSON(final int duration, final Set<String> selectedStationIds) throws IOException {
+    private static String getStatisticsMessageAsJSON(final int duration, final Set<String> selectedStationIds) {
 
         final Map<String,String> dailySummariesAsJson = new HashMap<>();
         // we know that duration is in [DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD, MAX_NUM_OF_DAYS_IN_STATISTICS_PERIOD]
@@ -240,11 +237,11 @@ public class ApiStatisticsServlet extends HttpServlet {
             }
         }
 
-        try {
+//        try {
             return createStatisticsMessageAsJson(from, to, dailySummariesAsJson, selectedStationIds);
-        } catch (JSONException jsone) {
-            throw new IOException(jsone.getMessage());
-        }
+//        } catch (JSONException jsone) {
+//            throw new IOException(jsone.getMessage());
+//        }
     }
 
     private static String getDailySummaryAsJson(final MemcacheService memcacheService, final String dateS) {
@@ -253,19 +250,19 @@ public class ApiStatisticsServlet extends HttpServlet {
         if(memcacheService.contains(memcacheKey)) {
             return (String) memcacheService.get(memcacheKey);
         } else {
-            final DailySummary dailySummary = DailySummaryFactory.getDailySummary(dateS);
-            if(dailySummary == null) {
+            final DailySummaryEntity dailySummaryEntity = DailySummaryFactory.getDailySummary(dateS);
+            if(dailySummaryEntity == null) {
                 return null;
             } else {
-                dailySummaryAsJson = dailySummary.getJson();
+                dailySummaryAsJson = dailySummaryEntity.getJson();
                 memcacheService.put(memcacheKey, dailySummaryAsJson);
                 return dailySummaryAsJson;
             }
         }
     }
 
-    private static String createStatisticsMessageAsJson(final String from, final String to, final Map<String,String> datesToDailySummariesAsJsonMap, final Set<String> selectedStationCodes)
-            throws JSONException {
+    private static String createStatisticsMessageAsJson(final String from, final String to,
+                    final Map<String,String> datesToDailySummariesAsJsonMap, final Set<String> selectedStationCodes) {
 
         final long start = System.currentTimeMillis();
 
@@ -275,11 +272,11 @@ public class ApiStatisticsServlet extends HttpServlet {
         final Map<String, Double> datesToEurUsd = new HashMap<>();
         final Map<String, Double> datesToEurGbp = new HashMap<>();
         for(final String dateS : datesToDailySummariesAsJsonMap.keySet()) {
-            final DailySummaryBundle dailySummaryBundle = DailySummaryParser.fromDailySummaryJson(datesToDailySummariesAsJsonMap.get(dateS));
-            datesToCrudeOilPriceInUsd.put(dateS, dailySummaryBundle.getCrudeOilPriceInUSD());
-            datesToEurUsd.put(dateS, dailySummaryBundle.getEurToUsd());
-            datesToEurGbp.put(dateS, dailySummaryBundle.getEurToGbp());
-            final Map<String, Integer[]> stationsToPrices = dailySummaryBundle.getStationCodeToPricesMap();
+            final DailySummary dailySummary = DailySummaryParser.fromDailySummaryJson(datesToDailySummariesAsJsonMap.get(dateS));
+            datesToCrudeOilPriceInUsd.put(dateS, dailySummary.getCrudeOilPriceInUSD());
+            datesToEurUsd.put(dateS, dailySummary.getEurToUsd());
+            datesToEurGbp.put(dateS, dailySummary.getEurToGbp());
+            final Map<String, Integer[]> stationsToPrices = dailySummary.getStationCodeToPricesMap();
             allStations.addAll(stationsToPrices.keySet());
             datesToStationsToPrices.put(dateS, stationsToPrices);
         }

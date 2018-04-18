@@ -15,7 +15,7 @@
  * along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.aspectsense.fuel.server.data;
+package com.aspectsense.fuel.server.model;
 
 import java.io.Serializable;
 
@@ -28,18 +28,32 @@ import java.io.Serializable;
  */
 public class Station implements Serializable {
 
-    private final String stationCode;
-    private final String stationName;
-    private final String stationTelNo;
-    private final String stationCity;
-    private final String stationDistrict;
-    private final String stationAddress;
-    private final double stationLatitude;
-    private final double stationLongitude;
+    @com.google.gson.annotations.SerializedName("code")
+    private String stationCode;
+    @com.google.gson.annotations.SerializedName("brand")
+    private String stationBrand;
+    @com.google.gson.annotations.SerializedName("name")
+    private String stationName;
+    @com.google.gson.annotations.SerializedName("telNo")
+    private String stationTelNo;
+    @com.google.gson.annotations.SerializedName("city")
+    private String stationCity;
+    @com.google.gson.annotations.SerializedName("district")
+    private String stationDistrict;
+    @com.google.gson.annotations.SerializedName("address")
+    private String stationAddress;
+    @com.google.gson.annotations.SerializedName("lat")
+    private double stationLatitude;
+    @com.google.gson.annotations.SerializedName("lng")
+    private double stationLongitude;
 
-    public Station(String stationCode, String stationName, String stationTelNo, String stationCity,
+    public Station() {
+    }
+
+    public Station(String stationCode, String stationBrand, String stationName, String stationTelNo, String stationCity,
                    String stationDistrict, String stationAddress, double stationLatitude, double stationLongitude) {
         this.stationCode = stationCode;
+        this.stationBrand = stationBrand;
         this.stationName = stationName;
         this.stationTelNo = stationTelNo;
         this.stationCity = stationCity;
@@ -50,7 +64,10 @@ public class Station implements Serializable {
     }
 
     public String getStationBrand() {
-        if(stationCode.startsWith("AG")) return "Agip";
+        if(stationBrand != null && !stationBrand.isEmpty()) {
+            return stationBrand;
+        }
+        else if(stationCode.startsWith("AG")) return "Agip";
         else if(stationCode.startsWith("EK")) return "Eko";
         else if(stationCode.startsWith("ES")) return "Esso";
         else if(stationCode.startsWith("IS")) return "Independent";
@@ -103,6 +120,7 @@ public class Station implements Serializable {
         if (Double.compare(station.stationLatitude, stationLatitude) != 0) return false;
         if (Double.compare(station.stationLongitude, stationLongitude) != 0) return false;
         if (!stationCode.equals(station.stationCode)) return false;
+        if ((stationBrand == null && station.stationBrand != null) || (stationBrand != null && !stationBrand.equals(station.stationBrand))) return false;
         if (!stationName.equals(station.stationName)) return false;
         if (!stationTelNo.equals(station.stationTelNo)) return false;
         if (!stationCity.equals(station.stationCity)) return false;

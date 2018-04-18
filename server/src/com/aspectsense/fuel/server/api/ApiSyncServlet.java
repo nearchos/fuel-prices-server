@@ -20,20 +20,20 @@ package com.aspectsense.fuel.server.api;
 import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.*;
 import com.aspectsense.fuel.server.json.*;
+import com.aspectsense.fuel.server.model.Offline;
+import com.aspectsense.fuel.server.model.Price;
+import com.aspectsense.fuel.server.model.Station;
+import com.aspectsense.fuel.server.model.SyncMessage;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.google.gson.Gson;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -47,7 +47,7 @@ public class ApiSyncServlet extends HttpServlet {
 
     private static final Logger log = Logger.getLogger("cyprusfuelguide");
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
@@ -66,17 +66,13 @@ public class ApiSyncServlet extends HttpServlet {
         } else if(!ApiKeyFactory.isActive(key)) {
             response.getWriter().println(" { \"status\": \"error\", \"message\": \"invalid key\" }");
         } else {
-            try {
-                response.getWriter().println(getSyncMessageAsJSON(fromTimestamp)); // compute reply
-            } catch (JSONException jsone) {
-                response.getWriter().println(" { \"status\": \"error\", \"message\": \"" + jsone.getMessage() + "\" }");
-            }
+            response.getWriter().println(getSyncMessageAsJSON(fromTimestamp)); // compute reply
         }
     }
 
     public static final String SYNC_NAMESPACE = "sync";
 
-    private String getSyncMessageAsJSON(final long fromTimestamp) throws JSONException {
+    private String getSyncMessageAsJSON(final long fromTimestamp) {
 
         // first check if the requested data is already in memcache
         final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(SYNC_NAMESPACE);
@@ -85,28 +81,28 @@ public class ApiSyncServlet extends HttpServlet {
         } else { // key not found in memcache - data must be dynamically generated now (and stored in cache at the end)
             final long start = System.currentTimeMillis();
             final String reply;
-            final SyncMessage targetSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
-            if(targetSyncMessage == null) {
+            final SyncMessageEntity targetSyncMessageEntity = SyncMessageFactory.queryLatestSyncMessage();
+            if(targetSyncMessageEntity == null) {
                 log.severe("No SyncMessages in datastore");
                 return "{ \"status\": \"error\", \"message\": \"No SyncMessages in datastore\"}";
             } else {
                 final Modifications modifications;
                 if(fromTimestamp == 0L) { // no need to compute modifications, just return the latest data
-                    modifications = computeModifications(targetSyncMessage);
+                    modifications = computeModifications(targetSyncMessageEntity);
                 } else { // must dynamically compute the changes
-                    final SyncMessage sourceSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
-                    if(sourceSyncMessage == null) {
-                        log.warning("No SyncMessage in datastore for given timestamp:" + fromTimestamp);
+                    final SyncMessageEntity sourceSyncMessageEntity = SyncMessageFactory.querySyncMessage(fromTimestamp);
+                    if(sourceSyncMessageEntity == null) {
+                        log.warning("No SyncMessageEntity in datastore for given timestamp:" + fromTimestamp);
                         // revert to sending back the whole Sync message
                         return getSyncMessageAsJSON(0L);
                     } else {
-                        modifications = computeModifications(sourceSyncMessage, targetSyncMessage);
+                        modifications = computeModifications(sourceSyncMessageEntity, targetSyncMessageEntity);
                     }
                 }
 
                 final long finish = System.currentTimeMillis();
 
-                reply = formReplyMessage(fromTimestamp, modifications, finish-start, targetSyncMessage.getLastUpdated());
+                reply = formReplyMessage(fromTimestamp, modifications, finish-start, targetSyncMessageEntity.getLastUpdated());
 
                 memcacheService.put(fromTimestamp, reply); // store in memcache
             }
@@ -114,25 +110,29 @@ public class ApiSyncServlet extends HttpServlet {
         }
     }
 
-    private Modifications computeModifications(final SyncMessage targetSyncMessage) throws JSONException {
+    private Modifications computeModifications(final SyncMessageEntity targetSyncMessageEntity) {
+        final Gson gson = new Gson();
+
         // compute target-related data
-        final String targetJson = targetSyncMessage.getJson();
-        final JSONObject targetJsonObject = new JSONObject(targetJson);
+        final String targetJson = targetSyncMessageEntity.getJson();
+//        final JSONObject targetJsonObject = new JSONObject(targetJson);
+        final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
 
-        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
-        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
+//        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+        final Station [] targetStations = targetSyncMessage.getStations();
 
-        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
-        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
+//        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+        final Map<String, Boolean> targetOfflines = targetSyncMessage.getOfflinesMap();
 
-        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
-        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+//        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
+//        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+        final Map<String, Price> targetPrices = targetSyncMessage.getPricesMap();
 
         // add all stations
         final Vector<Station> modifiedStations = new Vector<>();
-        for(final Station station : targetStations) {
-            modifiedStations.add(station);
-        }
+        Collections.addAll(modifiedStations, targetStations);
 
         // no station was removed
         final Vector<Station> removedStations = new Vector<>();
@@ -156,37 +156,47 @@ public class ApiSyncServlet extends HttpServlet {
 
     }
 
-    public static Modifications computeModifications(final SyncMessage sourceSyncMessage, final SyncMessage targetSyncMessage) throws JSONException {
-        final String sourceJson = sourceSyncMessage.getJson();
-        final String targetJson = targetSyncMessage.getJson();
+    public static Modifications computeModifications(final SyncMessageEntity sourceSyncMessageEntity, final SyncMessageEntity targetSyncMessageEntity) {
+        final String sourceJson = sourceSyncMessageEntity.getJson();
+        final String targetJson = targetSyncMessageEntity.getJson();
         return computeModifications(sourceJson, targetJson);
     }
 
-    public static Modifications computeModifications(final String sourceJson, final String targetJson) throws JSONException {
+    public static Modifications computeModifications(final String sourceJson, final String targetJson) {
+
+        final Gson gson = new Gson();
 
         // compute source-related data
-        final JSONObject sourceJsonObject = new JSONObject(sourceJson);
+//        final JSONObject sourceJsonObject = new JSONObject(sourceJson);
+        final SyncMessage sourceSyncMessage = gson.fromJson(sourceJson, SyncMessage.class);
 
-        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations");
-        final Map<String, Station> sourceCodeToStationsMap = StationsParser.jsonArrayToMap(sourceStationsArray);
+//        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations");
+//        final Map<String, Station> sourceCodeToStationsMap = StationsParser.jsonArrayToMap(sourceStationsArray);
+        final Map<String, Station> sourceCodeToStationsMap = sourceSyncMessage.getCodeToStationsMap();
 
-        final JSONArray sourceOfflinesArray = sourceJsonObject.getJSONArray("offlines");
-        final Map<String, Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceOfflinesArray);
+//        final JSONArray sourceOfflinesArray = sourceJsonObject.getJSONArray("offlines");
+//        final Map<String, Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceOfflinesArray);
+        final Map<String, Boolean> sourceOfflines = sourceSyncMessage.getOfflinesMap();
 
-        final JSONArray sourcePricesArray = sourceJsonObject.getJSONArray("prices");
-        final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourcePricesArray);
+//        final JSONArray sourcePricesArray = sourceJsonObject.getJSONArray("prices");
+//        final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourcePricesArray);
+        final Map<String, Price> sourcePrices = sourceSyncMessage.getPricesMap();
 
         // compute target-related data
-        final JSONObject targetJsonObject = new JSONObject(targetJson);
+//        final JSONObject targetJsonObject = new JSONObject(targetJson);
+        final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
 
-        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
-        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
+//        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
+        final List<Station> targetStations = Arrays.asList(targetSyncMessage.getStations());
 
-        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
-        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
+//        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
+        final Map<String, Boolean> targetOfflines = targetSyncMessage.getOfflinesMap();
 
-        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
-        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+//        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
+//        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
+        final Map<String, Price> targetPrices = targetSyncMessage.getPricesMap();
 
         // compute differences in stations
         final Vector<Station> modifiedStations = new Vector<>();

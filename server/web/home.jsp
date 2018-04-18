@@ -5,6 +5,7 @@
 <%@ page import="com.aspectsense.fuel.server.json.PricesParser" %>
 <%@ page import="java.util.*" %>
 <%@ page import="com.aspectsense.fuel.server.json.Util" %>
+<%@ page import="com.aspectsense.fuel.server.model.Station" %>
 
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 

@@ -1,4 +1,4 @@
-<%@ page import="com.aspectsense.fuel.server.data.Station" %>
+<%@ page import="com.aspectsense.fuel.server.model.Station" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.StationsFactory" %>
 <%@ page import="com.aspectsense.fuel.server.data.Stations" %>
 <%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>

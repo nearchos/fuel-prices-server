@@ -1,8 +1,7 @@
 package com.aspectsense.fuel.server.json;
 
 import com.aspectsense.fuel.server.data.City;
-import com.aspectsense.fuel.server.data.Station;
-import com.aspectsense.fuel.server.datastore.StationsFactory;
+import com.aspectsense.fuel.server.model.Station;
 
 import java.text.SimpleDateFormat;
 import java.util.*;

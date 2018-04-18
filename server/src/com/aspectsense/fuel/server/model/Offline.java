@@ -1,4 +1,4 @@
-package com.aspectsense.fuel.server.data;
+package com.aspectsense.fuel.server.model;
 
 import java.io.Serializable;
 
@@ -8,8 +8,13 @@ import java.io.Serializable;
  */
 public class Offline implements Serializable {
 
-    private final String stationCode;
-    private final boolean offline;
+    @com.google.gson.annotations.SerializedName("stationCode")
+    private String stationCode;
+    @com.google.gson.annotations.SerializedName("offline")
+    private boolean offline;
+
+    public Offline() {
+    }
 
     public Offline(String stationCode, boolean offline) {
         this.stationCode = stationCode;

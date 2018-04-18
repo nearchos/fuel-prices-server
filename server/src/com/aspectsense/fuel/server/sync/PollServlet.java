@@ -54,7 +54,7 @@ public class PollServlet extends HttpServlet {
     private static String userPasswordHashed = null;
     private static String productionUrlPoll = null;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final long start = System.currentTimeMillis();
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();

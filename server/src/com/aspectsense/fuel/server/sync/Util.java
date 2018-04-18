@@ -160,25 +160,4 @@ public class Util {
 
         return String.format("%9.6f", d + m / 60d + s / 3600d);
     }
-
-//    public static void main(String[] args) {
-//        try {
-//            System.out.println(new File(".").getAbsolutePath());
-//            final File file = new File("test3.json.txt");
-//            final FileInputStream fileInputStream = new FileInputStream(file);
-//            final byte [] data = new byte[(int) file.length()];
-//            fileInputStream.read(data);
-//            fileInputStream.close();
-//            final String testJsonMessage = new String(data, "UTF-8").substring(1);
-//            for(int i = 0; i < 10; i++) {
-//                System.out.println(i + " -> " + testJsonMessage.charAt(i));
-//            }
-////            System.out.println(">>" + testJsonMessage + "<<");
-//            System.out.println("--------");
-//
-//            parseXmlPollResponse(testJsonMessage, "1");
-//        } catch (IOException ioe) {
-//            System.out.println(ioe.getMessage());
-//        }
-//    }
 }

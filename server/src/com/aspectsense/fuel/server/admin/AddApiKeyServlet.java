@@ -43,7 +43,7 @@ public class AddApiKeyServlet extends HttpServlet {
     Logger log = Logger.getLogger("cyprusfuelguide");
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String note = request.getParameter(ApiKeyFactory.PROPERTY_NOTE);
         UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();

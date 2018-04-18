@@ -17,13 +17,8 @@
 
 package com.aspectsense.fuel.server.json;
 
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import com.aspectsense.fuel.server.model.DailySummary;
+import com.google.gson.Gson;
 
 /**
  * fuel-prices-server
@@ -33,27 +28,28 @@ import java.util.Map;
  */
 public class DailySummaryParser {
 
-    public static DailySummaryBundle fromDailySummaryJson(final String json) throws JSONException {
+    public static DailySummary fromDailySummaryJson(final String json) {
 
-        final JSONObject jsonObject = new JSONObject(json);
-
-        final double crudeOilPriceInUSD = jsonObject.has("crudeOilInUsd") ? jsonObject.getDouble("crudeOilInUsd") : 0d;
-        final double eurToUsd = jsonObject.has("eurUsd") ? jsonObject.getDouble("eurUsd") : 0d;
-        final double eurToGbp = jsonObject.has("eurGbp") ? jsonObject.getDouble("eurGbp") : 0d;
-
-        final Map<String, Integer[]> stationsToPricesMap = new HashMap<>();
-        final JSONObject stationsObject = jsonObject.has("stations") ? jsonObject.getJSONObject("stations") : jsonObject;
-        final Iterator iterator = stationsObject.keys();
-        while(iterator.hasNext()) {
-            final String station = iterator.next().toString();
-            final JSONArray pricesJsonArray = stationsObject.getJSONArray(station);
-            final Integer [] prices = new Integer[pricesJsonArray.length()];
-            for(int i = 0; i < prices.length; i++) {
-                prices[i] = pricesJsonArray.getInt(i);
-            }
-            stationsToPricesMap.put(station, prices);
-        }
-
-        return new DailySummaryBundle(crudeOilPriceInUSD, eurToUsd, eurToGbp, stationsToPricesMap);
+        return new Gson().fromJson(json, DailySummary.class);
+//        final JSONObject jsonObject = new JSONObject(json);
+//
+//        final double crudeOilPriceInUSD = jsonObject.has("crudeOilInUsd") ? jsonObject.getDouble("crudeOilInUsd") : 0d;
+//        final double eurToUsd = jsonObject.has("eurUsd") ? jsonObject.getDouble("eurUsd") : 0d;
+//        final double eurToGbp = jsonObject.has("eurGbp") ? jsonObject.getDouble("eurGbp") : 0d;
+//
+//        final Map<String, Integer[]> stationsToPricesMap = new HashMap<>();
+//        final JSONObject stationsObject = jsonObject.has("stations") ? jsonObject.getJSONObject("stations") : jsonObject;
+//        final Iterator iterator = stationsObject.keys();
+//        while(iterator.hasNext()) {
+//            final String station = iterator.next().toString();
+//            final JSONArray pricesJsonArray = stationsObject.getJSONArray(station);
+//            final Integer [] prices = new Integer[pricesJsonArray.length()];
+//            for(int i = 0; i < prices.length; i++) {
+//                prices[i] = pricesJsonArray.getInt(i);
+//            }
+//            stationsToPricesMap.put(station, prices);
+//        }
+//
+//        return new DailySummary(crudeOilPriceInUSD, eurToUsd, eurToGbp, stationsToPricesMap);
     }
 }

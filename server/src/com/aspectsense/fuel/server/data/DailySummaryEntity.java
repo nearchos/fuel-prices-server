@@ -23,13 +23,13 @@ import java.io.Serializable;
  * @author Nearchos Paspallis
  * 18-Mar-17
  */
-public class DailySummary implements Serializable {
+public class DailySummaryEntity implements Serializable {
 
     private final String uuid;
-    private final String json; // JSON-formatted messgae having the latest prices of all stations
-    private final String date; // 2017-03-17
+    private final String json; // JSON-formatted message having the latest prices of all stations
+    private final String date; // e.g. 2017-03-17
 
-    public DailySummary(final String uuid, final String json, final String date) {
+    public DailySummaryEntity(final String uuid, final String json, final String date) {
         this.uuid = uuid;
         this.json = json;
         this.date = date;

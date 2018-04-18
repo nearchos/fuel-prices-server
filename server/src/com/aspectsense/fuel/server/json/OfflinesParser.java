@@ -1,12 +1,7 @@
 package com.aspectsense.fuel.server.json;
 
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -30,19 +25,19 @@ public class OfflinesParser {
         return jsonStringBuilder.toString();
     }
 
-    public static Map<String, Boolean> fromOfflinesJsonArray(final JSONArray jsonArray) {
-        final Map<String, Boolean> offlines = new HashMap<>();
-        try {
-            for(int i = 0; i < jsonArray.length(); i++) {
-                final JSONObject offlineJsonObject = jsonArray.getJSONObject(i);
-                final String stationCode = offlineJsonObject.getString("stationCode");
-                final boolean offline = offlineJsonObject.getBoolean("offline");
-                offlines.put(stationCode, offline);
-            }
-        } catch (JSONException jsone) {
-            throw new RuntimeException(jsone);
-        }
-
-        return offlines;
-    }
+//    public static Map<String, Boolean> fromOfflinesJsonArray(final JSONArray jsonArray) {
+//        final Map<String, Boolean> offlines = new HashMap<>();
+//        try {
+//            for(int i = 0; i < jsonArray.length(); i++) {
+//                final JSONObject offlineJsonObject = jsonArray.getJSONObject(i);
+//                final String stationCode = offlineJsonObject.getString("stationCode");
+//                final boolean offline = offlineJsonObject.getBoolean("offline");
+//                offlines.put(stationCode, offline);
+//            }
+//        } catch (JSONException jsone) {
+//            throw new RuntimeException(jsone);
+//        }
+//
+//        return offlines;
+//    }
 }

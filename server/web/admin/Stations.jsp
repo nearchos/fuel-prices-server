@@ -18,7 +18,7 @@
 <%@ page import="com.aspectsense.fuel.server.data.Stations" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.StationsFactory" %>
 <%@ page import="java.util.Vector" %>
-<%@ page import="com.aspectsense.fuel.server.data.Station" %>
+<%@ page import="com.aspectsense.fuel.server.model.Station" %>
 <%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="java.util.Date" %>
@@ -70,6 +70,7 @@ You are not logged in!
         <tr>
             <th>#</th>
             <th>COMPANY</th>
+            <th>LOGO</th>
             <th>CODE</th>
             <th>TEL-NO</th>
             <th>ADDRESS</th>
@@ -83,6 +84,7 @@ You are not logged in!
         <tr>
             <td><%=++counter%></td>
             <td><%=station.getStationBrand()%></td>
+            <td><img src="../images/<%=station.getStationBrand().toLowerCase()%>.png" align="inline"></td>
             <td><%=station.getStationCode()%></td>
             <td><%=station.getStationTelNo()%></td>
             <td><%=station.getStationAddress()%>, <%=station.getStationDistrict()%>, <%=station.getStationCity()%></td>

@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class EnableOrDisableApiKeyServlet extends HttpServlet {
     Logger log = Logger.getLogger("cyprusfuelguide");
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String apiKey = request.getParameter(ApiKeyFactory.PROPERTY_API_KEY_CODE);
         UserService userService = UserServiceFactory.getUserService();
         final User user = userService.getCurrentUser();

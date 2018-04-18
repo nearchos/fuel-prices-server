@@ -1,15 +1,18 @@
 package com.aspectsense.fuel.server.data;
 
+import java.io.Serializable;
+
 /**
  * @author Nearchos
  */
-public class City {
+public class City implements Serializable {
 
     public static final City NICOSIA    = new City("Λευκωσία",      "Nicosia",      35.16932f,  33.36014f);
     public static final City LIMASSOL   = new City("Λεμεσός",       "Limassol",     34.679038f, 33.044171f);
     public static final City LARNACA    = new City("Λάρνακα",       "Larnaca",      34.9177f,   33.6319f);
     public static final City PAPHOS     = new City("Πάφος",         "Paphos",       34.75572f,  32.41542f);
     public static final City FAMAGUSTA  = new City("Αμμόχωστος",    "Famagusta",    35.1174f,   33.941f);
+    public static final City KYRENIA    = new City("Κερύνεια",      "Kyrenia",      35.340278f, 33.319167f);
 
     public static final City [] ALL_CITIES = {NICOSIA, LIMASSOL, LARNACA, PAPHOS, FAMAGUSTA};
 
@@ -52,6 +55,8 @@ public class City {
             return PAPHOS;
         } if("Αμμόχωστος".equalsIgnoreCase(cityAsString) || "Αμμοχωστος".equalsIgnoreCase(cityAsString)) {
             return FAMAGUSTA;
+        } if("Κερύνεια".equalsIgnoreCase(cityAsString) || "Κερυνεια".equalsIgnoreCase(cityAsString)) {
+            return KYRENIA;
         } else {
             throw new RuntimeException("Unknown city: " + cityAsString);
         }

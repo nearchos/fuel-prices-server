@@ -22,10 +22,11 @@ import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.*;
 import com.aspectsense.fuel.server.json.PriceParser;
 import com.aspectsense.fuel.server.json.StationsParser;
+import com.aspectsense.fuel.server.model.Price;
+import com.aspectsense.fuel.server.model.Station;
 import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -47,7 +48,7 @@ public class UpdateDatastoreServlet extends HttpServlet {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
         response.setContentType("text/plain; charset=utf-8");
         final PrintWriter printWriter = response.getWriter();
@@ -65,7 +66,7 @@ public class UpdateDatastoreServlet extends HttpServlet {
         final long updateTimestamp = System.currentTimeMillis();
 
         final Stations stations = StationsFactory.getLatestStations();
-        final Vector<Station> allStations = stations != null ? StationsParser.fromStationsJson(stations.getJson()) : new Vector<Station>();
+        final Vector<Station> allStations = stations != null ? StationsParser.fromStationsJson(stations.getJson()) : new Vector<>();
         final Offlines offlines = OfflinesFactory.getLatestOfflines();
 
         final Map<FuelType, Map<String,Prices.PriceInMillieurosAndTimestamp>> fuelTypeToStationCodeToPriceInMillieurosMap = new HashMap<>();
@@ -96,23 +97,23 @@ public class UpdateDatastoreServlet extends HttpServlet {
 
         int numberOfChanges = 0;
 
-        // compute number of differences since last update and ignore saving the SyncMessage is there are no changes
-        final SyncMessage latestSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
-        if(latestSyncMessage == null) {
+        // compute number of differences since last update and ignore saving the SyncMessageEntity is there are no changes
+        final SyncMessageEntity latestSyncMessageEntity = SyncMessageFactory.queryLatestSyncMessage();
+        if(latestSyncMessageEntity == null) {
             SyncMessageFactory.addSyncMessage(new Text(currentJson), 0, updateTimestamp);
         } else {
-            final String latestJson = latestSyncMessage.getJson();
-            try {
+            final String latestJson = latestSyncMessageEntity.getJson();
+//            try {
                 final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(latestJson, currentJson);
                 numberOfChanges = modifications.getSize();
                 if(numberOfChanges > 0) {
                     SyncMessageFactory.addSyncMessage(new Text(currentJson), numberOfChanges, updateTimestamp);
                 } else {
-                    log.info("Saving the SyncMessage was not necessary because it has 0 modifications (timestamp: " + updateTimestamp + ")");
+                    log.info("Saving the SyncMessageEntity was not necessary because it has 0 modifications (timestamp: " + updateTimestamp + ")");
                 }
-            } catch (JSONException jsone) {
-                log.warning("Error while compiling current JSON with latest one to decide if we will store it: " + jsone.getMessage());
-            }
+//            } catch (JSONException jsone) {
+//                log.warning("Error while compiling current JSON with latest one to decide if we will store it: " + jsone.getMessage());
+//            }
         }
 
         // invalidate all sync cache
@@ -120,8 +121,8 @@ public class UpdateDatastoreServlet extends HttpServlet {
         memcacheService.clearAll();
 
         // check if there has been an update in the last 24 hours...
-        if(latestSyncMessage != null && numberOfChanges == 0) {
-            final long lastUpdated = latestSyncMessage.getLastUpdated();
+        if(latestSyncMessageEntity != null && numberOfChanges == 0) {
+            final long lastUpdated = latestSyncMessageEntity.getLastUpdated();
             if(System.currentTimeMillis() - lastUpdated > 24L*60*60*1000) {
                 // todo send an email with a warning message if no updates
             }

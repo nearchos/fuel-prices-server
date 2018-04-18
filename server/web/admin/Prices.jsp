@@ -24,6 +24,7 @@
 <%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="com.aspectsense.fuel.server.data.*" %>
+<%@ page import="com.aspectsense.fuel.server.model.Station" %>
 
 <%--
   User: Nearchos Paspallis

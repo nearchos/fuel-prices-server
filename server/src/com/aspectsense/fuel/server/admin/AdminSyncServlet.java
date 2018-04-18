@@ -51,7 +51,7 @@ public class AdminSyncServlet extends HttpServlet {
     private static String magic = null;
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) {
 
         log.info("Running sync cron task - sync stations or sync prices");
 

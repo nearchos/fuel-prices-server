@@ -1,6 +1,4 @@
-<%@ page import="com.aspectsense.fuel.server.data.FuelType" %>
 <%@ page import="com.aspectsense.fuel.server.api.ApiStatisticsServlet" %>
-<%@ page import="com.google.appengine.labs.repackaged.org.json.JSONException" %>
 <%@ page import="java.io.IOException" %>
 <%@ page import="static com.aspectsense.fuel.server.api.ApiStatisticsServlet.ONE_DAY" %>
 <%@ page import="static com.aspectsense.fuel.server.json.Util.SIMPLE_DATE_FORMAT" %>
@@ -423,12 +421,12 @@
 
                 str += '<table cellspacing="0">';
 
-                str += '<tr><td style="text-align: right">Oil price:</td><td>€' + parseFloat(params[2].data).toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">Max:</td><td>€' + params[1].data[3].toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">3rd quartile:</td><td>€' + params[1].data[0].toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">Mean:</td><td>€' + params[0].value.toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">1st quartile:</td><td>€' + params[1].data[1].toFixed(2) + '</td><tr>';
-                str += '<tr><td style="text-align: right">Min:</td><td>€' + params[1].data[2].toFixed(2) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Oil price:</td><td>€' + parseFloat(params[2].data).toFixed(3) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Max:</td><td>€' + params[1].data[3].toFixed(3) + '</td><tr>';
+                str += '<tr><td style="text-align: right">3rd quartile:</td><td>€' + params[1].data[0].toFixed(3) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Mean:</td><td>€' + params[0].value.toFixed(3) + '</td><tr>';
+                str += '<tr><td style="text-align: right">1st quartile:</td><td>€' + params[1].data[1].toFixed(3) + '</td><tr>';
+                str += '<tr><td style="text-align: right">Min:</td><td>€' + params[1].data[2].toFixed(3) + '</td><tr>';
 
                 str += '</table>';
 
@@ -502,13 +500,13 @@
                 continue;
             }
 
-            data.means.push(round(STATISTICS_AS_JSON.means[key][typeIndex] / 1000, 2));
+            data.means.push(round(STATISTICS_AS_JSON.means[key][typeIndex] / 1000, 3));
 
             data.candlestick.push([
-                round(STATISTICS_AS_JSON['third-quartiles'][key][typeIndex] / 1000, 2),
-                round(STATISTICS_AS_JSON['first-quartiles'][key][typeIndex] / 1000, 2),
-                round(STATISTICS_AS_JSON.mins[key][typeIndex] / 1000, 2),
-                round(STATISTICS_AS_JSON.maxs[key][typeIndex] / 1000, 2)
+                round(STATISTICS_AS_JSON['third-quartiles'][key][typeIndex] / 1000, 3),
+                round(STATISTICS_AS_JSON['first-quartiles'][key][typeIndex] / 1000, 3),
+                round(STATISTICS_AS_JSON.mins[key][typeIndex] / 1000, 3),
+                round(STATISTICS_AS_JSON.maxs[key][typeIndex] / 1000, 3)
             ]);
         }
 

@@ -19,12 +19,14 @@
 <%@ page import="java.util.Date" %>
 <%@ page import="com.aspectsense.fuel.server.api.ApiSyncServlet" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.SyncMessageFactory" %>
-<%@ page import="com.google.appengine.labs.repackaged.org.json.JSONException" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="com.aspectsense.fuel.server.data.*" %>
-<%@ page import="com.aspectsense.fuel.server.json.*" %>
 <%@ page import="java.util.Map" %>
-<%@ page import="com.google.appengine.labs.repackaged.org.json.JSONObject" %>
+<%@ page import="com.aspectsense.fuel.server.model.Station" %>
+<%@ page import="com.aspectsense.fuel.server.model.Offline" %>
+<%@ page import="com.aspectsense.fuel.server.model.Price" %>
+<%@ page import="com.aspectsense.fuel.server.model.SyncMessage" %>
+<%@ page import="com.google.gson.Gson" %>
 
 <%--
   User: Nearchos Paspallis
@@ -77,11 +79,11 @@ You are not logged in!
 <p>To: <%=toTimestampS%> (<%=timestampFormat.format(new Date(toTimestamp))%>)</p>
 <hr/>
 <%
-            final SyncMessage fromSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
-            final SyncMessage toSyncMessage = SyncMessageFactory.querySyncMessage(toTimestamp);
+            final SyncMessageEntity fromSyncMessageEntity = SyncMessageFactory.querySyncMessage(fromTimestamp);
+            final SyncMessageEntity toSyncMessageEntity = SyncMessageFactory.querySyncMessage(toTimestamp);
             try {
-                final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(fromSyncMessage, toSyncMessage);
-                final String reply = ApiSyncServlet.formReplyMessage(fromTimestamp, modifications, System.currentTimeMillis() - start, toSyncMessage.getLastUpdated());
+                final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(fromSyncMessageEntity, toSyncMessageEntity);
+                final String reply = ApiSyncServlet.formReplyMessage(fromTimestamp, modifications, System.currentTimeMillis() - start, toSyncMessageEntity.getLastUpdated());
 %>
 <p><%=reply%></p>
 <hr/>
@@ -91,17 +93,26 @@ You are not logged in!
             <th>Updated</th>
         </tr>
 <%
-                final String sourceJson = fromSyncMessage.getJson();
-                final JSONObject sourceJsonObject = new JSONObject(sourceJson);
-                final Map<String,Station> sourceStations = StationsParser.jsonArrayToMap(sourceJsonObject.getJSONArray("stations"));
-                final Map<String,Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceJsonObject.getJSONArray("offlines"));
-                final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourceJsonObject.getJSONArray("prices"));
+                final String sourceJson = fromSyncMessageEntity.getJson();
+                final Gson gson = new Gson();
+                final SyncMessage sourceSyncMessage = gson.fromJson(sourceJson, SyncMessage.class);
+//                final JSONObject sourceJsonObject = new JSONObject(sourceJson);
+//                final Map<String,Station> sourceStations = StationsParser.jsonArrayToMap(sourceJsonObject.getJSONArray("stations"));
+                final Map<String,Station> sourceStations = sourceSyncMessage.getCodeToStationsMap();
+//                final Map<String,Boolean> sourceOfflines = OfflinesParser.fromOfflinesJsonArray(sourceJsonObject.getJSONArray("offlines"));
+                final Map<String,Boolean> sourceOfflines = sourceSyncMessage.getOfflinesMap();
+//                final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourceJsonObject.getJSONArray("prices"));
+                final Map<String, Price> sourcePrices = sourceSyncMessage.getPricesMap();
 
-                final String targetJson = toSyncMessage.getJson();
-                final JSONObject targetJsonObject = new JSONObject(targetJson);
-                final Map<String,Station> targetStations = StationsParser.jsonArrayToMap(targetJsonObject.getJSONArray("stations"));
-                final Map<String,Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonObject.getJSONArray("offlines"));
-                final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetJsonObject.getJSONArray("prices"));
+                final String targetJson = toSyncMessageEntity.getJson();
+//                final JSONObject targetJsonObject = new JSONObject(targetJson);
+                final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
+//                final Map<String,Station> targetStations = StationsParser.jsonArrayToMap(targetJsonObject.getJSONArray("stations"));
+                final Map<String,Station> targetStations = targetSyncMessage.getCodeToStationsMap();
+//                final Map<String,Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonObject.getJSONArray("offlines"));
+                final Map<String,Boolean> targetOfflines = targetSyncMessage.getOfflinesMap();
+//                final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetJsonObject.getJSONArray("prices"));
+                final Map<String, Price> targetPrices = targetSyncMessage.getPricesMap();
 
                 final Vector<Station> modifiedStations = modifications.getModifiedStations();
                 final Vector<Station> removedStations = modifications.getRemovedStations();
@@ -148,9 +159,9 @@ You are not logged in!
 <p><i>Please note that all times are in <a href="http://en.wikipedia.org/wiki/UTC">UTC (Coordinated Universal Time)</a></i></p>
 
 <%
-            } catch (JSONException jsone) {
+            } catch (Exception e) {
 %>
-<p>JSON Exception: <%=jsone.getMessage()%></p>
+<p>JSON Exception: <%=e.getMessage()%></p>
 <%
             }
         }

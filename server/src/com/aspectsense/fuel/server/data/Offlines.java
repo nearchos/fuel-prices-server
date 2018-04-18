@@ -17,13 +17,7 @@
 
 package com.aspectsense.fuel.server.data;
 
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
-
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 /**
@@ -53,4 +47,7 @@ public class Offlines implements Serializable {
 
     public String getJson() { return json; }
 
+    public long getLastUpdated() {
+        return lastUpdated;
+    }
 }

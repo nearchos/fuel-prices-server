@@ -17,9 +17,8 @@
 
 package com.aspectsense.fuel.server.data;
 
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -65,21 +64,26 @@ public class Prices implements Serializable {
 
     public Map<String,PriceInMillieurosAndTimestamp> getStationCodeToPriceInMillieurosAndTimestampMap() {
         final Map<String,PriceInMillieurosAndTimestamp> stationCodeToPriceInMillieurosAndTimestampMap = new HashMap<>();
-        try {
+//        try {
             // parse JSON
-            final JSONArray prices = new JSONArray(json);
-            for(int i = 0; i < prices.length(); i++) {
-                final JSONObject price = prices.getJSONObject(i);
-                final String stationCode = price.getString("stationCode");
-                final int priceInMillieuros = price.getInt("price");
-                final long timestamp = price.has("timestamp") ? price.getLong("timestamp") : 0;
+            final Prices.Price [] prices = new Gson().fromJson(json, Prices.Price[].class);
+//            final JSONArray prices = new JSONArray(json);
+//            for(int i = 0; i < prices.length(); i++) {
+            for(int i = 0; i < prices.length; i++) {
+//                final JSONObject price = prices.getJSONObject(i);
+//                final String stationCode = price.getString("stationCode");
+                final String stationCode = prices[i].stationCode;
+//                final int priceInMillieuros = price.getInt("price");
+                final int priceInMillieuros = prices[i].price;
+//                final long timestamp = price.has("timestamp") ? price.getLong("timestamp") : 0;
+                final long timestamp = lastUpdated;
                 stationCodeToPriceInMillieurosAndTimestampMap.put(stationCode, new PriceInMillieurosAndTimestamp(priceInMillieuros, timestamp));
             }
-        } catch (JSONException jsone) {
-            log.severe("JSON Error: " + jsone);
-            log.severe("Error while parsing JSON: " + json);
-            throw new RuntimeException(jsone);
-        }
+//        } catch (JSONException jsone) {
+//            log.severe("JSON Error: " + jsone);
+//            log.severe("Error while parsing JSON: " + json);
+//            throw new RuntimeException(jsone);
+//        }
         return stationCodeToPriceInMillieurosAndTimestampMap;
     }
 
@@ -98,6 +102,27 @@ public class Prices implements Serializable {
 
         public long getTimestamp() {
             return timestamp;
+        }
+    }
+
+    public class Price {
+        private String stationCode;
+        private int price;
+
+        public Price() {
+        }
+
+        public Price(String stationCode, int price) {
+            this.stationCode = stationCode;
+            this.price = price;
+        }
+
+        public String getStationCode() {
+            return stationCode;
+        }
+
+        public int getPrice() {
+            return price;
         }
     }
 }

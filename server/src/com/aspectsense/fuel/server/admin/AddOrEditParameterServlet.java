@@ -35,7 +35,7 @@ import java.util.logging.Logger;
  */
 public class AddOrEditParameterServlet extends HttpServlet {
     Logger log = Logger.getLogger("cyprusfuelguide");
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String name = request.getParameter(ParameterFactory.PROPERTY_NAME);
         final String value = request.getParameter(ParameterFactory.PROPERTY_VALUE);
         if(name == null || name.isEmpty() || value == null || value.isEmpty()) {

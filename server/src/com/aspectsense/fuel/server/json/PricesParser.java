@@ -2,9 +2,7 @@ package com.aspectsense.fuel.server.json;
 
 import com.aspectsense.fuel.server.data.Prices;
 import com.aspectsense.fuel.server.sync.PetroleumPriceDetail;
-import com.google.appengine.labs.repackaged.org.json.JSONArray;
-import com.google.appengine.labs.repackaged.org.json.JSONException;
-import com.google.appengine.labs.repackaged.org.json.JSONObject;
+import com.google.gson.Gson;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -79,17 +77,21 @@ public class PricesParser {
 
     public static Map<String,Integer> fromPricesJson(final String pricesJson) {
         final Map<String,Integer> pricesMap = new HashMap<>();
-        try {
-            final JSONArray jsonArray = new JSONArray(pricesJson);
-            for(int i = 0; i < jsonArray.length(); i++) {
-                final JSONObject jsonObject = jsonArray.getJSONObject(i);
-                final String stationCode = jsonObject.getString("stationCode");
-                final int price = jsonObject.getInt("price");
-                pricesMap.put(stationCode, price);
-            }
-        } catch (JSONException jsone) {
-            throw new RuntimeException(jsone);
+        final Prices.Price [] prices = new Gson().fromJson(pricesJson, Prices.Price[].class);
+        for(final Prices.Price price : prices) {
+            pricesMap.put(price.getStationCode(), price.getPrice());
         }
+//        try {
+//            final JSONArray jsonArray = new JSONArray(pricesJson);
+//            for(int i = 0; i < jsonArray.length(); i++) {
+//                final JSONObject jsonObject = jsonArray.getJSONObject(i);
+//                final String stationCode = jsonObject.getString("stationCode");
+//                final int price = jsonObject.getInt("price");
+//                pricesMap.put(stationCode, price);
+//            }
+//        } catch (JSONException jsone) {
+//            throw new RuntimeException(jsone);
+//        }
 
         return pricesMap;
     }

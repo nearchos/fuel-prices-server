@@ -21,7 +21,7 @@
       var s = window.getComputedStyle(el);
       var invalid = function(k, ok) {
         return !(s[k] === undefined || s[k] === ok);
-      }
+      };
       if (s.opacity < 1 ||
           invalid('zIndex', 'auto') ||
           invalid('transform', 'none') ||
@@ -442,7 +442,7 @@
         records.forEach(function(rec) {
           for (var i = 0, c; c = rec.removedNodes[i]; ++i) {
             if (!(c instanceof Element)) {
-              continue;
+
             } else if (c.localName === 'dialog') {
               removed.push(c);
             } else {

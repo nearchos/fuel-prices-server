@@ -31,7 +31,7 @@ public class WeeklyReportServlet extends HttpServlet {
     public static final long MILLISECONDS_IN_A_DAY = 24L * 60 * 60 * 1000L;
     public static final long MILLISECONDS_IN_A_WEEK = 7L * MILLISECONDS_IN_A_DAY;
 
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
 
