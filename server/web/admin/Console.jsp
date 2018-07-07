@@ -72,6 +72,8 @@ You are not logged in!
 
 <h1>Console</h1>
 
+    <p>Last <%=NUM_OF_ENTRIES_TO_RETURN%> entries:</p>
+
     <table border="1">
         <tr>
             <th>FUEL TYPE</th>

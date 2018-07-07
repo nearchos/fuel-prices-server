@@ -3,6 +3,7 @@ package com.aspectsense.fuel.server.model;
 import java.util.Map;
 
 public class FixrIoMessage {
+    public boolean success;
     public String date; // e.g. "2018-04-17"
     public String base; // e.g. "EUR"
     public Map<String,Double> rates; // e.g. {"GBP":0.8628,"USD":1.2357}
@@ -14,6 +15,10 @@ public class FixrIoMessage {
         this.date = date;
         this.base = base;
         this.rates = rates;
+    }
+
+    public boolean isSuccess() {
+        return success;
     }
 
     public String getDate() {

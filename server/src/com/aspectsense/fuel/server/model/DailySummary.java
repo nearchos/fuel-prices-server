@@ -35,6 +35,14 @@ public class DailySummary implements Serializable {
         return eurToGbp;
     }
 
+    public void setEurToUsd(double eurToUsd) {
+        this.eurToUsd = eurToUsd;
+    }
+
+    public void setEurToGbp(double eurToGbp) {
+        this.eurToGbp = eurToGbp;
+    }
+
     public Map<String, Integer[]> getStationCodeToPricesMap() {
         return stationCodeToPricesMap;
     }

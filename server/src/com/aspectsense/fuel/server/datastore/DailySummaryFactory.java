@@ -17,7 +17,7 @@
 
 package com.aspectsense.fuel.server.datastore;
 
-import com.aspectsense.fuel.server.data.DailySummaryEntity;
+import com.aspectsense.fuel.server.data.DailySummary;
 import com.google.appengine.api.datastore.*;
 
 import java.util.List;
@@ -32,7 +32,7 @@ import java.util.logging.Logger;
 public class DailySummaryFactory {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
-    public static final String KIND = "DailySummaryEntity";
+    public static final String KIND = "DailySummary";
 
     public static final String PROPERTY_JSON        = "json";
     public static final String PROPERTY_DATE        = "date";
@@ -51,11 +51,11 @@ public class DailySummaryFactory {
     }
 
     /**
-     * Returns the specified {@link DailySummaryEntity}.
-     * @param dateS the date in the form of 2017-03-18 for which the {@link DailySummaryEntity} is to be retrieved.
-     * @return the specified {@link DailySummaryEntity}, or null if that could not be found
+     * Returns the specified {@link DailySummary}.
+     * @param dateS the date in the form of 2017-03-18 for which the {@link DailySummary} is to be retrieved.
+     * @return the specified {@link DailySummary}, or null if that could not be found
      */
-    static public DailySummaryEntity getDailySummary(final String dateS) {
+    static public DailySummary getDailySummary(final String dateS) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Query.Filter filter = new Query.FilterPredicate(PROPERTY_DATE, Query.FilterOperator.EQUAL, dateS);
         final Query query = new Query(KIND).setFilter(filter);
@@ -70,8 +70,8 @@ public class DailySummaryFactory {
         }
     }
 
-    static public DailySummaryEntity getFromEntity(final Entity entity) {
-        return new DailySummaryEntity(
+    static public DailySummary getFromEntity(final Entity entity) {
+        return new DailySummary(
                 KeyFactory.keyToString(entity.getKey()),
                 ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
                 (String) entity.getProperty(PROPERTY_DATE));

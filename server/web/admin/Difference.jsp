@@ -79,11 +79,11 @@ You are not logged in!
 <p>To: <%=toTimestampS%> (<%=timestampFormat.format(new Date(toTimestamp))%>)</p>
 <hr/>
 <%
-            final SyncMessageEntity fromSyncMessageEntity = SyncMessageFactory.querySyncMessage(fromTimestamp);
-            final SyncMessageEntity toSyncMessageEntity = SyncMessageFactory.querySyncMessage(toTimestamp);
+            final com.aspectsense.fuel.server.data.SyncMessage fromSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
+            final com.aspectsense.fuel.server.data.SyncMessage toSyncMessage = SyncMessageFactory.querySyncMessage(toTimestamp);
             try {
-                final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(fromSyncMessageEntity, toSyncMessageEntity);
-                final String reply = ApiSyncServlet.formReplyMessage(fromTimestamp, modifications, System.currentTimeMillis() - start, toSyncMessageEntity.getLastUpdated());
+                final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(fromSyncMessage, toSyncMessage);
+                final String reply = ApiSyncServlet.formReplyMessage(fromTimestamp, modifications, System.currentTimeMillis() - start, toSyncMessage.getLastUpdated());
 %>
 <p><%=reply%></p>
 <hr/>
@@ -93,7 +93,7 @@ You are not logged in!
             <th>Updated</th>
         </tr>
 <%
-                final String sourceJson = fromSyncMessageEntity.getJson();
+                final String sourceJson = fromSyncMessage.getJson();
                 final Gson gson = new Gson();
                 final SyncMessage sourceSyncMessage = gson.fromJson(sourceJson, SyncMessage.class);
 //                final JSONObject sourceJsonObject = new JSONObject(sourceJson);
@@ -104,7 +104,7 @@ You are not logged in!
 //                final Map<String, Price> sourcePrices = PriceParser.jsonArrayToMap(sourceJsonObject.getJSONArray("prices"));
                 final Map<String, Price> sourcePrices = sourceSyncMessage.getPricesMap();
 
-                final String targetJson = toSyncMessageEntity.getJson();
+                final String targetJson = toSyncMessage.getJson();
 //                final JSONObject targetJsonObject = new JSONObject(targetJson);
                 final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
 //                final Map<String,Station> targetStations = StationsParser.jsonArrayToMap(targetJsonObject.getJSONArray("stations"));

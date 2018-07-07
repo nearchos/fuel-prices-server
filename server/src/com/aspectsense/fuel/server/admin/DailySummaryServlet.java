@@ -24,13 +24,10 @@ import com.aspectsense.fuel.server.datastore.*;
 import com.aspectsense.fuel.server.model.FixrIoMessage;
 import com.google.gson.Gson;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
@@ -45,8 +42,8 @@ import static com.aspectsense.fuel.server.util.Util.convertStreamToString;
  */
 public class DailySummaryServlet extends HttpServlet {
 
-    private static final String CRUDE_OIL_PRICE_SERVICE_URL = "http://finance.yahoo.com/d/quotes.csv?s=CL=F&f=a";
-    private static final String EXCHANGE_RATE_SERVICE_URL = "http://api.fixer.io/latest?base=EUR&symbols=USD,GBP";
+    private static final String PARAMETER_FIXER_API_ACCESS_KEY = "FIXER_API_ACCESS_KEY";
+    private static final String EXCHANGE_RATE_SERVICE_URL = "http://data.fixer.io/api/latest?access_key=%ACCESS_KEY%&base=EUR&symbols=USD,GBP";
 
     public static final Logger log = Logger.getLogger(DailySummaryServlet.class.getCanonicalName());
 
@@ -68,31 +65,15 @@ public class DailySummaryServlet extends HttpServlet {
             return;
         }
 
-        final int MAX_NUM_OF_TRIES = 3;
-        // get latest crude oil price
-        double crudeOilPrice = 0d; // default is zero (i.e. unknown)
-        for(int tries = 0; tries < MAX_NUM_OF_TRIES; tries++) {
-            try {
-                final String receivedPriceS = makeRequest(CRUDE_OIL_PRICE_SERVICE_URL);
-                crudeOilPrice = Double.parseDouble(receivedPriceS.trim());
-                break;
-            } catch (final IOException | NumberFormatException e) {
-                final String error = "SyncCrudeOilPrice error -> " + e.getMessage();
-                log.warning(error);
-            }
-        }
-
         // get latest EURUSD and EURGBP rates
         double eurUsd = 0; // default is zero (i.e. unknown)
         double eurGbp = 0; // default is zero (i.e. unknown)
         try {
-            final String exchangeRatesJson = makeRequest(EXCHANGE_RATE_SERVICE_URL);
-//            final JSONObject replyJsonObject = new JSONObject(exchangeRatesJson);
-//            eurUsd = replyJsonObject.getJSONObject("rates").getDouble("USD");
+            final String fixrAccessKey = ParameterFactory.getParameterValueAsStringByName(PARAMETER_FIXER_API_ACCESS_KEY);
+            final String exchangeRatesJson = makeRequest(EXCHANGE_RATE_SERVICE_URL.replace("%ACCESS_KEY%", fixrAccessKey));
             FixrIoMessage fixrIoMessage = new Gson().fromJson(exchangeRatesJson, FixrIoMessage.class);
             eurUsd = fixrIoMessage.getRate("USD");
-//            eurGbp = replyJsonObject.getJSONObject("rates").getDouble("GBP");
-            eurGbp = eurUsd = fixrIoMessage.getRate("GBP");
+            eurGbp = fixrIoMessage.getRate("GBP");
         } catch (final IOException e) {
             final String error = "SyncExchangeRates error -> " + e.getMessage();
             log.warning(error);
@@ -111,6 +92,7 @@ public class DailySummaryServlet extends HttpServlet {
         }
 
         final StringBuilder json = new StringBuilder("{\n");
+        final double crudeOilPrice = 0d; // kept here for legacy support -- the actual historical crude prices are accessed in ApiStatisticsServlet directly
         json.append("  \"crudeOilInUsd\": ").append(String.format("%.2f", crudeOilPrice)).append(",\n");
         json.append("  \"eurUsd\": ").append(String.format("%.2f", eurUsd)).append(",\n");
         json.append("  \"eurGbp\": ").append(String.format("%.2f", eurGbp)).append(",\n");

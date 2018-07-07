@@ -21,7 +21,6 @@ import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.datastore.DailySummaryFactory;
 import com.aspectsense.fuel.server.datastore.StationsFactory;
-import com.aspectsense.fuel.server.model.DailySummary;
 import com.aspectsense.fuel.server.json.DailySummaryParser;
 import com.aspectsense.fuel.server.json.StationsParser;
 import com.aspectsense.fuel.server.json.StatisticsParser;
@@ -29,7 +28,6 @@ import com.aspectsense.fuel.server.model.Station;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -37,6 +35,7 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static com.aspectsense.fuel.server.api.Util.getDateToCrudeOilPriceInUSD;
 import static com.aspectsense.fuel.server.json.Util.SIMPLE_DATE_FORMAT;
 
 /**
@@ -237,11 +236,7 @@ public class ApiStatisticsServlet extends HttpServlet {
             }
         }
 
-//        try {
-            return createStatisticsMessageAsJson(from, to, dailySummariesAsJson, selectedStationIds);
-//        } catch (JSONException jsone) {
-//            throw new IOException(jsone.getMessage());
-//        }
+        return createStatisticsMessageAsJson(from, to, dailySummariesAsJson, selectedStationIds);
     }
 
     private static String getDailySummaryAsJson(final MemcacheService memcacheService, final String dateS) {
@@ -250,11 +245,11 @@ public class ApiStatisticsServlet extends HttpServlet {
         if(memcacheService.contains(memcacheKey)) {
             return (String) memcacheService.get(memcacheKey);
         } else {
-            final DailySummaryEntity dailySummaryEntity = DailySummaryFactory.getDailySummary(dateS);
-            if(dailySummaryEntity == null) {
+            final DailySummary dailySummary = DailySummaryFactory.getDailySummary(dateS);
+            if(dailySummary == null) {
                 return null;
             } else {
-                dailySummaryAsJson = dailySummaryEntity.getJson();
+                dailySummaryAsJson = dailySummary.getJson();
                 memcacheService.put(memcacheKey, dailySummaryAsJson);
                 return dailySummaryAsJson;
             }
@@ -272,7 +267,7 @@ public class ApiStatisticsServlet extends HttpServlet {
         final Map<String, Double> datesToEurUsd = new HashMap<>();
         final Map<String, Double> datesToEurGbp = new HashMap<>();
         for(final String dateS : datesToDailySummariesAsJsonMap.keySet()) {
-            final DailySummary dailySummary = DailySummaryParser.fromDailySummaryJson(datesToDailySummariesAsJsonMap.get(dateS));
+            final com.aspectsense.fuel.server.model.DailySummary dailySummary = DailySummaryParser.fromDailySummaryJson(datesToDailySummariesAsJsonMap.get(dateS));
             datesToCrudeOilPriceInUsd.put(dateS, dailySummary.getCrudeOilPriceInUSD());
             datesToEurUsd.put(dateS, dailySummary.getEurToUsd());
             datesToEurGbp.put(dateS, dailySummary.getEurToGbp());
@@ -421,6 +416,16 @@ public class ApiStatisticsServlet extends HttpServlet {
 
         final long end = System.currentTimeMillis();
         final String duration = String.format(Locale.US, "%.2f seconds", (end - start) / 1000d);
+
+        final Map<String,Double> latestDatesToCrudeOilPriceInUSD = getDateToCrudeOilPriceInUSD();
+
+        // replace all 0 values from 'datesToCrudeOilPriceInUsd'
+        final Set<String> allDates = uniqueIncludedDatesToMeans.keySet();
+        for(final String date : allDates) {
+            if(datesToCrudeOilPriceInUsd.get(date) == 0d && latestDatesToCrudeOilPriceInUSD.containsKey(date)) {
+                datesToCrudeOilPriceInUsd.put(date, latestDatesToCrudeOilPriceInUSD.get(date));
+            }
+        }
 
         return StatisticsParser.toStatisticsJson(
                 datesToCrudeOilPriceInUsd,

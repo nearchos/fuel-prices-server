@@ -19,7 +19,7 @@
 <%@ page import="java.util.Date" %>
 <%@ page import="java.util.Vector" %>
 <%@ page import="com.aspectsense.fuel.server.datastore.SyncMessageFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.SyncMessageEntity" %>
+<%@ page import="com.aspectsense.fuel.server.data.SyncMessage" %>
 
 <%--
   User: Nearchos Paspallis
@@ -55,7 +55,7 @@ You are not logged in!
     {
         int NUM_OF_ENTRIES_TO_RETURN = 20;
         int NUM_OF_CHARACTERS_TO_SHOW = 128;
-        final Vector<SyncMessageEntity> syncMessageEntities = SyncMessageFactory.queryLatestSyncMessages(NUM_OF_ENTRIES_TO_RETURN);
+        final Vector<SyncMessage> syncMessages = SyncMessageFactory.queryLatestSyncMessages(NUM_OF_ENTRIES_TO_RETURN);
 %>
 
 <h1>Sync Messages</h1>
@@ -69,25 +69,25 @@ You are not logged in!
             <th>COMPARE</th>
         </tr>
 <%
-        for(int i = 0; i < syncMessageEntities.size(); i++) {
-            final SyncMessageEntity syncMessageEntity = syncMessageEntities.elementAt(i);
-            final String json = syncMessageEntity.getJson();
+        for(int i = 0; i < syncMessages.size(); i++) {
+            final SyncMessage syncMessage = syncMessages.elementAt(i);
+            final String json = syncMessage.getJson();
 %>
         <tr>
             <td><%=json.substring(Math.max(0, json.length() - NUM_OF_CHARACTERS_TO_SHOW))%></td>
-            <td><%=syncMessageEntity.getLastUpdated()%></td>
-            <td><%=timestampFormat.format(new Date(syncMessageEntity.getLastUpdated()))%></td>
-            <td><%=syncMessageEntity.getNumOfChanges()%></td>
+            <td><%=syncMessage.getLastUpdated()%></td>
+            <td><%=timestampFormat.format(new Date(syncMessage.getLastUpdated()))%></td>
+            <td><%=syncMessage.getNumOfChanges()%></td>
             <td>
 <%
-            if(i < syncMessageEntities.size() - 1) {
-                final SyncMessageEntity nextSyncMessageEntity = syncMessageEntities.elementAt(i+1);
-                final long distanceFromPreviousInMilliseconds =  syncMessageEntity.getLastUpdated() - nextSyncMessageEntity.getLastUpdated();
+            if(i < syncMessages.size() - 1) {
+                final SyncMessage nextSyncMessage = syncMessages.elementAt(i+1);
+                final long distanceFromPreviousInMilliseconds =  syncMessage.getLastUpdated() - nextSyncMessage.getLastUpdated();
                 long hours = distanceFromPreviousInMilliseconds / (60 * 60 * 1000);
                 long minutes = (distanceFromPreviousInMilliseconds - (hours * 60 * 60 * 1000)) / (60 * 1000);
                 long seconds = (distanceFromPreviousInMilliseconds - (minutes * 60 * 1000)) / 1000L;
 %>
-                <a href="/admin/difference?from=<%=nextSyncMessageEntity.getLastUpdated()%>&to=<%=syncMessageEntity.getLastUpdated()%>"><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
+                <a href="/admin/difference?from=<%=nextSyncMessage.getLastUpdated()%>&to=<%=syncMessage.getLastUpdated()%>"><%=hours%> hrs, <%=minutes%> mins, <%=seconds%> secs</a>
 <%
             }
 %>

@@ -75,6 +75,11 @@ public class ParameterFactory {
         }
     }
 
+    static public String getParameterValueAsStringByName(final String name) {
+        final Parameter parameter = getParameterByName(name);
+        return parameter == null ? "" : parameter.getParameterValue();
+    }
+
     static public Key addParameter(final String name, final String value) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity parameterEntity = new Entity(KIND);

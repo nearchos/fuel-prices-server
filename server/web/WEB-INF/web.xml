@@ -113,6 +113,24 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>MergeServlet</servlet-name>
+        <jsp-file>/admin/Merge.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MergeServlet</servlet-name>
+        <url-pattern>/admin/merge</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>IndexServlet</servlet-name>
+        <jsp-file>/admin/Index.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>IndexServlet</servlet-name>
+        <url-pattern>/admin</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>AdminSyncServlet</servlet-name>
         <servlet-class>com.aspectsense.fuel.server.admin.AdminSyncServlet</servlet-class>
     </servlet>

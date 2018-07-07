@@ -17,13 +17,13 @@
 
 package com.aspectsense.fuel.server.api;
 
-import com.aspectsense.fuel.server.data.*;
-import com.aspectsense.fuel.server.datastore.*;
+import com.aspectsense.fuel.server.data.SyncMessage;
+import com.aspectsense.fuel.server.datastore.SyncMessageFactory;
+import com.aspectsense.fuel.server.datastore.ApiKeyFactory;
 import com.aspectsense.fuel.server.json.*;
 import com.aspectsense.fuel.server.model.Offline;
 import com.aspectsense.fuel.server.model.Price;
 import com.aspectsense.fuel.server.model.Station;
-import com.aspectsense.fuel.server.model.SyncMessage;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.google.gson.Gson;
@@ -81,28 +81,28 @@ public class ApiSyncServlet extends HttpServlet {
         } else { // key not found in memcache - data must be dynamically generated now (and stored in cache at the end)
             final long start = System.currentTimeMillis();
             final String reply;
-            final SyncMessageEntity targetSyncMessageEntity = SyncMessageFactory.queryLatestSyncMessage();
-            if(targetSyncMessageEntity == null) {
+            final SyncMessage targetSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
+            if(targetSyncMessage == null) {
                 log.severe("No SyncMessages in datastore");
                 return "{ \"status\": \"error\", \"message\": \"No SyncMessages in datastore\"}";
             } else {
                 final Modifications modifications;
                 if(fromTimestamp == 0L) { // no need to compute modifications, just return the latest data
-                    modifications = computeModifications(targetSyncMessageEntity);
+                    modifications = computeModifications(targetSyncMessage);
                 } else { // must dynamically compute the changes
-                    final SyncMessageEntity sourceSyncMessageEntity = SyncMessageFactory.querySyncMessage(fromTimestamp);
-                    if(sourceSyncMessageEntity == null) {
-                        log.warning("No SyncMessageEntity in datastore for given timestamp:" + fromTimestamp);
+                    final SyncMessage sourceSyncMessage = SyncMessageFactory.querySyncMessage(fromTimestamp);
+                    if(sourceSyncMessage == null) {
+                        log.warning("No SyncMessage in datastore for given timestamp:" + fromTimestamp);
                         // revert to sending back the whole Sync message
                         return getSyncMessageAsJSON(0L);
                     } else {
-                        modifications = computeModifications(sourceSyncMessageEntity, targetSyncMessageEntity);
+                        modifications = computeModifications(sourceSyncMessage, targetSyncMessage);
                     }
                 }
 
                 final long finish = System.currentTimeMillis();
 
-                reply = formReplyMessage(fromTimestamp, modifications, finish-start, targetSyncMessageEntity.getLastUpdated());
+                reply = formReplyMessage(fromTimestamp, modifications, finish-start, targetSyncMessage.getLastUpdated());
 
                 memcacheService.put(fromTimestamp, reply); // store in memcache
             }
@@ -110,24 +110,17 @@ public class ApiSyncServlet extends HttpServlet {
         }
     }
 
-    private Modifications computeModifications(final SyncMessageEntity targetSyncMessageEntity) {
+    private Modifications computeModifications(final SyncMessage pTargetSyncMessage) {
         final Gson gson = new Gson();
 
         // compute target-related data
-        final String targetJson = targetSyncMessageEntity.getJson();
-//        final JSONObject targetJsonObject = new JSONObject(targetJson);
-        final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
+        final String targetJson = pTargetSyncMessage.getJson();
+        final com.aspectsense.fuel.server.model.SyncMessage targetSyncMessage = gson.fromJson(targetJson, com.aspectsense.fuel.server.model.SyncMessage.class);
 
-//        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
-//        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);
         final Station [] targetStations = targetSyncMessage.getStations();
 
-//        final JSONArray targetJsonOfflinesArray = targetJsonObject.getJSONArray("offlines");
-//        final Map<String, Boolean> targetOfflines = OfflinesParser.fromOfflinesJsonArray(targetJsonOfflinesArray);
         final Map<String, Boolean> targetOfflines = targetSyncMessage.getOfflinesMap();
 
-//        final JSONArray targetPricesArray = targetJsonObject.getJSONArray("prices");
-//        final Map<String, Price> targetPrices = PriceParser.jsonArrayToMap(targetPricesArray);
         final Map<String, Price> targetPrices = targetSyncMessage.getPricesMap();
 
         // add all stations
@@ -156,9 +149,9 @@ public class ApiSyncServlet extends HttpServlet {
 
     }
 
-    public static Modifications computeModifications(final SyncMessageEntity sourceSyncMessageEntity, final SyncMessageEntity targetSyncMessageEntity) {
-        final String sourceJson = sourceSyncMessageEntity.getJson();
-        final String targetJson = targetSyncMessageEntity.getJson();
+    public static Modifications computeModifications(final SyncMessage sourceSyncMessage, final SyncMessage targetSyncMessage) {
+        final String sourceJson = sourceSyncMessage.getJson();
+        final String targetJson = targetSyncMessage.getJson();
         return computeModifications(sourceJson, targetJson);
     }
 
@@ -168,7 +161,7 @@ public class ApiSyncServlet extends HttpServlet {
 
         // compute source-related data
 //        final JSONObject sourceJsonObject = new JSONObject(sourceJson);
-        final SyncMessage sourceSyncMessage = gson.fromJson(sourceJson, SyncMessage.class);
+        final com.aspectsense.fuel.server.model.SyncMessage sourceSyncMessage = gson.fromJson(sourceJson, com.aspectsense.fuel.server.model.SyncMessage.class);
 
 //        final JSONArray sourceStationsArray = sourceJsonObject.getJSONArray("stations");
 //        final Map<String, Station> sourceCodeToStationsMap = StationsParser.jsonArrayToMap(sourceStationsArray);
@@ -184,7 +177,7 @@ public class ApiSyncServlet extends HttpServlet {
 
         // compute target-related data
 //        final JSONObject targetJsonObject = new JSONObject(targetJson);
-        final SyncMessage targetSyncMessage = gson.fromJson(targetJson, SyncMessage.class);
+        final com.aspectsense.fuel.server.model.SyncMessage targetSyncMessage = gson.fromJson(targetJson, com.aspectsense.fuel.server.model.SyncMessage.class);
 
 //        final JSONArray targetStationsArray = targetJsonObject.getJSONArray("stations");
 //        final Vector<Station> targetStations = StationsParser.fromStationsJsonArray(targetStationsArray);

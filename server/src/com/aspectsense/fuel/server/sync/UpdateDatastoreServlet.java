@@ -28,7 +28,6 @@ import com.google.appengine.api.datastore.Text;
 import com.google.appengine.api.memcache.MemcacheService;
 import com.google.appengine.api.memcache.MemcacheServiceFactory;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -97,19 +96,19 @@ public class UpdateDatastoreServlet extends HttpServlet {
 
         int numberOfChanges = 0;
 
-        // compute number of differences since last update and ignore saving the SyncMessageEntity is there are no changes
-        final SyncMessageEntity latestSyncMessageEntity = SyncMessageFactory.queryLatestSyncMessage();
-        if(latestSyncMessageEntity == null) {
+        // compute number of differences since last update and ignore saving the SyncMessage is there are no changes
+        final SyncMessage latestSyncMessage = SyncMessageFactory.queryLatestSyncMessage();
+        if(latestSyncMessage == null) {
             SyncMessageFactory.addSyncMessage(new Text(currentJson), 0, updateTimestamp);
         } else {
-            final String latestJson = latestSyncMessageEntity.getJson();
+            final String latestJson = latestSyncMessage.getJson();
 //            try {
                 final ApiSyncServlet.Modifications modifications = ApiSyncServlet.computeModifications(latestJson, currentJson);
                 numberOfChanges = modifications.getSize();
                 if(numberOfChanges > 0) {
                     SyncMessageFactory.addSyncMessage(new Text(currentJson), numberOfChanges, updateTimestamp);
                 } else {
-                    log.info("Saving the SyncMessageEntity was not necessary because it has 0 modifications (timestamp: " + updateTimestamp + ")");
+                    log.info("Saving the SyncMessage was not necessary because it has 0 modifications (timestamp: " + updateTimestamp + ")");
                 }
 //            } catch (JSONException jsone) {
 //                log.warning("Error while compiling current JSON with latest one to decide if we will store it: " + jsone.getMessage());
@@ -121,8 +120,8 @@ public class UpdateDatastoreServlet extends HttpServlet {
         memcacheService.clearAll();
 
         // check if there has been an update in the last 24 hours...
-        if(latestSyncMessageEntity != null && numberOfChanges == 0) {
-            final long lastUpdated = latestSyncMessageEntity.getLastUpdated();
+        if(latestSyncMessage != null && numberOfChanges == 0) {
+            final long lastUpdated = latestSyncMessage.getLastUpdated();
             if(System.currentTimeMillis() - lastUpdated > 24L*60*60*1000) {
                 // todo send an email with a warning message if no updates
             }

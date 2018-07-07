@@ -7,7 +7,7 @@ import java.util.logging.Logger;
  * @author Nearchos Paspallis
  * 07-Feb-16
  */
-public class SyncMessageEntity implements Serializable {
+public class SyncMessage implements Serializable {
 
     public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
@@ -16,7 +16,7 @@ public class SyncMessageEntity implements Serializable {
     private final long numOfChanges;
     private final long lastUpdated;
 
-    public SyncMessageEntity(String uuid, String json, long numOfChanges, long lastUpdated) {
+    public SyncMessage(String uuid, String json, long numOfChanges, long lastUpdated) {
         this.uuid = uuid;
         this.json = json;
         this.numOfChanges = numOfChanges;
