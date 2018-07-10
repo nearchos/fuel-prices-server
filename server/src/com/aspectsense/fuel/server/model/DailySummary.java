@@ -56,18 +56,4 @@ public class DailySummary implements Serializable {
                 ", stationCodeToPricesMap=" + stationCodeToPricesMap +
                 '}';
     }
-
-    public static void main(String[] args) {
-        final String json = "{\n" +
-                "  \"crudeOilInUsd\": 0.00,\n" +
-                "  \"eurUsd\": 1.24,\n" +
-                "  \"eurGbp\": 0.90,\n" +
-                "  \"stations\": {\n" +
-                "    \"ES066\": [1219, 1270, 1232, 815, 865],\n" +
-                "    \"PE010\": [1208, 1284, 1214, 821, 873]\n" +
-                "  }\n" +
-                "}";
-        final DailySummary dailySummary = new Gson().fromJson(json, DailySummary.class);
-        System.out.println(dailySummary);
-    }
 }

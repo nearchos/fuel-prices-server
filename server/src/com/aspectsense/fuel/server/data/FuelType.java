@@ -1,5 +1,7 @@
 package com.aspectsense.fuel.server.data;
 
+import com.google.appengine.repackaged.com.google.gson.annotations.SerializedName;
+
 import java.util.HashMap;
 import java.util.Map;
 

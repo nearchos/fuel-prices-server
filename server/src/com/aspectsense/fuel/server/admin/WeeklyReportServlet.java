@@ -20,6 +20,8 @@ import java.util.logging.Logger;
 import static com.aspectsense.fuel.server.json.Util.SIMPLE_DATE_FORMAT;
 
 /**
+ * Weekly email.
+ *
  * @author Nearchos Paspallis
  *         03/02/2017
  *         22:02

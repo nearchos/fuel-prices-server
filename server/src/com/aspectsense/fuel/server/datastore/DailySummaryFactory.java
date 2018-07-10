@@ -20,7 +20,7 @@ package com.aspectsense.fuel.server.datastore;
 import com.aspectsense.fuel.server.data.DailySummary;
 import com.google.appengine.api.datastore.*;
 
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -68,6 +68,29 @@ public class DailySummaryFactory {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Returns a map of {@link Date}s to {@link DailySummary} for all days in the specified month.
+     * @param fromS the starting date and year in the form 'yyyy-MM-dd'
+     * @param toS the ending date and year in the form 'yyyy-MM-dd'
+     * @return a map of {@link String}-formatted date (in the form 'yyyy-MM-dd') to {@link DailySummary}
+     * for all days in the specified month
+     */
+    static public Vector<DailySummary> getSortedDailySummariesForMonth(final String fromS, final String toS) {
+        final Vector<DailySummary> dailySummaries = new Vector<>();
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query.Filter filterFrom = new Query.FilterPredicate(PROPERTY_DATE, Query.FilterOperator.GREATER_THAN_OR_EQUAL, fromS);
+        final Query.Filter filterTo = new Query.FilterPredicate(PROPERTY_DATE, Query.FilterOperator.LESS_THAN_OR_EQUAL, toS);
+        final Query.CompositeFilter filterFromTo = Query.CompositeFilterOperator.and(filterFrom, filterTo);
+        final Query query = new Query(KIND).setFilter(filterFromTo).addSort(PROPERTY_DATE, Query.SortDirection.ASCENDING);
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        // assert exactly one (or none) is found
+        for (final Entity entity : preparedQuery.asIterable()) {
+            final DailySummary dailySummary = getFromEntity(entity);
+            dailySummaries.add(dailySummary);
+        }
+        return dailySummaries;
     }
 
     static public DailySummary getFromEntity(final Entity entity) {

@@ -152,7 +152,7 @@ Time: 10:19
 
                             <p class="cfg-privacy-text">
                                 Additional data used in the statistics/visualization pages are
-                                the crude oil prices from <a href="http://finance.yahoo.com" target="_blank">Yahoo! finance</a>,
+                                the crude oil prices from <a href="https://www.eia.gov" target="_blank">U.S. Energy Information Administration</a>'s site,
                                 and EUR/USD rates from <a href="http://fixer.io" target="_blank">fixer.io</a>.
                             </p>
 

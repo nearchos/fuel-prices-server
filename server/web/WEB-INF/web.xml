@@ -160,6 +160,14 @@
         <servlet-name>DailySummaryServlet</servlet-name>
         <url-pattern>/admin/daily-summary</url-pattern>
     </servlet-mapping>
+    <servlet>
+        <servlet-name>MonthReportServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.MonthReportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MonthReportServlet</servlet-name>
+        <url-pattern>/admin/month-report</url-pattern>
+    </servlet-mapping>
 
     <!--End of Admin Mappings-->
 
@@ -245,6 +253,15 @@
     <servlet-mapping>
         <servlet-name>StatisticsServlet</servlet-name>
         <url-pattern>/statistics</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ReportsServlet</servlet-name>
+        <jsp-file>/reports.jsp</jsp-file>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ReportsServlet</servlet-name>
+        <url-pattern>/reports</url-pattern>
     </servlet-mapping>
 
     <servlet>

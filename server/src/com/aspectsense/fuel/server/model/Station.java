@@ -17,6 +17,8 @@
 
 package com.aspectsense.fuel.server.model;
 
+import com.aspectsense.fuel.server.data.City;
+
 import java.io.Serializable;
 
 /**
@@ -92,6 +94,10 @@ public class Station implements Serializable {
 
     public String getStationCity() {
         return stationCity;
+    }
+
+    public String getStationCityEn() {
+        return City.decode(stationCity).getNameEn();
     }
 
     public String getStationDistrict() {
