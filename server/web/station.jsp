@@ -213,6 +213,11 @@
                     </div>
                     <div class="mdl-card__supporting-text mdl-color-text--grey-600">
                         Sporting a cool Android device? Get the App!
+                        <br/>
+                        <br/>
+                        <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
+                            <img src="images/cfg-in-nexus-5x.png" alt="Cyprus Fuel Guide - App in device screenshot"/>
+                        </a>
                     </div>
                     <div class="mdl-card__actions">
                         <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">

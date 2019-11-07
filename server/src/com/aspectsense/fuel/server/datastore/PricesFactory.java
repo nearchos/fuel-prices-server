@@ -120,4 +120,19 @@ public class PricesFactory {
                 ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
                 (Long) entity.getProperty(PROPERTY_LAST_UPDATED));
     }
+
+    static public int deletePrices(final long notNewerThan, final int maxNumOfEntitiesToBeDeleted) {
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query query = new Query(KIND)
+                .setFilter(new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.LESS_THAN_OR_EQUAL, notNewerThan))
+                .addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.ASCENDING); // start from oldest
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        final List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumOfEntitiesToBeDeleted));
+        final List<Key> keys = new Vector<>();
+        for(final Entity entity : entities) {
+            keys.add(entity.getKey());
+        }
+        datastoreService.delete(keys);
+        return keys.size();
+    }
 }

@@ -104,42 +104,6 @@ public class ApiStatisticsServlet extends HttpServlet {
                 responseMessage = getStatisticsMessageAsJSON(duration); // compute reply
             }
             response.getWriter().println(responseMessage);
-//            } catch (JSONException jsone) {
-//                log.warning("JSON error: " + jsone.getMessage());
-//                response.getWriter().println(" { \"status\": \"error\", \"message\": \"" + jsone.getMessage() + "\" }");
-//            }
-        }
-    }
-
-    public static String getStatisticsMessageAsJSON() {
-
-        final long now = System.currentTimeMillis();
-        final String to = SIMPLE_DATE_FORMAT.format(new Date(now));
-        String from = to;
-        final String memcacheKey = "statistics-" + to;
-
-        // first check if the requested data is already in memcache
-        final MemcacheService memcacheService = MemcacheServiceFactory.getMemcacheService(SYNC_NAMESPACE);
-        if(memcacheService.contains(memcacheKey)) {
-            return (String) memcacheService.get(memcacheKey);
-        } else { // key not found in memcache - data must be dynamically generated now (and stored in cache at the end)
-            final Map<String,String> dailySummariesAsJson = new HashMap<>();
-            long currentTimestamp = now;
-            for(int i = 0; i < DEFAULT_NUM_OF_DAYS_IN_STATISTICS_PERIOD; i++) {
-                final String dateS = SIMPLE_DATE_FORMAT.format(new Date(currentTimestamp));
-                final String dailySummaryAsJson = getDailySummaryAsJson(memcacheService, dateS);
-                if(dailySummaryAsJson != null) {
-                    dailySummariesAsJson.put(dateS, dailySummaryAsJson);
-                }
-                from = dateS;
-                currentTimestamp -= ONE_DAY;
-            }
-
-            final String statisticsMessageAsJson = createStatisticsMessageAsJson(from, to, dailySummariesAsJson, getAllStationCodes());
-
-            memcacheService.put(memcacheKey, statisticsMessageAsJson); // store in memcache
-
-            return statisticsMessageAsJson;
         }
     }
 

@@ -1,4 +1,4 @@
-package com.aspectsense.fuel.server.admin;
+package com.aspectsense.fuel.server.api;
 
 import com.aspectsense.fuel.server.data.*;
 import com.aspectsense.fuel.server.datastore.DailySummaryFactory;
@@ -15,16 +15,22 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.logging.Logger;
 
 public class MonthReportServlet extends HttpServlet {
+
+    public static final Logger log = Logger.getLogger("cyprusfuelguide");
 
     private static final Gson gson = new GsonBuilder().serializeSpecialFloatingPointValues().create();
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
+        response.setHeader("Access-Control-Allow-Origin", "*"); // todo consider limiting to own domain
+        response.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
         response.setContentType("application/json");
         response.setCharacterEncoding("utf-8");
 
@@ -62,7 +68,7 @@ public class MonthReportServlet extends HttpServlet {
 
             final Vector<DailySummary> dailySummaries = DailySummaryFactory.getSortedDailySummariesForMonth(fromS, toS);
 
-            final Stations latestStations = StationsFactory.getLatestStations();
+            final Stations latestStations = StationsFactory.getStationsByDate(lastDayOfMonth.atTime(0, 0).atZone(ZoneId.systemDefault()).toEpochSecond() * 1000L);
             assert latestStations != null;
 
             final MonthReport monthReport = produceMonthReport(dailySummaries, latestStations.getJson());
@@ -105,6 +111,10 @@ public class MonthReportServlet extends HttpServlet {
             for(int i = 0; i < lowestPrices.length; i++) lowestPrices[i] = Integer.MAX_VALUE;
 
             final Map<String,Integer[]> daysStationCodeToPricesMap = dailySummary.getStationCodeToPricesMap();
+            if(daysStationCodeToPricesMap == null) {
+                log.severe("Null dailySummary " + dailySummary.toString());
+                continue;
+            }
             final Set<String> stationCodes = daysStationCodeToPricesMap.keySet();
             for(final String stationCode : stationCodes) {
                 final Integer [] prices = daysStationCodeToPricesMap.get(stationCode);
@@ -150,24 +160,26 @@ public class MonthReportServlet extends HttpServlet {
         }
 
         // for each fuel type, compute averages for each station
-        final Map<FuelType,MonthReport.StationCodeToPrice []> fuelTypeToStationCodeToPrices = new HashMap<>();
+        final Map<FuelType, Vector<MonthReport.StationCodeToPrice>> fuelTypeToStationCodeToPrices = new HashMap<>();
         {
             final Set<String> stationCodes = stationCodesToSumsAndCountsMap.keySet();
             for(final FuelType fuelType : FuelType.values()) {
-                final MonthReport.StationCodeToPrice [] stationCodeToPrices = new MonthReport.StationCodeToPrice[stationCodes.size()];
-                final Iterator<String> iterator = stationCodes.iterator();
-                for(int i = 0; i < stationCodes.size(); i++) {
-                    final String stationCode = iterator.next();
+                final Vector<MonthReport.StationCodeToPrice> stationCodeToPrices = new Vector<>(stationCodes.size());
+                int i = 0;
+                for(final String stationCode : stationCodes) {
                     final Station station = stationCodeToStationsMap.get(stationCode);
                     final Integer [] occurrences = stationCodeToLowestPriceDays.get(stationCode);
                     int numOfDaysRankedTop = occurrences[fuelType.getCode()-1];
-                    stationCodeToPrices[i] = new MonthReport.StationCodeToPrice(
-                            stationCode,
-                            station.getStationName(),
-                            station.getStationBrand(),
-                            stationCodesToSumsAndCountsMap.get(stationCode).getAverage(fuelType),
-                            numOfDaysRankedTop,
-                            station.getStationCityEn());
+                    // there is a chance the station was 'closed' or 'deleted' before the end of that month - in this case we skip the station
+                    if(station != null) {
+                        stationCodeToPrices.add(new MonthReport.StationCodeToPrice(
+                                stationCode,
+                                station.getStationName(),
+                                station.getStationBrand(),
+                                stationCodesToSumsAndCountsMap.get(stationCode).getAverage(fuelType),
+                                numOfDaysRankedTop,
+                                station.getStationCityEn()));
+                    }
                 }
                 fuelTypeToStationCodeToPrices.put(fuelType, stationCodeToPrices);
             }
@@ -175,7 +187,8 @@ public class MonthReportServlet extends HttpServlet {
 
         // sort and set arrays
         for(final FuelType fuelType : FuelType.values()) {
-            final MonthReport.StationCodeToPrice [] stationCodeToPrices = fuelTypeToStationCodeToPrices.get(fuelType);
+            final Vector<MonthReport.StationCodeToPrice> stationCodeToPricesVector = fuelTypeToStationCodeToPrices.get(fuelType);
+            final MonthReport.StationCodeToPrice [] stationCodeToPrices = stationCodeToPricesVector.toArray(new MonthReport.StationCodeToPrice[0]);
             Arrays.sort(stationCodeToPrices);
             fuelTypeToStationsOrderedByPriceDescending.put(fuelType.getCode(), stationCodeToPrices);
         }
@@ -187,12 +200,15 @@ public class MonthReportServlet extends HttpServlet {
             final Set<String> stationCodes = daysStationCodeToPricesMap.keySet();
             for(final String stationCode : stationCodes) {
                 final Station station = stationCodeToStationsMap.get(stationCode);
-                final String cityName = station.getStationCityEn();
-                final Integer [] prices = daysStationCodeToPricesMap.get(stationCode);
-                if (!cityNamesToSumsAndCountsMap.containsKey(cityName)) {
-                    cityNamesToSumsAndCountsMap.put(cityName, new SumsAndCounts());
+                // there is a chance the station was 'closed' or 'deleted' before the end of that month - in this case we skip the station
+                if(station != null) {
+                    final String cityName = station.getStationCityEn();
+                    final Integer [] prices = daysStationCodeToPricesMap.get(stationCode);
+                    if (!cityNamesToSumsAndCountsMap.containsKey(cityName)) {
+                        cityNamesToSumsAndCountsMap.put(cityName, new SumsAndCounts());
+                    }
+                    cityNamesToSumsAndCountsMap.get(cityName).add(prices);
                 }
-                cityNamesToSumsAndCountsMap.get(cityName).add(prices);
             }
         }
 
@@ -217,12 +233,15 @@ public class MonthReportServlet extends HttpServlet {
             final Set<String> stationCodes = daysStationCodeToPricesMap.keySet();
             for(final String stationCode : stationCodes) {
                 final Station station = stationCodeToStationsMap.get(stationCode);
-                final String brand = station.getStationBrand();
-                final Integer [] prices = daysStationCodeToPricesMap.get(stationCode);
-                if (!brandsToSumsAndCountsMap.containsKey(brand)) {
-                    brandsToSumsAndCountsMap.put(brand, new SumsAndCounts());
+                // there is a chance the station was 'closed' or 'deleted' before the end of that month - in this case we skip the station
+                if(station != null) {
+                    final String brand = station.getStationBrand();
+                    final Integer[] prices = daysStationCodeToPricesMap.get(stationCode);
+                    if (!brandsToSumsAndCountsMap.containsKey(brand)) {
+                        brandsToSumsAndCountsMap.put(brand, new SumsAndCounts());
+                    }
+                    brandsToSumsAndCountsMap.get(brand).add(prices);
                 }
-                brandsToSumsAndCountsMap.get(brand).add(prices);
             }
         }
 

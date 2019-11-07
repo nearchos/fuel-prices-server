@@ -105,7 +105,7 @@
             Website & App developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a>.
         </p>
         <p>
-            The research and implementation in the Statistics page was funded by <a href="http://www.uclancyprus.ac.cy" target="_blank">UCLan Cyprus</a>
+            The research and implementation in the Statistics page was supported by <a href="http://www.uclancyprus.ac.cy" target="_blank">UCLan Cyprus</a>
             and <a href="http://inspirecenter.org/" target="_blank">Inspire Center</a>.
         </p>
         <p>

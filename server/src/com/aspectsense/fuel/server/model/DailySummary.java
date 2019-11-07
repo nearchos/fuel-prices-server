@@ -1,7 +1,5 @@
 package com.aspectsense.fuel.server.model;
 
-import com.google.gson.Gson;
-
 import java.io.Serializable;
 import java.util.Map;
 

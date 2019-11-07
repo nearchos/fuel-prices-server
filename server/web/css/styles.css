@@ -301,7 +301,7 @@ _:-ms-input-placeholder, :root .demo-graph {
     position: relative;
     font-size: 1.2em;
     color: slategray;
-    padding: 16px 32px;
+    padding: 8px 32px;
 }
 
 .cfg-card-container {
@@ -314,8 +314,86 @@ _:-ms-input-placeholder, :root .demo-graph {
     width: 320px;
     height: 350px;
 }
+
 .cfg-card-square > .mdl-card__title {
     color: #fff;
     background:
-            url('../images/android-desktop.png') bottom right 15% no-repeat saddlebrown;
+            url('../images/badge.png') center right 15% no-repeat ghostwhite;
+}
+
+.cfg-card-city.mdl-card {
+    float: left;
+    margin: 8px;
+    width: 185px;
+    height: 250px;
+}
+
+.cfg-card-city> .mdl-card__title {
+    color: #fff;
+    background: ghostwhite;
+}
+
+.cfg-table-tabs {
+    float: left;
+    width: 1080px;
+}
+
+.cfg-table-container {
+    float: bottom;
+    padding: 16px 16px;
+}
+
+.cfg-table {
+    width: 992px;
+    max-width: 992px;
+    margin: 8px;
+}
+
+.cfg-bold {
+    color: saddlebrown;
+    font-weight: bold;
+}
+
+.cfg-title {
+    color: white;
+    font-size: 1.2em;
+}
+
+.cfg-black {
+    color: black;
+}
+
+.cfg-red {
+    color: red;
+}
+
+.cfg-green {
+    color: green;
+}
+
+i.material-icons{
+    display: flow;
+    vertical-align: text-bottom;
+    justify-content: center !important;
+}
+
+tr:hover {
+    cursor: pointer;
+}
+
+th {
+    font-style: italic;
+}
+
+th, td {
+    overflow: hidden;
+}
+
+.mdl-spinner {
+    width: 96px;
+    height: 96px;
+}
+
+.mdl-spinner__circle {
+    border-width: 8px;
 }

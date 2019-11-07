@@ -78,6 +78,8 @@ You are not logged in!
             <td><%=parameter.getParameterValue()%></td>
             <td>
                 <form action="/admin/add-or-edit-parameter" method="post" onsubmit="submitButton.disabled = true; return true;">
+                    <input type="hidden" name="edit" />
+                    <input type="hidden" name="<%= ParameterFactory.PROPERTY_NAME%>" value="<%=parameter.getParameterName()%>" required/>
                     <input type="text" name="<%= ParameterFactory.PROPERTY_VALUE%>" value="<%=parameter.getParameterValue()%>" required/>
                     <div>
                         <input type="submit" name="submitButton" value="Save" />

@@ -1,14 +1,4 @@
-<%@ page import="com.aspectsense.fuel.server.datastore.PricesFactory" %>
-<%@ page import="com.aspectsense.fuel.server.datastore.StationsFactory" %>
-<%@ page import="com.aspectsense.fuel.server.data.*" %>
-<%@ page import="com.aspectsense.fuel.server.json.StationsParser" %>
-<%@ page import="com.aspectsense.fuel.server.json.PricesParser" %>
-<%@ page import="java.util.*" %>
-<%@ page import="com.aspectsense.fuel.server.json.Util" %>
-<%@ page import="com.aspectsense.fuel.server.model.Station" %>
-
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
@@ -155,7 +145,7 @@
             var latr2 = lat2.toRad();
 
             var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                    Math.sin(dLng/2) * Math.sin(dLng/2) * Math.cos(latr1) * Math.cos(latr2);
+                Math.sin(dLng/2) * Math.sin(dLng/2) * Math.cos(latr1) * Math.cos(latr2);
             var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         }
@@ -168,7 +158,6 @@
         }
     </script>
 
-    <%--support for polyfill modal dialogs (https://github.com/GoogleChrome/dialog-polyfill)--%>
     <link rel="stylesheet" type="text/css" href="css/dialog-polyfill.css" />
     <script src="js/dialog-polyfill.js"></script>
 
@@ -221,30 +210,10 @@
         </div>
         <!-- Tabs -->
         <div class="mdl-layout__tab-bar mdl-js-ripple-effect">
-            <%
-                boolean first = true;
-                for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-            %>
-                    <a href="#scroll-tab-<%=fuelType.getCodeAsString()%>" class="mdl-layout__tab<%=first ? " is-active" : ""%>" onclick="updateFuelType(<%=fuelType.getCodeAsString()%>)"><%=fuelType.getName()%></a>
-            <%
-                    first = false;
-                }
-            %>
         </div>
     </header>
-    <%
-        final String stationsJson = StationsFactory.getLatestStations().getJson();
-        final Map<String,Station> stationsMap = StationsParser.jsonArrayToMap(stationsJson);
-        final Map<FuelType, Map<City,Set<String>>> fuelTypeToCheapestStationsPerCity = new HashMap<>();
-        final Map<FuelType, Map<String,Integer>> fuelTypeToPricesMap = new HashMap<>();
-        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-            final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
-            final Map<String,Integer> pricesMap = PricesParser.fromPricesJson(prices.getJson());
-            fuelTypeToPricesMap.put(fuelType, pricesMap);
-            fuelTypeToCheapestStationsPerCity.put(fuelType, Util.findCheapestStationsPerCity(stationsMap, pricesMap));
-        }
-    %>
-        <main class="mdl-layout__content mdl-color--grey-100">
+
+    <main class="mdl-layout__content mdl-color--grey-100">
         <div class="mdl-grid demo-content">
 
             <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
@@ -265,8 +234,8 @@
                         <tr class="cfg-prices-table-row">
                             <td class="cfg-price">Average</td>
                             <td class="cfg-black" id="daily-statistics-avg">€&nbsp;1.234</td>
-                            <td class="cfg-green" id="daily-statistics-avg-3days">+1%</td>
-                            <td class="cfg-red" id="daily-statistics-avg-10days">-1%</td>
+                            <td class="cfg-green" id="daily-statistics-avg-3days"><i class=material-icons>trending_down</i>1%</td>
+                            <td class="cfg-red" id="daily-statistics-avg-10days"><i class=material-icons>trending_up</i>1%</td>
                         </tr>
                         <tr class="cfg-prices-table-row">
                             <td class="cfg-price">Median</td>
@@ -295,138 +264,85 @@
                 <div class="mdl-card__title mdl-color--brown-300">
                     <h2 class="mdl-card__title-text">Best prices</h2>
                 </div>
-    <%
-        for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-            Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
-            final City [] allCities = City.ALL_CITIES;
-    %>
+
                 <div class="mdl-color--white mdl-color-text--brown-600" style="width: auto" id="cheapestPrices-<%=fuelType.getCodeAsString()%>">
-                    <%--<b><%=fuelType.getNameEn().toUpperCase()%></b>--%>
 
                     <table class="rmdl-data-table mdl-js-data-table mdl-shadow--2dp" style="width: 100%;">
                         <thead>
                         <tr>
-                            <%
-                                for(final City city : allCities) {
-                            %>
-                            <th class="cfg-price-header-column"><a href="#<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>"><%=city.getNameEn()%></a></th>
-                            <%
-                                }
-                            %>
+                            <th class="cfg-price-header-column"><a href="#<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>">Nicosia</a></th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr class="cfg-prices-table-row">
-                            <%
-                                for(final City city : allCities) {
-                                    final Set<String> stationCodes = cheapestStationsPerCity.get(city);
-                                    final int price = fuelTypeToPricesMap.get(fuelType).get(stationCodes.iterator().next());
-                            %>
-                            <td class="cfg-price-value-column"><%=String.format("€%5.3f", price/1000f)%></td>
-                            <%
-                                }
-                            %>
+                            <td class="cfg-price-value-column">€1.2345</td>
                         </tr>
                         </tbody>
                     </table>
 
                 </div>
-    <%
-        }
-    %>
             </div>
             <div class="cfg-city-prices">
-                <%
-                    boolean active = true;
-                    for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-                %>
-                <section class="mdl-layout__tab-panel <%=active ? "is-active" : ""%>" id="scroll-tab-<%=fuelType.getCodeAsString()%>">
-                    <%
-                        active = false;
-                        for(final City city : City.ALL_CITIES) {
-                    %>
-                    <a name="<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>"></a>
-                    <div class="demo-graphs mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop" id="<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>">
-                        <div class="page-content">
-                            <div class="cfg-city-header">
-                                <%=city.getNameEn()%>
-                            </div>
-
-                            <%
-                                final Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
-                                final Set<String> cheapestStations = cheapestStationsPerCity.get(city);
-                                int counter = 0;
-                                for(final String stationCode : cheapestStations) {
-                                    counter++;
-                                    final Station station = stationsMap.get(stationCode);
-                                    final Map<String,Integer> pricesMap = fuelTypeToPricesMap.get(fuelType);
-                            %>
-                            <div class="cfg-station-header" id="<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>-<%=counter%>" style="display: <%=counter > 3 ? "none": "block"%>">
-                                <a href="station?id=<%=station.getStationCode()%>"><span class="cfg-empty-span-trick"></span></a>
-                                <img src="images/<%=station.getStationBrand().toLowerCase()%>.png" align="inline">
-                                <span class="cfg-price"><%=String.format("€%5.3f", pricesMap.get(stationCode)/1000f)%></span> <a href="http://maps.google.com/maps?z=14&q=loc:<%=station.getStationLatitude()%>+<%=station.getStationLongitude()%>&hl=en" target="_blank"><%=station.getStationAddress()%>, <%=station.getStationDistrict()%></a>
-                            </div>
-                            <%
-                                }
-
-                                if(counter > 3) {
-                            %>
-                            <div class="cfg-align-right-padding-8" id="showMore-<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>">
-                                <!-- Accent-colored raised button with ripple -->
-                                <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="showMore('<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>',<%=counter%>)">
-                                    <span id="nicosiaShowMore">Show more</span>
-                                </button>
-                            </div>
-
-                            <%
-                                }
-                            %>
+                <section class="mdl-layout__tab-panel is-active" id="scroll-tab-1">
+                <a name="nicosia-1"></a>
+                <div class="demo-graphs mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop" id="<%=city.getNameEn().toLowerCase()%>-<%=fuelType.getCodeAsString()%>">
+                    <div class="page-content">
+                        <div class="cfg-city-header">
+                            Nicosia
                         </div>
-                    </div>
-                    <%--<div style="height: 16px"></div>--%>
-                    <%
-                        }
-                    %>
-                </section>
-                <%
-                    }
-                %>
-            </div>
-            <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
-                <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-                    <div class="mdl-card__title mdl-card--expand mdl-color--brown-300">
-                        <h2 class="mdl-card__title-text">Get the Android app!</h2>
-                    </div>
-                    <div class="mdl-card__supporting-text mdl-color-text--grey-600">
-                        Sporting a cool Android device? Get the App!
-                        <br/>
-                        <br/>
-                        <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
-                            <img src="images/cfg-in-nexus-5x.png" alt="Cyprus Fuel Guide - App in device screenshot"/>
-                        </a>
-                    </div>
-                    <div class="mdl-card__actions">
-                        <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
-                            <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/apps/en-play-badge.png" width="200" title="Android, Google Play and the Google Play logo are trademarks of Google Inc."/>
-                        </a>
 
-                        <!--<a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank" class="mdl-button mdl-js-button mdl-color-text&#45;&#45;amber mdl-js-ripple-effect">Install</a>-->
+                            <div class="cfg-station-header" id="nicosia-1-1" style="display: none">
+                            <a href="station?id=ES001"><span class="cfg-empty-span-trick"></span></a>
+                            <img src="images/esso.png" align="inline">
+                            <span class="cfg-price">€1.1234</span> <a href="http://maps.google.com/maps?z=14&q=loc:34.1+33.5&hl=en" target="_blank">Here, There</a>
+                            </div>
+
+                    <div class="cfg-align-right-padding-8" id="showMore-nicosia-1">
+                        <!-- Accent-colored raised button with ripple -->
+                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="showMore('nicosia-1',1)">
+                            <span id="nicosiaShowMore">Show more</span>
+                        </button>
                     </div>
+
+                </div>
+            </div>
+            </section>
+        </div>
+        <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
+            <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
+                <div class="mdl-card__title mdl-card--expand mdl-color--brown-300">
+                    <h2 class="mdl-card__title-text">Get the Android app!</h2>
+                </div>
+                <div class="mdl-card__supporting-text mdl-color-text--grey-600">
+                    Sporting a cool Android device? Get the App!
+                    <br/>
+                    <br/>
+                    <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
+                        <img src="images/cfg-in-nexus-5x.png" alt="Cyprus Fuel Guide - App in device screenshot"/>
+                    </a>
+                </div>
+                <div class="mdl-card__actions">
+                    <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
+                        <img alt="Get it on Google Play" src="https://play.google.com/intl/en_us/badges/images/apps/en-play-badge.png" width="200" title="Android, Google Play and the Google Play logo are trademarks of Google Inc."/>
+                    </a>
+
+                    <!--<a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank" class="mdl-button mdl-js-button mdl-color-text&#45;&#45;amber mdl-js-ripple-effect">Install</a>-->
                 </div>
             </div>
         </div>
-        <footer class="mdl-mini-footer">
-            <div class="mdl-mini-footer__left-section">
-                <div class="mdl-logo">Cyprus Fuel Guide</div>
-                <ul class="mdl-mini-footer__link-list">
-                    <li><a href="#" onclick="showAboutDialog()">About</a></li>
-                    <li><a href="#" onclick="showContactDialog()">Contact</a></li>
-                    <li><a href="privacy">Privacy & Terms</a></li>
-                </ul>
-                <div>Developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a> &copy; <script>document.write(new Date().getFullYear())</script></div>
-            </div>
-        </footer>
-    </main>
+</div>
+<footer class="mdl-mini-footer">
+    <div class="mdl-mini-footer__left-section">
+        <div class="mdl-logo">Cyprus Fuel Guide</div>
+        <ul class="mdl-mini-footer__link-list">
+            <li><a href="#" onclick="showAboutDialog()">About</a></li>
+            <li><a href="#" onclick="showContactDialog()">Contact</a></li>
+            <li><a href="privacy">Privacy & Terms</a></li>
+        </ul>
+        <div>Developed by <a href="http://aspectsense.com" target="_blank">aspectsense.com</a> &copy; <script>document.write(new Date().getFullYear())</script></div>
+    </div>
+</footer>
+</main>
 </div>
 <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 <script>
@@ -447,37 +363,10 @@
         dialog.showModal();
     }
 
-    function showMore(cityNameAndFuelType,numOfStations) {
-        for(i = 1; i <= numOfStations; i++) {
-            var stationDiv = document.getElementById(cityNameAndFuelType + "-" + i);
-            stationDiv.style.display = "block";
-        }
-        var showMoreDiv = document.getElementById("showMore-" + cityNameAndFuelType);
-        showMoreDiv.style.display = "none";
-    }
-
-    var dailyStatistics = null;
-
-    function loadDailyStatistics() {
-        var xhttp = new XMLHttpRequest();
-        xhttp.onreadystatechange = function() {
-            if (this.readyState === 4 && this.status === 200) {
-                // set the current dam level
-                dailyStatistics = JSON.parse(this.responseText);
-                updateDailyStatistics();
-            }
-        };
-        xhttp.open("GET", "/api/daily-statistics", true);
-        xhttp.send();
-    }
-
-    var selectedFuelType = 1;
-
     function updateFuelType(fuelTypeCode) {
         if(fuelTypeCode === undefined) {
             fuelTypeCode = 1;
         }
-        selectedFuelType = fuelTypeCode;
         var fuelTypes = ["1", "2", "3", "4", "5"];
         var arrayLength = fuelTypes.length;
         var i;
@@ -490,12 +379,20 @@
                 cheapestPrices.style.display = "none";
             }
         }
-        updateDailyStatistics();
+
     }
 
-    function updateDailyStatistics() {
-        if(dailyStatistics == null) return;
-        var i = selectedFuelType-1;
+    function showMore(cityNameAndFuelType,numOfStations) {
+        for(i = 1; i <= numOfStations; i++) {
+            var stationDiv = document.getElementById(cityNameAndFuelType + "-" + i);
+            stationDiv.style.display = "block";
+        }
+        var showMoreDiv = document.getElementById("showMore-" + cityNameAndFuelType);
+        showMoreDiv.style.display = "none";
+    }
+
+    function updateDailyStatistics(dailyStatistics) {
+        var i = fuelTypeCode; // todo set selected index
         document.getElementById("daily-statistics-avg").innerHTML = "€&nbsp;" + (dailyStatistics.todaysStatistics.averages[i] / 1000).toFixed(4);
         document.getElementById("daily-statistics-med").innerHTML = "€&nbsp;" + (dailyStatistics.todaysStatistics.medians[i] / 1000).toFixed(4);
         document.getElementById("daily-statistics-min").innerHTML = "€&nbsp;" + (dailyStatistics.todaysStatistics.mins[i] / 1000).toFixed(4);
@@ -505,54 +402,55 @@
         var changeAvg3days = dailyStatistics.todaysStatistics.averages[i] - dailyStatistics.minusThreeDaysStatistics.averages[i];
         var changeAvg3daysPct = 100 * changeAvg3days / dailyStatistics.minusThreeDaysStatistics.averages[i];
         document.getElementById("daily-statistics-avg-3days").setAttribute("class", changeAvg3days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-avg-3days").innerHTML = "<i class=material-icons>" + (changeAvg3days<0 ? "trending_down" : changeAvg3days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeAvg3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeAvg3days<0 ? "" : "+") + changeAvg3daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-avg-3days").innerHTML = "<i class=material-icons>" + (changeAvg3days<0 ? "trending_down" : "trending_up") + "</i>" + (changeAvg3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeAvg3days<0 ? "" : "+") + changeAvg3daysPct.toFixed(2) + "%";
 
         var changeAvg10days = dailyStatistics.todaysStatistics.averages[i] - dailyStatistics.minusTenDaysStatistics.averages[i];
         var changeAvg10daysPct = 100 * changeAvg10days / dailyStatistics.minusTenDaysStatistics.averages[i];
         document.getElementById("daily-statistics-avg-10days").setAttribute("class", changeAvg10days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-avg-10days").innerHTML = "<i class=material-icons>" + (changeAvg10days<0 ? "trending_down" : changeAvg10days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeAvg10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeAvg10days<0 ? "" : "+") + changeAvg10daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-avg-10days").innerHTML = "<i class=material-icons>" + (changeAvg10days<0 ? "trending_down" : "trending_up") + "</i>" + (changeAvg10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeAvg10days<0 ? "" : "+") + changeAvg10daysPct.toFixed(2) + "%";
 
         // med
         var changeMed3days = dailyStatistics.todaysStatistics.medians[i] - dailyStatistics.minusThreeDaysStatistics.medians[i];
         var changeMed3daysPct = 100 * changeMed3days / dailyStatistics.minusThreeDaysStatistics.medians[i];
         document.getElementById("daily-statistics-med-3days").setAttribute("class", changeMed3days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-med-3days").innerHTML = "<i class=material-icons>" + (changeMed3days<0 ? "trending_down" : changeMed3days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMed3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMed3days<0 ? "" : "+") + changeMed3daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-med-3days").innerHTML = "<i class=material-icons>" + (changeMed3days<0 ? "trending_down" : "trending_up") + "</i>" + (changeMed3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMed3days<0 ? "" : "+") + changeMed3daysPct.toFixed(2) + "%";
 
         var changeMed10days = dailyStatistics.todaysStatistics.medians[i] - dailyStatistics.minusTenDaysStatistics.medians[i];
         var changeMed10daysPct = 100 * changeMed10days / dailyStatistics.minusTenDaysStatistics.medians[i];
         document.getElementById("daily-statistics-med-10days").setAttribute("class", changeMed10days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-med-10days").innerHTML = "<i class=material-icons>" + (changeMed10days<0 ? "trending_down" : changeMed10days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMed10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMed10days<0 ? "" : "+") + changeMed10daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-med-10days").innerHTML = "<i class=material-icons>" + (changeMed10days<0 ? "trending_down" : "trending_up") + "</i>" + (changeMed10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMed10days<0 ? "" : "+") + changeMed10daysPct.toFixed(2) + "%";
 
         // min
         var changeMin3days = dailyStatistics.todaysStatistics.mins[i] - dailyStatistics.minusThreeDaysStatistics.mins[i];
         var changeMin3daysPct = 100 * changeMin3days / dailyStatistics.minusThreeDaysStatistics.mins[i];
         document.getElementById("daily-statistics-min-3days").setAttribute("class", changeMin3days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-min-3days").innerHTML = "<i class=material-icons>" + (changeMin3days<0 ? "trending_down" : changeMin3days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMin3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMin3days<0 ? "" : "+") + changeMin3daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-min-3days").innerHTML = "<i class=material-icons>" + (changeMin3days<0 ? "trending_down" : "trending_up") + "</i>" + (changeMin3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMin3days<0 ? "" : "+") + changeMin3daysPct.toFixed(2) + "%";
 
         var changeMin10days = dailyStatistics.todaysStatistics.mins[i] - dailyStatistics.minusTenDaysStatistics.mins[i];
         var changeMin10daysPct = 100 * changeMin10days / dailyStatistics.minusTenDaysStatistics.mins[i];
         document.getElementById("daily-statistics-min-10days").setAttribute("class", changeMin10days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-min-10days").innerHTML = "<i class=material-icons>" + (changeMin10days<0  ? "trending_down" : changeMin10days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMin10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMin10days<0 ? "" : "+") + changeMin10daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-min-10days").innerHTML = "<i class=material-icons>" + (changeMin10days<0  ? "trending_down" : "trending_up") + "</i>" + (changeMin10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMin10days<0 ? "" : "+") + changeMin10daysPct.toFixed(2) + "%";
 
         // max
         var changeMax3days = dailyStatistics.todaysStatistics.maxs[i] - dailyStatistics.minusThreeDaysStatistics.maxs[i];
         var changeMax3daysPct = 100 * changeMax3days / dailyStatistics.minusThreeDaysStatistics.maxs[i];
         document.getElementById("daily-statistics-max-3days").setAttribute("class", changeMax3days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-max-3days").innerHTML = "<i class=material-icons>" + (changeMax3days<0 ? "trending_down" : changeMax3days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMax3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMax3days<0 ? "" : "+") + changeMax3daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-max-3days").innerHTML = "<i class=material-icons>" + (changeMax3days<0 ? "trending_down" : "trending_up") + "</i>" + (changeMax3days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMax3days<0 ? "" : "+") + changeMax3daysPct.toFixed(2) + "%";
 
         var changeMax10days = dailyStatistics.todaysStatistics.maxs[i] - dailyStatistics.minusTenDaysStatistics.maxs[i];
         var changeMax10daysPct = 100 * changeMax10days / dailyStatistics.minusTenDaysStatistics.maxs[i];
         document.getElementById("daily-statistics-max-10days").setAttribute("class", changeMax10days>0 ? "cfg-red" : "cfg-green");
-        document.getElementById("daily-statistics-max-10days").innerHTML = "<i class=material-icons>" + (changeMax10days<0 ? "trending_down" : changeMax10days>0 ? "trending_up" : "trending_flat") + "</i>" + (changeMax10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMax10days<0 ? "" : "+") + changeMax10daysPct.toFixed(2) + "%";
+        document.getElementById("daily-statistics-max-10days").innerHTML = "<i class=material-icons>" + (changeMax10days<0 ? "trending_down" : "trending_up") + "</i>" + (changeMax10days / 10).toFixed(2) + "&nbsp;¢ / " + (changeMax10days<0 ? "" : "+") + changeMax10daysPct.toFixed(2) + "%";
     }
 
-    loadDailyStatistics();
+    // todo replace with AJAX
+    updateDailyStatistics(JSON.parse("{\"todaysStatistics\":{\"mins\":[1288,1355,1299,811,802],\"maxs\":[1359,1412,1369,1000,989],\"medians\":[1331,1383,1332,919,911],\"averages\":[1326.6065573770493,1381.6531986531986,1331.1213114754098,918.01393728223,904.2087912087912]},\"minusThreeDaysStatistics\":{\"mins\":[1287,1354,1298,811,802],\"maxs\":[1359,1412,1369,1000,989],\"medians\":[1319,1378,1327,919,911],\"averages\":[1320.3704918032786,1376.9023569023568,1327.1245901639345,917.3776223776224,903.5091575091575]},\"minusTenDaysStatistics\":{\"mins\":[1288,1327,1299,811,802],\"maxs\":[1349,1399,1363,1000,989],\"medians\":[1318,1369,1322,919,910],\"averages\":[1315.9967213114753,1372.7441077441079,1324.4295081967214,916.5804195804196,901.9560439560439]}}"));
 
 </script>
 <script>
     (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-                (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-            m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
     })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
 
     ga('create', 'UA-319978-22', 'auto');

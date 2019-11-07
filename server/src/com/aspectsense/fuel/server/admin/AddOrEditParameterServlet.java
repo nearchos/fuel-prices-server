@@ -17,6 +17,7 @@
 
 package com.aspectsense.fuel.server.admin;
 
+import com.aspectsense.fuel.server.data.Parameter;
 import com.aspectsense.fuel.server.datastore.ParameterFactory;
 
 import javax.servlet.ServletException;
@@ -38,10 +39,23 @@ public class AddOrEditParameterServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
         final String name = request.getParameter(ParameterFactory.PROPERTY_NAME);
         final String value = request.getParameter(ParameterFactory.PROPERTY_VALUE);
+        final boolean edit = request.getParameterMap().containsKey("edit");
+        log.info("Adding or editing parameter with name (" + name + "), value (" + value + ") and edit flag (" + edit + ")");
         if(name == null || name.isEmpty() || value == null || value.isEmpty()) {
             log.warning("Both name (" + name + ") and value (" + value + ") must be non-null");
         } else {
-            ParameterFactory.addParameter(name, value);
+            if(edit) {
+                final Parameter parameter = ParameterFactory.getParameterByName(name);
+                if(parameter == null) {
+                    log.warning("Could not edit as parameter with name (" + name + ") was not found");
+                } else if(value.equals(parameter.getParameterValue())) {
+                    log.warning("Could not edit as parameter with name (" + name + ") already has identical value (" + value + ")");
+                } else {
+                    ParameterFactory.editParameter(parameter.getUuid(), name, value);
+                }
+            } else { // add
+                ParameterFactory.addParameter(name, value);
+            }
         }
         response.sendRedirect("/admin/parameters");
     }

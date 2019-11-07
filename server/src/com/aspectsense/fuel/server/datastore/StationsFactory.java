@@ -70,6 +70,26 @@ public class StationsFactory {
         }
     }
 
+    /**
+     * Retrieves the latest {@link Stations} with a timestamp not later than the given one.
+     * @return the latest {@link Stations} with a timestamp not later than the given one.
+     */
+    static public Stations getStationsByDate(final long timestamp) {
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query query = new Query(KIND)
+                .setFilter(new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.LESS_THAN_OR_EQUAL, timestamp))
+                .addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.DESCENDING);
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        // assert exactly one (or none) is found
+        final FetchOptions fetchOptions = FetchOptions.Builder.withLimit(1);
+        final List<Entity> list = preparedQuery.asList(fetchOptions);
+        if(!list.isEmpty()) {
+            return getFromEntity(list.get(0));
+        } else {
+            return null;
+        }
+    }
+
     static public Key addStations(Text json, long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity stationsEntity = new Entity(KIND);
@@ -84,5 +104,20 @@ public class StationsFactory {
                 KeyFactory.keyToString(entity.getKey()),
                 ((Text) entity.getProperty(PROPERTY_JSON)).getValue(),
                 (Long) entity.getProperty(PROPERTY_LAST_UPDATED));
+    }
+
+    static public int deleteStations(final long notNewerThan, final int maxNumOfEntitiesToBeDeleted) {
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query query = new Query(KIND)
+                .setFilter(new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.LESS_THAN_OR_EQUAL, notNewerThan))
+                .addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.ASCENDING); // start from oldest
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        final List<Entity> entities = preparedQuery.asList(FetchOptions.Builder.withLimit(maxNumOfEntitiesToBeDeleted));
+        final List<Key> keys = new Vector<>();
+        for(final Entity entity : entities) {
+            keys.add(entity.getKey());
+        }
+        datastoreService.delete(keys);
+        return keys.size();
     }
 }

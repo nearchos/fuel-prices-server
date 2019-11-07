@@ -102,6 +102,21 @@ public class SyncMessageFactory {
         return syncMessages;
     }
 
+    static public int deleteSyncMessages(final long notNewerThan, final int maxNumOfEntitiesToBeDeleted) {
+        final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
+        final Query query = new Query(KIND)
+                .setFilter(new Query.FilterPredicate(PROPERTY_LAST_UPDATED, Query.FilterOperator.LESS_THAN_OR_EQUAL, notNewerThan))
+                .addSort(PROPERTY_LAST_UPDATED, Query.SortDirection.ASCENDING); // start from oldest
+        final PreparedQuery preparedQuery = datastoreService.prepare(query);
+        final Iterable<Entity> entities = preparedQuery.asIterable(FetchOptions.Builder.withLimit(maxNumOfEntitiesToBeDeleted));
+        final List<Key> keys = new Vector<>();
+        for(final Entity entity : entities) {
+            keys.add(entity.getKey());
+        }
+        datastoreService.delete(keys);
+        return keys.size();
+    }
+
     static public Key addSyncMessage(Text json, int numOfChanges, long lastUpdated) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         final Entity syncMessageEntity = new Entity(KIND);

@@ -113,15 +113,6 @@
     </servlet-mapping>
 
     <servlet>
-        <servlet-name>MergeServlet</servlet-name>
-        <jsp-file>/admin/Merge.jsp</jsp-file>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>MergeServlet</servlet-name>
-        <url-pattern>/admin/merge</url-pattern>
-    </servlet-mapping>
-
-    <servlet>
         <servlet-name>IndexServlet</servlet-name>
         <jsp-file>/admin/Index.jsp</jsp-file>
     </servlet>
@@ -160,13 +151,23 @@
         <servlet-name>DailySummaryServlet</servlet-name>
         <url-pattern>/admin/daily-summary</url-pattern>
     </servlet-mapping>
+
     <servlet>
-        <servlet-name>MonthReportServlet</servlet-name>
-        <servlet-class>com.aspectsense.fuel.server.admin.MonthReportServlet</servlet-class>
+        <servlet-name>DailyStatisticsServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.DailyStatisticsServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>MonthReportServlet</servlet-name>
-        <url-pattern>/admin/month-report</url-pattern>
+        <servlet-name>DailyStatisticsServlet</servlet-name>
+        <url-pattern>/admin/daily-statistics</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>DailyCleanupServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.admin.DailyCleanupServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>DailyCleanupServlet</servlet-name>
+        <url-pattern>/admin/daily-cleanup</url-pattern>
     </servlet-mapping>
 
     <!--End of Admin Mappings-->
@@ -218,6 +219,24 @@
     <servlet-mapping>
         <servlet-name>ApiStatisticsServlet</servlet-name>
         <url-pattern>/api/statistics</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ApiDailyStatisticsServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.api.ApiDailyStatisticsServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ApiDailyStatisticsServlet</servlet-name>
+        <url-pattern>/api/daily-statistics</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>MonthReportServlet</servlet-name>
+        <servlet-class>com.aspectsense.fuel.server.api.MonthReportServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>MonthReportServlet</servlet-name>
+        <url-pattern>/api/month-report</url-pattern>
     </servlet-mapping>
 
     <!--End of External API servlet mappings-->
@@ -279,8 +298,8 @@
     <!--Security constraints-->
     <security-constraint>
         <web-resource-collection>
-            <web-resource-name>api</web-resource-name>
-            <url-pattern>/api/*</url-pattern>
+            <web-resource-name>everything</web-resource-name>
+            <url-pattern>/*</url-pattern>
         </web-resource-collection>
         <user-data-constraint>
             <transport-guarantee>CONFIDENTIAL</transport-guarantee>

@@ -42,7 +42,21 @@
     <cron>
         <url>/admin/daily-summary</url>
         <description>Daily create a report of the daily summary (latest prices  per station and fuel type)</description>
+        <schedule>every day 23:45</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
+    <cron>
+        <url>/admin/daily-statistics</url>
+        <description>Daily create a statistics report of the percentage change (median and average price changes in last 1, 3, and 10 days)</description>
         <schedule>every day 23:50</schedule>
+        <timezone>Asia/Nicosia</timezone>
+    </cron>
+
+    <cron>
+        <url>/admin/daily-cleanup</url>
+        <description>Daily delete up to 1000 of the oldest entities of each (Prices, Stations, Offlines), which are not less than 90 days old</description>
+        <schedule>every day 23:55</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 

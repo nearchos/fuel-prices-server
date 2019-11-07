@@ -92,13 +92,12 @@ public class ParameterFactory {
     static public void editParameter(final String uuid, final String name, final String value) {
         final DatastoreService datastoreService = DatastoreServiceFactory.getDatastoreService();
         try {
+//            final Key key = KeyFactory.createKey(KIND, uuid);
             final Entity parameterEntity = datastoreService.get(KeyFactory.stringToKey(uuid));
             parameterEntity.setProperty(PROPERTY_NAME, name);
             parameterEntity.setProperty(PROPERTY_VALUE, value);
             datastoreService.put(parameterEntity);
-        }
-        catch (EntityNotFoundException enfe)
-        {
+        } catch (EntityNotFoundException enfe) {
             log.severe("Could not find " + KIND + " with key: " + uuid);
         }
     }

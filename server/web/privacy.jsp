@@ -117,69 +117,71 @@ Time: 10:19
     <main class="mdl-layout__content mdl-color--grey-100">
         <div class="mdl-grid demo-content">
 
-            <div class="cfg-city-prices">
-
-                <div class="demo-graphs mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-                    <div class="page-content">
-                        <div class="cfg-prices-header">
-                            Privacy & Terms of Use
-                        </div>
-
-                        <div>
-                            <p class="cfg-privacy-text">
-                                Cyprus Fuel Guide takes your privacy very seriously!
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                The only permissions required by the Cyprus Fuel Guide app is internet access, which is needed simply to fetch
-                                updates regarding fuel stations and prices, and location, which is needed to show you nearby fuel stations.
-                                Please note that approximate and anonymous information regarding the device's location at the time of nearby
-                                searches might be logged for research purposes.
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                We also use <a href="http://www.google.com/analytics/learn/privacy.html">Google Analytics</a> to trace app
-                                usage, and <a href="http://www.google.com/policies/privacy/partners/">AdMob</a> to serve ads.
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                This app is made available to you in the hope that it provides helpful information and services. The data
-                                regarding the fuel prices are collected from the <a href="http://http://www.mcit.gov.cy/" target="_blank">
-                                Ministry of Energy, Commerce, Industry and Tourism</a> as uploaded and updated daily from the petrol stations.
-                                The app is not responsible for the correctness, validity or non-updating of the information that might arise
-                                from incomplete or non-updated information.
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                Additional data used in the statistics/visualization pages are
-                                the crude oil prices from <a href="https://www.eia.gov" target="_blank">U.S. Energy Information Administration</a>'s site,
-                                and EUR/USD rates from <a href="http://fixer.io" target="_blank">fixer.io</a>.
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                From a technical perspective, this service is built with Java on Google App Engine, along with a healthy amount
-                                of JavaScript. We periodically fetch the updated prices from the Ministry's server and update a Google
-                                Datastore-based database. Our apps
-                                (<a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy">Android</a> and
-                                <a href="http://cyprusfuelguide.com/">Web</a>) use that data to provide the latest prices to the users.
-                            </p>
-
-                            <p class="cfg-privacy-text">
-                                The copying or reproduction of this website or its content is prohibited.
-                            </p>
-                        </div>
-
+            <div class="demo-graphs mdl-shadow--2dp mdl-color--white mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--8-col-desktop">
+                <div class="page-content">
+                    <div class="cfg-prices-header">
+                        Privacy & Terms of Use
                     </div>
+
+                    <div>
+                        <p class="cfg-privacy-text">
+                            Cyprus Fuel Guide takes your privacy very seriously!
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            The only permissions required by the Cyprus Fuel Guide app is internet access, which is needed simply to fetch
+                            updates regarding fuel stations and prices, and location, which is needed to show you nearby fuel stations.
+                            Please note that approximate and anonymous information regarding the device's location at the time of nearby
+                            searches might be logged for research purposes.
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            We also use <a href="http://www.google.com/analytics/learn/privacy.html">Google Analytics</a> to trace app
+                            usage, and <a href="http://www.google.com/policies/privacy/partners/">AdMob</a> to serve ads.
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            This app is made available to you in the hope that it provides helpful information and services. The data
+                            regarding the fuel prices are collected from the <a href="http://http://www.mcit.gov.cy/" target="_blank">
+                            Ministry of Energy, Commerce, Industry and Tourism</a> as uploaded and updated daily from the petrol stations.
+                            The app is not responsible for the correctness, validity or non-updating of the information that might arise
+                            from incomplete or non-updated information.
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            Additional data used in the statistics/visualization pages are
+                            the crude oil prices from <a href="https://www.eia.gov" target="_blank">U.S. Energy Information Administration</a>,
+                            and EUR/USD/GBP rates from <a href="http://fixer.io" target="_blank">fixer.io</a>.
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            From a technical perspective, this service is built with Java on Google App Engine, along with a generous amount
+                            of JavaScript. We periodically fetch the updated prices from the Ministry's server and update a Google
+                            Datastore-based database. Our apps
+                            (<a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy">Android</a> and
+                            <a href="http://cyprusfuelguide.com/">Web</a>) use that data to provide the latest prices to the users.
+                        </p>
+
+                        <p class="cfg-privacy-text">
+                            The copying or reproduction of this website or its content is not allowed.
+                        </p>
+                    </div>
+
                 </div>
             </div>
 
-            <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-grid mdl-grid--no-spacing">
+            <div class="demo-cards mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-grid mdl-grid--no-spacing mdl-cell--4-col-desktop">
                 <div class="demo-updates mdl-card mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
                     <div class="mdl-card__title mdl-card--expand mdl-color--brown-300">
                         <h2 class="mdl-card__title-text">Get the Android app!</h2>
                     </div>
                     <div class="mdl-card__supporting-text mdl-color-text--grey-600">
                         Sporting a cool Android device? Get the App!
+                        <br/>
+                        <br/>
+                        <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
+                            <img src="images/cfg-in-nexus-5x.png" alt="Cyprus Fuel Guide - App in device screenshot"/>
+                        </a>
                     </div>
                     <div class="mdl-card__actions">
                         <a href="https://play.google.com/store/apps/details?id=com.aspectsense.fuelguidecy" target="_blank">
@@ -188,7 +190,9 @@ Time: 10:19
                     </div>
                 </div>
             </div>
+
         </div>
+
         <footer class="mdl-mini-footer">
             <div class="mdl-mini-footer__left-section">
                 <div class="mdl-logo">Cyprus Fuel Guide</div>

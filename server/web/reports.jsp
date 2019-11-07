@@ -1,3 +1,21 @@
+<%--
+~ This file is part of the Cyprus Fuel Guide server.
+~
+~ The Cyprus Fuel Guide server is free software: you can redistribute it
+~ and/or modify it under the terms of the GNU General Public License as
+~ published by the Free Software Foundation, either version 3 of
+~ the License, or (at your option) any later version.
+~
+~ The Cyprus Fuel Guide server is distributed in the hope that it will be
+~ useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+~ Public License for more details.
+~
+~ You should have received a copy of the GNU General Public License
+~ along with Cyprus Fuel Guide. If not, see <http://www.gnu.org/licenses/>.
+--%>
+
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,51 +125,7 @@
 
         <div class="mdl-grid demo-content">
 
-            <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
-                <div class="mdl-card__title mdl-color--brown-300">
-                    <h2 class="mdl-card__title-text">Price trends</h2>
-                </div>
-                <div class="mdl-color--white" style="width: auto;">
-                    <table class="" style="width: 100%; padding-left: 16px; padding-bottom: 16px;">
-                        <thead>
-                            <tr>
-                                <th class="cfg-price-header-column"></th>
-                                <th class="cfg-price-header-column"><h4 style="text-align: left">Today's prices</h4></th>
-                                <th class="cfg-price-header-column"><h4 style="text-align: left">Last 3 days</h4></th>
-                                <th class="cfg-price-header-column"><h4 style="text-align: left">Last 10 days</h4></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="cfg-prices-table-row">
-                                <td class="cfg-price">Average</td>
-                                <td class="cfg-black" id="daily-statistics-avg">€&nbsp;1.234</td>
-                                <td class="cfg-green" id="daily-statistics-3days">+1%</td>
-                                <td class="cfg-red" id="daily-statistics-10days">-1%</td>
-                            </tr>
-                            <tr class="cfg-prices-table-row">
-                                <td class="cfg-price">Median</td>
-                                <td class="cfg-black">€&nbsp;1.234</td>
-                                <td class="cfg-green">+1%</td>
-                                <td class="cfg-red">-1%</td>
-                            </tr>
-                            <tr class="cfg-prices-table-row">
-                                <td class="cfg-price">Min</td>
-                                <td class="cfg-black">€&nbsp;1.234</td>
-                                <td class="cfg-green">+1%</td>
-                                <td class="cfg-red">-1%</td>
-                            </tr>
-                            <tr class="cfg-prices-table-row">
-                                <td class="cfg-price">Max</td>
-                                <td class="cfg-black">€&nbsp;1.234</td>
-                                <td class="cfg-green">+1%</td>
-                                <td class="cfg-red">-1%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--12-col-tablet mdl-cell--12-col-desktop">
+            <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
                 <div class="mdl-card__title mdl-color--brown-300">
                     <div class="options__item">
                         <label class="cfg-title" for="periodDropdown">Select Period&nbsp;</label>
@@ -159,10 +133,10 @@
                         </select>
                     </div>
                 </div>
-
             </div>
 
-            <div class="mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--8-col-tablet mdl-cell--12-col-desktop mdl-color--white">
+            <div class="mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop mdl-color--white">
+
                 <div class="mdl-card__title">
 
                     <div class="page-content" id="report">
@@ -443,7 +417,7 @@
                 }
             }
         };
-        xhttp.open("GET", "http://cyprusfuelguide.com/admin/month-report?year=" + selectedYear + "&month=" + selectedMonth, true);
+        xhttp.open("GET", "https://cyprusfuelguide.appspot.com/api/month-report?year=" + selectedYear + "&month=" + selectedMonth, true);
         xhttp.send();
     }
 

@@ -1,5 +1,6 @@
-package com.aspectsense.fuel.server.admin;
+package com.aspectsense.fuel.server.api;
 
+import com.aspectsense.fuel.server.api.MonthReportServlet;
 import com.aspectsense.fuel.server.data.DailySummary;
 import com.aspectsense.fuel.server.model.MonthReport;
 import com.google.gson.Gson;
