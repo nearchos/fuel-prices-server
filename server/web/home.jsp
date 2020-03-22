@@ -233,15 +233,18 @@
         </div>
     </header>
     <%
+        final int minNumberOfStationsToBeAddedPerCity = 5;
         final String stationsJson = StationsFactory.getLatestStations().getJson();
         final Map<String,Station> stationsMap = StationsParser.jsonArrayToMap(stationsJson);
-        final Map<FuelType, Map<City,Set<String>>> fuelTypeToCheapestStationsPerCity = new HashMap<>();
+//        final Map<FuelType, Map<City,Set<String>>> fuelTypeToCheapestStationsPerCity = new HashMap<>();
+        final Map<FuelType, Map<City,Vector<String>>> fuelTypeToCheapestStationsPerCity = new HashMap<>();
         final Map<FuelType, Map<String,Integer>> fuelTypeToPricesMap = new HashMap<>();
         for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
             final Prices prices = PricesFactory.getLatestPrices(fuelType.getCodeAsString());
             final Map<String,Integer> pricesMap = PricesParser.fromPricesJson(prices.getJson());
             fuelTypeToPricesMap.put(fuelType, pricesMap);
-            fuelTypeToCheapestStationsPerCity.put(fuelType, Util.findCheapestStationsPerCity(stationsMap, pricesMap));
+//            fuelTypeToCheapestStationsPerCity.put(fuelType, Util.findCheapestStationsPerCity(stationsMap, pricesMap));
+            fuelTypeToCheapestStationsPerCity.put(fuelType, Util.findCheapestStationsPerCity(stationsMap, pricesMap, minNumberOfStationsToBeAddedPerCity));
         }
     %>
         <main class="mdl-layout__content mdl-color--grey-100">
@@ -297,7 +300,8 @@
                 </div>
     <%
         for(final FuelType fuelType : FuelType.ALL_FUEL_TYPES) {
-            Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
+//            Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
+            Map<City,Vector<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
             final City [] allCities = City.ALL_CITIES;
     %>
                 <div class="mdl-color--white mdl-color-text--brown-600" style="width: auto" id="cheapestPrices-<%=fuelType.getCodeAsString()%>">
@@ -319,10 +323,12 @@
                         <tr class="cfg-prices-table-row">
                             <%
                                 for(final City city : allCities) {
-                                    final Set<String> stationCodes = cheapestStationsPerCity.get(city);
-                                    final int price = fuelTypeToPricesMap.get(fuelType).get(stationCodes.iterator().next());
+//                                    final Set<String> stationCodes = cheapestStationsPerCity.get(city);
+                                    final Vector<String> stationCodes = cheapestStationsPerCity.get(city);
+//                                    final int price = fuelTypeToPricesMap.get(fuelType).get(stationCodes.iterator().next());
+                                    final int bestPrice = fuelTypeToPricesMap.get(fuelType).get(stationCodes.firstElement());
                             %>
-                            <td class="cfg-price-value-column"><%=String.format("€%5.3f", price/1000f)%></td>
+                            <td class="cfg-price-value-column"><%=String.format("€%5.3f", bestPrice/1000f)%></td>
                             <%
                                 }
                             %>
@@ -353,10 +359,13 @@
                             </div>
 
                             <%
-                                final Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
-                                final Set<String> cheapestStations = cheapestStationsPerCity.get(city);
+//                                final Map<City,Set<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
+                                final Map<City,Vector<String>> cheapestStationsPerCity = fuelTypeToCheapestStationsPerCity.get(fuelType);
+//                                final Set<String> cheapestStations = cheapestStationsPerCity.get(city);
+                                final Vector<String> sortedCheapestStations = cheapestStationsPerCity.get(city);
                                 int counter = 0;
-                                for(final String stationCode : cheapestStations) {
+//                                for(final String stationCode : cheapestStations) {
+                                for(final String stationCode : sortedCheapestStations) {
                                     counter++;
                                     final Station station = stationsMap.get(stationCode);
                                     final Map<String,Integer> pricesMap = fuelTypeToPricesMap.get(fuelType);

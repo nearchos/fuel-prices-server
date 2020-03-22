@@ -168,33 +168,33 @@
 
         <div class="mdl-grid demo-content">
 
-            <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">
-                <div class="mdl-card__title mdl-color--brown-300">
-                    <div class="options__item">
-                        <label class="option-title" for="city-dropdown">City</label>
-                        <select class="option-input option-dropdown" id="city-dropdown">
-                            <option selected="selected" value="0">All cities</option>
-                            <option value="ΛΕΥΚΩΣΙΑ">Nicosia</option>
-                            <option value="ΛΕΜΕΣΟΣ">Limassol</option>
-                            <option value="ΛΑΡΝΑΚΑ">Larnaca</option>
-                            <option value="ΠΑΦΟΣ">Pafos</option>
-                            <option value="ΑΜΜΟΧΩΣΤΟΣ">Famagusta</option>
-                        </select>
+<%--            <div class="demo-updates mdl-shadow--2dp mdl-cell mdl-cell--4-col mdl-cell--4-col-tablet mdl-cell--12-col-desktop">--%>
+<%--                <div class="mdl-card__title mdl-color--brown-300">--%>
+<%--                    <div class="options__item">--%>
+<%--                        <label class="option-title" for="city-dropdown">City</label>--%>
+<%--                        <select class="option-input option-dropdown" id="city-dropdown">--%>
+<%--                            <option selected="selected" value="0">All cities</option>--%>
+<%--                            <option value="ΛΕΥΚΩΣΙΑ">Nicosia</option>--%>
+<%--                            <option value="ΛΕΜΕΣΟΣ">Limassol</option>--%>
+<%--                            <option value="ΛΑΡΝΑΚΑ">Larnaca</option>--%>
+<%--                            <option value="ΠΑΦΟΣ">Pafos</option>--%>
+<%--                            <option value="ΑΜΜΟΧΩΣΤΟΣ">Famagusta</option>--%>
+<%--                        </select>--%>
 
 
-                        <label class="option-title" for="district-dropdown">District</label>
-                        <select class="option-input option-dropdown" id="district-dropdown">
-                            <option selected="selected" value="0">All districts</option>
-                        </select>
+<%--                        <label class="option-title" for="district-dropdown">District</label>--%>
+<%--                        <select class="option-input option-dropdown" id="district-dropdown">--%>
+<%--                            <option selected="selected" value="0">All districts</option>--%>
+<%--                        </select>--%>
 
-                        <!-- Accent-colored raised button with ripple -->
-                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="apply()">
-                            <span>Apply</span>
-                        </button>
-                    </div>
+<%--                        <!-- Accent-colored raised button with ripple -->--%>
+<%--                        <button class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent" onclick="apply()">--%>
+<%--                            <span>Apply</span>--%>
+<%--                        </button>--%>
+<%--                    </div>--%>
 
-                </div>
-            </div>
+<%--                </div>--%>
+<%--            </div>--%>
 
             <section class="mdl-layout__tab-panel " id="all-fuel-types">
             </section>
