@@ -21,7 +21,7 @@
     <cron>
         <url>/admin/sync-prices</url>
         <description>Sync prices with the ministry's server</description>
-        <schedule>every 60 minutes from 7:00 to 20:00</schedule>
+        <schedule>every 120 minutes from 7:00 to 18:00</schedule>
         <timezone>Asia/Nicosia</timezone>
     </cron>
 

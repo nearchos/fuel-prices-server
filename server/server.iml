@@ -41,5 +41,6 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="material.brown-orange" level="application" />
   </component>
 </module>

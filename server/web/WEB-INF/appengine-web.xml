@@ -31,6 +31,7 @@
 
     <!-- Plain files -->
     <static-files>
+        <include path="/app-ads.txt" />
         <include path="/robots.txt" />
         <include path="/favicon.ico" />
         <include path="/google79bd7e77f9ffe0e4.html" />
